@@ -1,0 +1,98 @@
+/* ═════════════════════════════════════════════
+   SYSTÈME D'ANIMATIONS CENTRAL — Misstice
+   Importé UNE SEULE FOIS dans app/layout.tsx ;
+   il s'applique alors à toutes les pages du site.
+   (Ne pas réimporter dans les pages : Next.js l'interdit.)
+   ═════════════════════════════════════════════ */
+
+/* ---------- Keyframes ---------- */
+@keyframes ev-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ev-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ev-slide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ev-zoom-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes ev-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ---------- Apparition au montage ---------- */
+.ev-fade-in   { animation: ev-fade-in 0.6s ease both; }
+.ev-fade-up   { animation: ev-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ev-slide-up  { animation: ev-slide-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ev-zoom-in   { animation: ev-zoom-in 0.5s ease both; }
+.ev-float     { animation: ev-float 6s ease-in-out infinite; }
+
+/* ---------- Stagger (cascade) ----------
+   Sur un enfant marqué .ev-stagger-item, on pose --i (index)
+   en style inline pour décaler l'apparition. */
+.ev-stagger-item {
+  animation: ev-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* ---------- Reveal au scroll ----------
+   Piloté par le composant <Reveal /> (IntersectionObserver). */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Zoom au survol (cartes prestataires) ---------- */
+.ev-zoom-hover { overflow: hidden; }
+.ev-zoom-target { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.ev-zoom-hover:hover .ev-zoom-target { transform: scale(1.07); }
+
+/* ---------- Flip card au survol (cartes invités) ---------- */
+.ev-flip { perspective: 1000px; }
+.ev-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-style: preserve-3d;
+}
+.ev-flip:hover .ev-flip-inner { transform: rotateY(180deg); }
+.ev-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 1.5rem;
+}
+.ev-flip-back { transform: rotateY(180deg); }
+
+/* ═════════════════════════════════════════════
+   RESPECT DE prefers-reduced-motion
+   ═════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  .ev-flip:hover .ev-flip-inner { transform: none; }
+  .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
+}
