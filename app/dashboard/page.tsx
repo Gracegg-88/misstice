@@ -1,47 +1,106 @@
-import { TrendingUp, Wallet, Users, Store, BadgeCheck } from "lucide-react";
+import Link from "next/link";
+import { Wallet, Users, Store, BadgeCheck, PartyPopper } from "lucide-react";
 import ChecklistCard from "@/components/dashboard/ChecklistCard";
-import AgendaWidget from "@/components/dashboard/AgendaWidget";
+import { getCurrentEvent, getBudgetCategories } from "@/lib/queries";
+import { getChecklist, getEventVendors, getGuests } from "@/lib/dashboard";
 
-const budget = {
-  spent: 8750,
-  total: 15000,
-  lines: [
-    { label: "Lieu", value: 3000, color: "#6C3CE1" },
-    { label: "Traiteur", value: 2500, color: "#FF8C42" },
-    { label: "Photo/Vidéo", value: 1500, color: "#10B981" },
-    { label: "Décoration", value: 1000, color: "#EC4899" },
-    { label: "DJ", value: 750, color: "#F59E0B" },
-  ],
-};
-const pct = Math.round((budget.spent / budget.total) * 100);
+const eur = (n: number) => n.toLocaleString("fr-FR") + "€";
 
-const vendors = [
-  { name: "Salle Élégance", cat: "Lieu", status: "Confirmé" },
-  { name: "Saveurs d'Afrique", cat: "Traiteur", status: "Confirmé" },
-  { name: "Studio Lumière", cat: "Photographe", status: "En attente" },
-];
+export default async function DashboardOverview() {
+  const event = await getCurrentEvent();
 
-export default function DashboardOverview() {
+  // Pas encore d'événement : on invite à en créer un.
+  if (!event) {
+    return (
+      <div className="mx-auto max-w-xl py-16 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+          <PartyPopper size={26} />
+        </div>
+        <h1 className="mt-5 font-display text-2xl font-semibold text-plum">
+          Aucun événement pour l&apos;instant
+        </h1>
+        <p className="mt-2 text-slate">
+          Créez votre premier événement pour retrouver ici votre budget, vos
+          invités et votre équipe.
+        </p>
+        <Link
+          href="/dashboard/nouveau"
+          className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
+        >
+          <PartyPopper size={17} />
+          Créer un événement
+        </Link>
+      </div>
+    );
+  }
+
+  const cats = await getBudgetCategories(event.id);
+  const [tasks, bookedVendors, guests] = await Promise.all([
+    getChecklist(event.id),
+    getEventVendors(event.id),
+    getGuests(event.id),
+  ]);
+  const guestsConfirmed = guests.filter((g) => g.status === "confirmé").length;
+  const guestsPending = guests.filter(
+    (g) => g.status === "invité" || g.status === "en attente"
+  ).length;
+  const spent = cats.reduce((s, c) => s + Number(c.spent), 0);
+  const total = Number(event.budget_total) || cats.reduce((s, c) => s + Number(c.budget), 0);
+  const pct = total ? Math.round((spent / total) * 100) : 0;
+
+  // Progression globale = avancement de la checklist.
+  const doneTasks = tasks.filter((t) => t.done).length;
+  const progress = tasks.length
+    ? Math.round((doneTasks / tasks.length) * 100)
+    : 0;
+
+  // Top 5 des catégories où de l'argent a été dépensé.
+  const lines = [...cats]
+    .filter((c) => Number(c.spent) > 0)
+    .sort((a, b) => Number(b.spent) - Number(a.spent))
+    .slice(0, 5);
+
+  const dateLabel = event.event_date
+    ? new Date(event.event_date).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "Date à définir";
+
   return (
     <div className="mx-auto max-w-6xl">
-      <p className="text-sm text-slate">
-        Mariage de Sophie &amp; Marc — 15 Juin 2026
-      </p>
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm text-slate">
+          {event.name} — {dateLabel}
+        </p>
+        <Link
+          href="/dashboard/nouveau"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-plum transition-colors hover:bg-cream"
+        >
+          <PartyPopper size={15} />
+          Nouvel événement
+        </Link>
+      </div>
 
-      {/* Progression globale */}
-      <div className="ev-stagger-item mt-4 rounded-3xl border border-black/5 bg-white p-6" style={{ ["--i" as string]: 0 } as React.CSSProperties}>
+      {/* Progression globale (checklist) */}
+      <div className="mt-4 rounded-3xl border border-black/5 bg-white p-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={20} className="text-emerald" />
-            <h2 className="font-display text-lg font-semibold text-plum">
-              Progression globale
-            </h2>
-          </div>
-          <span className="text-sm font-semibold text-emerald">54%</span>
+          <span className="text-sm font-semibold text-plum">
+            Progression globale
+          </span>
+          <span className="text-sm font-medium text-emerald">{progress}%</span>
         </div>
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-cream">
-          <div className="h-full w-[54%] rounded-full bg-gradient-to-r from-violet to-emerald" />
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-cream">
+          <div
+            className="h-full rounded-full bg-emerald transition-all"
+            style={{ width: `${progress}%` }}
+          />
         </div>
+        <p className="mt-2 text-xs text-slate">
+          {doneTasks} / {tasks.length} tâche{tasks.length > 1 ? "s" : ""} de la
+          checklist terminée{doneTasks > 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* Cartes */}
@@ -63,10 +122,10 @@ export default function DashboardOverview() {
           <div className="mt-5 flex items-center gap-5">
             <div>
               <p className="font-display text-3xl font-semibold text-plum">
-                {budget.spent.toLocaleString("fr-FR")}€
+                {eur(spent)}
               </p>
               <p className="text-sm text-slate">
-                sur {budget.total.toLocaleString("fr-FR")}€ prévus
+                sur {eur(total)} prévus
               </p>
             </div>
             {/* Donut en CSS pur */}
@@ -83,9 +142,14 @@ export default function DashboardOverview() {
           </div>
 
           <ul className="mt-5 space-y-2">
-            {budget.lines.map((l) => (
+            {lines.length === 0 && (
+              <li className="text-sm text-slate">
+                Aucune dépense enregistrée pour l&apos;instant.
+              </li>
+            )}
+            {lines.map((l) => (
               <li
-                key={l.label}
+                key={l.id}
                 className="flex items-center justify-between text-sm"
               >
                 <span className="flex items-center gap-2 text-slate">
@@ -93,10 +157,10 @@ export default function DashboardOverview() {
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ background: l.color }}
                   />
-                  {l.label}
+                  {l.name}
                 </span>
                 <span className="font-medium text-plum">
-                  {l.value.toLocaleString("fr-FR")}€
+                  {eur(Number(l.spent))}
                 </span>
               </li>
             ))}
@@ -112,31 +176,26 @@ export default function DashboardOverview() {
             </h2>
           </div>
           <p className="mt-5 font-display text-5xl font-semibold text-plum">
-            129
+            {guests.length}
           </p>
-          <ul className="mt-5 space-y-2.5 text-sm">
-            <li className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-slate">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald" />
-                Confirmés
-              </span>
-              <span className="font-semibold text-plum">87</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-slate">
-                <span className="h-2.5 w-2.5 rounded-full bg-festif" />
-                En attente
-              </span>
-              <span className="font-semibold text-plum">34</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-slate">
-                <span className="h-2.5 w-2.5 rounded-full bg-black/30" />
-                Déclinés
-              </span>
-              <span className="font-semibold text-plum">8</span>
-            </li>
-          </ul>
+          <p className="mt-1 text-sm text-slate">
+            invité{guests.length > 1 ? "s" : ""} enregistré
+            {guests.length > 1 ? "s" : ""}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2.5 py-1 text-xs font-semibold text-emerald">
+              {guestsConfirmed} confirmé{guestsConfirmed > 1 ? "s" : ""}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2.5 py-1 text-xs font-semibold text-festif">
+              {guestsPending} en attente
+            </span>
+          </div>
+          <Link
+            href="/dashboard/invites"
+            className="mt-4 inline-block text-sm font-semibold text-violet hover:text-violet-dark"
+          >
+            Gérer les invités
+          </Link>
         </div>
 
         {/* Prestataires */}
@@ -147,36 +206,44 @@ export default function DashboardOverview() {
               Prestataires
             </h2>
           </div>
-          <ul className="mt-5 space-y-3">
-            {vendors.map((v) => (
-              <li
-                key={v.name}
-                className="flex items-center justify-between gap-2"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-plum">{v.name}</p>
-                  <p className="text-xs text-slate">{v.cat}</p>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    v.status === "Confirmé"
-                      ? "bg-emerald-soft text-emerald"
-                      : "bg-festif-soft text-festif"
-                  }`}
+          {bookedVendors.length === 0 ? (
+            <div className="mt-5 rounded-2xl border border-dashed border-black/10 px-4 py-6 text-center text-sm text-slate">
+              Aucun prestataire réservé.{" "}
+              <Link href="/dashboard/prestataires" className="font-semibold text-violet">
+                En ajouter
+              </Link>
+            </div>
+          ) : (
+            <ul className="mt-5 space-y-3">
+              {bookedVendors.slice(0, 5).map((v) => (
+                <li
+                  key={v.id}
+                  className="flex items-center justify-between gap-2"
                 >
-                  {v.status === "Confirmé" && <BadgeCheck size={13} />}
-                  {v.status}
-                </span>
-              </li>
-            ))}
-          </ul>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-plum">{v.name}</p>
+                    <p className="text-xs text-slate">{v.category ?? "—"}</p>
+                  </div>
+                  <span
+                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
+                      v.status === "confirmé"
+                        ? "bg-emerald-soft text-emerald"
+                        : "bg-festif-soft text-festif"
+                    }`}
+                  >
+                    {v.status === "confirmé" && <BadgeCheck size={13} />}
+                    {v.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
-      {/* Checklist + Agenda */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <ChecklistCard />
-        <AgendaWidget />
+      {/* Checklist */}
+      <div className="mt-6">
+        <ChecklistCard key={event.id} eventId={event.id} initial={tasks} />
       </div>
     </div>
   );

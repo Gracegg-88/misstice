@@ -1,135 +1,326 @@
+import Link from "next/link";
 import {
   Inbox,
   FileText,
-  Clock,
+  BadgeCheck,
   TrendingUp,
-  ShieldCheck,
-  Scale,
-  Phone,
-  Video,
-  ArrowRight,
+  Eye,
+  MessageSquare,
+  Store,
+  CalendarDays,
 } from "lucide-react";
-import CountUp from "@/components/animations/CountUp";
+import { getMyVendor, getProStats, getMyQuotes } from "@/lib/pro";
+import { getMyConversations } from "@/lib/messaging";
+import { createClient } from "@/lib/supabase/server";
+import { Sparkline, Donut, LineChart } from "@/components/admin/charts";
 
-const recent = [
-  { name: "Awa & Karim", event: "Mariage", date: "14 juin 2026", guests: 120, status: "Nouvelle" },
-  { name: "Sophie & Marc", event: "Mariage", date: "15 juin 2026", guests: 130, status: "Nouvelle" },
-  { name: "Fatou D.", event: "Baptême", date: "21 sept. 2026", guests: 60, status: "Devis envoyé" },
-];
+const QUOTE_BADGE: Record<string, string> = {
+  accepté: "bg-emerald-soft text-emerald",
+  envoyé: "bg-violet-soft text-violet",
+  refusé: "bg-festif-soft text-festif",
+  expiré: "bg-cream text-slate",
+};
 
-const calls = [
-  { who: "Awa & Karim", when: "Demain · 14:00", mode: "Appel" },
-  { who: "Sophie & Marc", when: "Jeudi · 18:00", mode: "Visio" },
-];
+export default async function ProOverviewPage() {
+  const [vendor, stats, conversations, quotes] = await Promise.all([
+    getMyVendor(),
+    getProStats(),
+    getMyConversations(),
+    getMyQuotes(),
+  ]);
 
-export default function ProOverview() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const uid = user?.id ?? "";
+
+  // Fenêtre glissante de 7 jours.
+  const todayMid = new Date();
+  todayMid.setHours(0, 0, 0, 0);
+  const since = new Date(todayMid);
+  since.setDate(todayMid.getDate() - 6);
+  const sinceISO = since.toISOString();
+
+  const [{ data: convRows }, { data: quoteRows }, viewRes] = await Promise.all([
+    supabase
+      .from("conversations")
+      .select("created_at")
+      .eq("prestataire_id", uid)
+      .gte("created_at", sinceISO),
+    supabase
+      .from("quotes")
+      .select("created_at, status")
+      .eq("prestataire_id", uid)
+      .gte("created_at", sinceISO),
+    vendor?.vendorId
+      ? supabase
+          .from("profile_views")
+          .select("viewed_at")
+          .eq("vendor_id", vendor.vendorId)
+          .gte("viewed_at", sinceISO)
+      : Promise.resolve({ data: [] as { viewed_at: string }[] }),
+  ]);
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(todayMid);
+    d.setDate(todayMid.getDate() - (6 - i));
+    return `${String(d.getDate()).padStart(2, "0")}/${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}`;
+  });
+
+  const bucket = (dates: (string | null | undefined)[]) => {
+    const c = Array(7).fill(0) as number[];
+    for (const d of dates) {
+      if (!d) continue;
+      const day = new Date(d);
+      day.setHours(0, 0, 0, 0);
+      const idx = 6 - Math.floor((todayMid.getTime() - day.getTime()) / 86_400_000);
+      if (idx >= 0 && idx < 7) c[idx] += 1;
+    }
+    return c;
+  };
+
+  const demandesSpark = bucket(
+    ((convRows as { created_at: string }[]) ?? []).map((r) => r.created_at)
+  );
+  const qs = (quoteRows as { created_at: string; status: string }[]) ?? [];
+  const devisSpark = bucket(qs.map((q) => q.created_at));
+  const acceptSpark = bucket(
+    qs.filter((q) => q.status === "accepté").map((q) => q.created_at)
+  );
+  const viewsSpark = bucket(
+    ((viewRes.data as { viewed_at: string }[]) ?? []).map((v) => v.viewed_at)
+  );
+  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+
+  const statCards = [
+    { icon: Inbox, label: "Demandes reçues", value: stats.demandes, sub: `+${sum(demandesSpark)} cette semaine`, tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: demandesSpark },
+    { icon: FileText, label: "Devis envoyés", value: stats.quotesSent, sub: `+${sum(devisSpark)} cette semaine`, tint: "bg-festif-soft text-festif", color: "#FF8C42", spark: devisSpark },
+    { icon: BadgeCheck, label: "Devis acceptés", value: stats.quotesAccepted, sub: `${stats.quotesSent ? Math.round((stats.quotesAccepted / stats.quotesSent) * 100) : 0}% de conversion`, tint: "bg-emerald-soft text-emerald", color: "#10B981", spark: acceptSpark },
+    { icon: TrendingUp, label: "Revenu estimé", value: stats.revenue, sub: "Devis acceptés", tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: acceptSpark, euro: true },
+  ];
+
+  // Répartition des devis par statut.
+  const byStatus = (s: string) => quotes.filter((q) => q.status === s).length;
+  const repartition = [
+    { label: "Acceptés", value: byStatus("accepté"), color: "#10B981" },
+    { label: "Envoyés", value: byStatus("envoyé"), color: "#6C3CE1" },
+    { label: "Refusés", value: byStatus("refusé") + byStatus("expiré"), color: "#FF8C42" },
+  ];
+  const repTotal = repartition.reduce((s, r) => s + r.value, 0);
+  const pct = (v: number) => (repTotal ? Math.round((v / repTotal) * 100) : 0);
+
+  const recent = conversations
+    .filter((c) => c.role === "prestataire")
+    .slice(0, 3);
+  const recentQuotes = quotes.slice(0, 4);
+
+  const quick = [
+    { icon: MessageSquare, label: "Ma messagerie", href: "/pro/messagerie" },
+    { icon: FileText, label: "Mes devis", href: "/pro/devis" },
+    { icon: Store, label: "Mon profil", href: "/pro/profil" },
+    { icon: CalendarDays, label: "Mon calendrier", href: "/pro/calendrier" },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl">
-      <p className="text-sm text-slate">Bonjour Studio Lumière 👋</p>
+      {/* En-tête */}
       <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-        Tableau de bord
+        Bonjour {vendor?.company ?? "et bienvenue"}
       </h1>
+      <p className="mt-1 text-sm text-slate">
+        Voici l&apos;activité de votre espace prestataire.
+      </p>
 
-      {/* Stats */}
+      {/* Stat cards */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { l: "Demandes ce mois", n: 8, icon: Inbox, suffix: "", c: "text-violet" },
-          { l: "Devis en attente", n: 3, icon: FileText, suffix: "", c: "text-festif" },
-          { l: "Taux de réponse", n: 98, icon: Clock, suffix: "%", c: "text-emerald" },
-          { l: "Revenu estimé", n: 4200, icon: TrendingUp, suffix: "€", c: "text-plum" },
-        ].map((s, i) => (
-          <div
-            key={s.l}
-            className="ev-stagger-item rounded-3xl border border-black/5 bg-white p-5"
-            style={{ ["--i" as string]: i } as React.CSSProperties}
-          >
-            <s.icon size={20} className={s.c} />
-            <p className={`mt-3 font-display text-3xl font-semibold ${s.c}`}>
-              <CountUp value={s.n} suffix={s.suffix} />
+        {statCards.map((c) => (
+          <div key={c.label} className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between">
+              <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${c.tint}`}>
+                <c.icon size={20} />
+              </span>
+              <Sparkline points={c.spark} color={c.color} className="mt-1 opacity-80" />
+            </div>
+            <p className="mt-3 text-sm text-slate">{c.label}</p>
+            <p className="font-display text-3xl font-semibold text-plum">
+              {c.value.toLocaleString("fr-FR")}
+              {c.euro ? "€" : ""}
             </p>
-            <p className="mt-1 text-sm text-slate">{s.l}</p>
+            <p className="mt-1 text-xs text-slate">{c.sub}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        {/* Demandes récentes */}
-        <div className="rounded-3xl border border-black/5 bg-white p-6 lg:col-span-2">
+      {/* Graphiques */}
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        {/* Activité — vues de la fiche */}
+        <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Inbox size={20} className="text-violet" />
-              <h2 className="font-display text-lg font-semibold text-plum">
-                Demandes récentes
-              </h2>
+              <Eye size={18} className="text-violet" />
+              <p className="font-display text-lg font-semibold text-plum">
+                Vues de votre fiche
+              </p>
             </div>
-            <a href="/pro/demandes" className="inline-flex items-center gap-1 text-sm font-semibold text-violet">
-              Tout voir <ArrowRight size={15} />
-            </a>
+            <span className="rounded-lg border border-black/10 px-3 py-1 text-xs font-medium text-slate">
+              7 derniers jours
+            </span>
           </div>
-          <ul className="mt-4 divide-y divide-black/5">
-            {recent.map((r) => (
-              <li key={r.name} className="flex items-center justify-between gap-3 py-3">
-                <div>
-                  <p className="font-medium text-plum">{r.name}</p>
-                  <p className="text-xs text-slate">
-                    {r.event} · {r.date} · {r.guests} invités
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    r.status === "Nouvelle"
-                      ? "bg-festif-soft text-festif"
-                      : "bg-violet-soft text-violet"
-                  }`}
-                >
-                  {r.status}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <p className="mt-3 flex items-baseline gap-1.5">
+            <span className="font-display text-3xl font-semibold text-plum">
+              {stats.views.toLocaleString("fr-FR")}
+            </span>
+            <span className="text-xs text-slate">vues au total</span>
+          </p>
+          <div className="mt-4">
+            <LineChart points={viewsSpark} labels={days} />
+          </div>
         </div>
 
-        {/* Prochains rendez-vous */}
-        <div className="rounded-3xl border border-black/5 bg-white p-6">
-          <h2 className="font-display text-lg font-semibold text-plum">
-            Prochains rendez-vous
-          </h2>
-          <ul className="mt-4 space-y-2.5">
-            {calls.map((c) => (
-              <li key={c.who} className="flex items-center gap-3 rounded-2xl border border-black/5 p-3">
-                <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl ${
-                    c.mode === "Visio" ? "bg-festif-soft text-festif" : "bg-violet-soft text-violet"
-                  }`}
-                >
-                  {c.mode === "Visio" ? <Video size={16} /> : <Phone size={16} />}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-plum">{c.who}</p>
-                  <p className="text-xs text-slate">{c.mode} · {c.when}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+        {/* Répartition des devis */}
+        <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+          <p className="font-display text-lg font-semibold text-plum">
+            Répartition des devis
+          </p>
+          {repTotal === 0 ? (
+            <p className="mt-6 text-sm text-slate">
+              Vos devis apparaîtront ici par statut.
+            </p>
+          ) : (
+            <div className="mt-4 flex items-center gap-4">
+              <Donut segments={repartition} />
+              <ul className="flex-1 space-y-2 text-sm">
+                {repartition.map((r) => (
+                  <li key={r.label} className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-slate">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: r.color }} />
+                      {r.label}
+                    </span>
+                    <span className="font-semibold text-plum">{pct(r.value)}%</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Réassurance pro (cohérent avec la promesse Misstice) */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="flex items-start gap-3 rounded-2xl border border-emerald/15 bg-emerald-soft p-4">
-          <ShieldCheck size={20} className="mt-0.5 shrink-0 text-emerald" />
-          <p className="text-sm text-plum">
-            <span className="font-semibold">Demandes qualifiées, zéro faux lead.</span>{" "}
-            Chaque demande vient d&apos;une famille réelle avec un événement daté.
-          </p>
+      {/* Demandes récentes + Devis récents + Actions rapides */}
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        {/* Demandes récentes */}
+        <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="font-display text-lg font-semibold text-plum">
+              Demandes récentes
+            </p>
+            <Link
+              href="/pro/messagerie"
+              className="text-sm font-semibold text-violet hover:text-violet-dark"
+            >
+              Tout voir
+            </Link>
+          </div>
+          {recent.length === 0 ? (
+            <div className="flex flex-col items-center py-6 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+                <Inbox size={22} />
+              </span>
+              <p className="mt-3 text-sm font-semibold text-plum">Aucune demande</p>
+              <p className="mt-1 text-xs text-slate">
+                Elles apparaîtront dès qu&apos;une famille vous contactera.
+              </p>
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {recent.map((r) => (
+                <li key={r.id}>
+                  <Link
+                    href={`/pro/messagerie/${r.id}`}
+                    className="flex items-center gap-3"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-soft text-sm font-semibold text-violet">
+                      {(r.otherName.trim()[0] || "?").toUpperCase()}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-plum">
+                        {r.otherName}
+                      </p>
+                      <p className="truncate text-xs text-slate">
+                        {r.subject || "Nouvelle demande"}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <div className="flex items-start gap-3 rounded-2xl border border-violet/15 bg-violet-soft p-4">
-          <Scale size={20} className="mt-0.5 shrink-0 text-violet" />
-          <p className="text-sm text-plum">
-            <span className="font-semibold">Classement au mérite.</span>{" "}
-            Votre visibilité dépend de vos avis et de votre réactivité, jamais
-            d&apos;un abonnement.
+
+        {/* Devis récents */}
+        <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+          <p className="font-display text-lg font-semibold text-plum">
+            Devis récents
           </p>
+          {recentQuotes.length === 0 ? (
+            <div className="flex flex-col items-center py-6 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-festif-soft text-festif">
+                <FileText size={22} />
+              </span>
+              <p className="mt-3 text-sm font-semibold text-plum">Aucun devis</p>
+              <p className="mt-1 text-xs text-slate">
+                Envoyez un devis depuis vos demandes.
+              </p>
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-2.5">
+              {recentQuotes.map((q) => (
+                <li
+                  key={q.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-black/5 p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-plum">
+                      {q.client_name || "Client"}
+                    </p>
+                    <p className="truncate text-xs text-slate">
+                      {Number(q.amount).toLocaleString("fr-FR")}€
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                      QUOTE_BADGE[q.status] ?? "bg-cream text-slate"
+                    }`}
+                  >
+                    {q.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Actions rapides */}
+        <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+          <p className="font-display text-lg font-semibold text-plum">
+            Actions rapides
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {quick.map((q) => (
+              <Link
+                key={q.label}
+                href={q.href}
+                className="flex flex-col items-center gap-2 rounded-2xl border border-black/5 bg-cream/50 p-4 text-center transition-colors hover:border-violet/30"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-soft text-violet">
+                  <q.icon size={17} />
+                </span>
+                <span className="text-xs font-medium text-plum">{q.label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

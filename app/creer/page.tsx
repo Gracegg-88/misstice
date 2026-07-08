@@ -2,25 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Sparkles,
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Eye,
-  EyeOff,
-  Heart,
-  Cake,
-  Baby,
-  GlassWater,
-  Gift,
-  Plus,
-  X,
-  Wallet,
-  Users,
-  CalendarDays,
-  PartyPopper,
-} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import Header from "@/components/Header";
+import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 
 function GoogleIcon() {
   return (
@@ -33,16 +17,8 @@ function GoogleIcon() {
   );
 }
 
-const EVENT_TYPES = [
-  { label: "Mariage", icon: Heart },
-  { label: "Anniversaire", icon: Cake },
-  { label: "Baptême", icon: Baby },
-  { label: "Gala / soirée", icon: GlassWater },
-  { label: "Autre", icon: Gift },
-];
-
 const inputCls =
-  "w-full rounded-xl border border-black/10 bg-cream px-4 py-3 text-sm text-plum outline-none focus:border-violet";
+  "w-full rounded-xl border border-black/10 bg-cream px-4 py-2 text-sm text-plum outline-none focus:border-violet";
 
 export default function CreerPage() {
   const router = useRouter();
@@ -52,106 +28,153 @@ export default function CreerPage() {
 
   // données
   const [account, setAccount] = useState({ name: "", email: "", password: "" });
-  const [event, setEvent] = useState({ type: "", name: "", date: "" });
-  const [details, setDetails] = useState({ budget: "", guests: "" });
-  const [collabs, setCollabs] = useState<{ email: string; role: string }[]>([]);
-  const [collabEmail, setCollabEmail] = useState("");
-  const [collabRole, setCollabRole] = useState("");
   const [pro, setPro] = useState({ company: "", category: "", city: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const stepsPart = ["Compte", "Événement", "Détails", "Équipe", "Résumé"];
-  const stepsPro = ["Compte", "Profil pro", "Résumé"];
-  const steps = type === "particulier" ? stepsPart : stepsPro;
+  // Le particulier ne crée qu'un compte ; ses événements se créent ensuite
+  // depuis le dashboard. Le prestataire renseigne en plus sa fiche.
+  const steps = type === "particulier" ? ["Compte"] : ["Compte", "Profil pro"];
   const last = steps.length - 1;
 
   const next = () => setStep((s) => Math.min(s + 1, last));
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
-  const addCollab = () => {
-    if (!collabEmail.trim()) return;
-    setCollabs((c) => [...c, { email: collabEmail, role: collabRole || "Collaborateur" }]);
-    setCollabEmail("");
-    setCollabRole("");
+  const goGoogle = async () => {
+    setError("");
+    const supabase = createClient();
+    const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (oauthErr) setError(oauthErr.message);
   };
 
-  const finish = () => {
-    // À remplacer par la vraie création (NextAuth + API). Ici on redirige.
-    router.push(type === "professionnel" ? "/pro" : "/dashboard");
+  const finish = async () => {
+    setError("");
+    setLoading(true);
+    const supabase = createClient();
+    const role = type === "professionnel" ? "prestataire" : "particulier";
+
+    // 1. Création du compte (le profil est créé automatiquement par un trigger).
+    const { data: signUp, error: signUpErr } = await supabase.auth.signUp({
+      email: account.email.trim(),
+      password: account.password,
+      options: {
+        data: {
+          full_name: account.name.trim(),
+          role,
+          // Repris par le trigger handle_new_user pour créer la fiche pro
+          // même si la confirmation d'email est activée (pas de session).
+          company: pro.company.trim(),
+          category: pro.category.trim(),
+          city: pro.city.trim(),
+        },
+      },
+    });
+
+    if (signUpErr) {
+      setLoading(false);
+      setError(
+        signUpErr.message.includes("registered")
+          ? "Un compte existe déjà avec cet email. Connectez-vous."
+          : signUpErr.message
+      );
+      return;
+    }
+
+    // Si la confirmation d'email est activée, aucune session n'est ouverte :
+    // on ne peut pas encore écrire côté DB (RLS). On informe l'utilisateur.
+    if (!signUp.session) {
+      setLoading(false);
+      setError(
+        "Compte créé ! Vérifiez votre boîte mail pour confirmer, puis connectez-vous. " +
+          "(Astuce dev : désactivez « Confirm email » dans Supabase → Auth pour aller plus vite.)"
+      );
+      return;
+    }
+
+    try {
+      if (type === "professionnel") {
+        // La fiche prestataire (vendor_profiles + vendors annuaire) est créée
+        // automatiquement par le trigger handle_new_user à partir des
+        // métadonnées — pas d'insert client nécessaire.
+        router.push("/pro");
+        return;
+      }
+
+      // Particulier : on l'emmène sur son dashboard, où il pourra créer
+      // un ou plusieurs événements.
+      router.push("/dashboard");
+    } catch (e) {
+      setLoading(false);
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Une erreur est survenue pendant la création."
+      );
+    }
   };
 
-  // validation minimale pour activer "Continuer"
-  const canNext =
+  // validation minimale pour activer "Continuer / Créer"
+  const canSubmit =
     step === 0
       ? account.email.trim() !== "" && account.password.trim() !== ""
-      : type === "particulier" && step === 1
-      ? event.type !== "" && event.name.trim() !== ""
-      : type === "professionnel" && step === 1
-      ? pro.company.trim() !== "" && pro.category.trim() !== ""
-      : true;
+      : pro.company.trim() !== "" && pro.category.trim() !== "";
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.1fr_0.9fr]">
-      {/* ── Colonne assistant ── */}
-      <div className="flex flex-col bg-cream px-5 py-8 sm:px-10">
-        <div className="flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet text-white">
-              <Sparkles size={17} />
-            </span>
-            <span className="font-display text-xl font-semibold tracking-tight">
-              Misstice
-            </span>
-          </a>
-          <a href="/auth" className="text-sm font-medium text-slate hover:text-plum">
-            Déjà un compte ? Se connecter
-          </a>
-        </div>
+    <div
+      className="flex h-screen flex-col overflow-hidden bg-cream bg-cover bg-center"
+      style={{ backgroundImage: "url('/background_login.png')" }}
+    >
+      <Header />
 
-        {/* Stepper */}
-        <div className="mx-auto mt-8 flex w-full max-w-lg items-center">
-          {steps.map((s, i) => (
-            <div key={s} className="flex flex-1 items-center last:flex-none">
-              <div className="flex flex-col items-center">
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-                    i < step
-                      ? "bg-emerald text-white"
-                      : i === step
-                      ? "bg-violet text-white"
-                      : "bg-white text-slate"
-                  }`}
-                >
-                  {i < step ? <Check size={15} /> : i + 1}
-                </span>
-                <span className="mt-1 hidden text-[11px] text-slate sm:block">
-                  {s}
-                </span>
-              </div>
-              {i < steps.length - 1 && (
-                <div
-                  className={`mx-1 h-0.5 flex-1 ${
-                    i < step ? "bg-emerald" : "bg-black/10"
-                  }`}
-                />
-              )}
+      <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-2">
+        <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 p-4 shadow-xl backdrop-blur-sm">
+          {/* Stepper (seulement pour le parcours pro, à 2 étapes) */}
+          {steps.length > 1 && (
+            <div className="flex w-full items-center">
+              {steps.map((s, i) => (
+                <div key={s} className="flex flex-1 items-center last:flex-none">
+                  <div className="flex flex-col items-center">
+                    <span
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                        i < step
+                          ? "bg-emerald text-white"
+                          : i === step
+                          ? "bg-violet text-white"
+                          : "bg-cream text-slate"
+                      }`}
+                    >
+                      {i < step ? <Check size={15} /> : i + 1}
+                    </span>
+                    <span className="mt-1 text-[11px] text-slate">{s}</span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div
+                      className={`mx-1 h-0.5 flex-1 ${
+                        i < step ? "bg-emerald" : "bg-black/10"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
 
-        <div className="flex flex-1 items-center justify-center">
-          <div key={step} className="ev-fade-in w-full max-w-lg py-8">
+          <div key={step} className={`ev-fade-in ${steps.length > 1 ? "mt-3" : ""}`}>
             {/* ÉTAPE 0 — Compte */}
             {step === 0 && (
               <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
+                <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
                   Créez votre compte
                 </h1>
-                <p className="mt-2 text-slate">
+                <p className="mt-1 text-sm text-slate">
                   Gratuit. Vous ne payez que les prestataires que vous réservez.
                 </p>
 
                 {/* Type de compte */}
-                <div className="mt-6 grid grid-cols-2 gap-1 rounded-2xl bg-white p-1">
+                <div className="mt-3 grid grid-cols-2 gap-1 rounded-2xl bg-cream p-1">
                   {(["particulier", "professionnel"] as const).map((t) => (
                     <button
                       key={t}
@@ -159,7 +182,7 @@ export default function CreerPage() {
                         setType(t);
                         setStep(0);
                       }}
-                      className={`rounded-xl py-2.5 text-sm font-semibold capitalize transition-colors ${
+                      className={`rounded-xl py-2 text-sm font-semibold capitalize transition-colors ${
                         type === t ? "bg-violet text-white" : "text-slate hover:text-plum"
                       }`}
                     >
@@ -169,19 +192,19 @@ export default function CreerPage() {
                 </div>
 
                 <button
-                  onClick={next}
-                  className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl border border-black/10 bg-white py-3 text-sm font-semibold text-plum hover:bg-cream"
+                  onClick={goGoogle}
+                  className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl border border-black/10 bg-white py-2 text-sm font-semibold text-plum hover:bg-cream"
                 >
                   <GoogleIcon />
                   Continuer avec Google
                 </button>
-                <div className="my-5 flex items-center gap-3 text-xs text-slate">
+                <div className="my-2.5 flex items-center gap-3 text-xs text-slate">
                   <span className="h-px flex-1 bg-black/10" />
                   ou avec votre email
                   <span className="h-px flex-1 bg-black/10" />
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <input
                     placeholder="Prénom et nom"
                     value={account.name}
@@ -189,6 +212,7 @@ export default function CreerPage() {
                     className={inputCls}
                   />
                   <input
+                    suppressHydrationWarning
                     type="email"
                     placeholder="vous@email.com"
                     value={account.email}
@@ -197,10 +221,12 @@ export default function CreerPage() {
                   />
                   <div className="relative">
                     <input
+                      suppressHydrationWarning
                       type={showPwd ? "text" : "password"}
                       placeholder="Mot de passe"
                       value={account.password}
                       onChange={(e) => setAccount({ ...account, password: e.target.value })}
+                      autoComplete="new-password"
                       className={`${inputCls} pr-11`}
                     />
                     <button
@@ -216,219 +242,16 @@ export default function CreerPage() {
               </div>
             )}
 
-            {/* PARTICULIER — ÉTAPE 1 : Événement */}
-            {type === "particulier" && step === 1 && (
-              <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-                  Votre événement
-                </h1>
-                <p className="mt-2 text-slate">On commence par l&apos;essentiel.</p>
-
-                <p className="mt-6 text-sm font-medium text-plum">
-                  Quel type d&apos;événement ?
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {EVENT_TYPES.map((t) => {
-                    const on = event.type === t.label;
-                    return (
-                      <button
-                        key={t.label}
-                        onClick={() => setEvent({ ...event, type: t.label })}
-                        className={`flex flex-col items-center gap-2 rounded-2xl border p-4 transition-colors ${
-                          on
-                            ? "border-violet bg-violet-soft text-violet"
-                            : "border-black/10 bg-white text-slate hover:border-violet/40"
-                        }`}
-                      >
-                        <t.icon size={22} />
-                        <span className="text-sm font-medium">{t.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-5 space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-plum">
-                      Nom de l&apos;événement
-                    </label>
-                    <input
-                      placeholder="ex. Mariage de Sophie & Marc"
-                      value={event.name}
-                      onChange={(e) => setEvent({ ...event, name: e.target.value })}
-                      className={`mt-1.5 ${inputCls}`}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-plum">Date</label>
-                    <input
-                      type="date"
-                      value={event.date}
-                      onChange={(e) => setEvent({ ...event, date: e.target.value })}
-                      className={`mt-1.5 ${inputCls}`}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* PARTICULIER — ÉTAPE 2 : Détails */}
-            {type === "particulier" && step === 2 && (
-              <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-                  Budget &amp; invités
-                </h1>
-                <p className="mt-2 text-slate">
-                  Des estimations, modifiables à tout moment.
-                </p>
-
-                <div className="mt-6">
-                  <label className="text-sm font-medium text-plum">
-                    Budget prévisionnel (€)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="ex. 15000"
-                    value={details.budget}
-                    onChange={(e) => setDetails({ ...details, budget: e.target.value })}
-                    className={`mt-1.5 ${inputCls}`}
-                  />
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {["5000", "10000", "20000", "30000"].map((b) => (
-                      <button
-                        key={b}
-                        onClick={() => setDetails({ ...details, budget: b })}
-                        className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate hover:text-plum"
-                      >
-                        {parseInt(b).toLocaleString("fr-FR")}€
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <label className="text-sm font-medium text-plum">
-                    Nombre d&apos;invités
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="ex. 120"
-                    value={details.guests}
-                    onChange={(e) => setDetails({ ...details, guests: e.target.value })}
-                    className={`mt-1.5 ${inputCls}`}
-                  />
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {["50", "100", "150", "200"].map((g) => (
-                      <button
-                        key={g}
-                        onClick={() => setDetails({ ...details, guests: g })}
-                        className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate hover:text-plum"
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* PARTICULIER — ÉTAPE 3 : Équipe */}
-            {type === "particulier" && step === 3 && (
-              <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-                  Invitez votre équipe
-                </h1>
-                <p className="mt-2 text-slate">
-                  Partagez l&apos;organisation avec vos proches (facultatif).
-                </p>
-
-                <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-                  <input
-                    type="email"
-                    placeholder="email@exemple.com"
-                    value={collabEmail}
-                    onChange={(e) => setCollabEmail(e.target.value)}
-                    className={inputCls}
-                  />
-                  <input
-                    placeholder="Rôle (ex. Traiteur)"
-                    value={collabRole}
-                    onChange={(e) => setCollabRole(e.target.value)}
-                    className={`${inputCls} sm:w-44`}
-                  />
-                  <button
-                    onClick={addCollab}
-                    className="flex items-center justify-center gap-1.5 rounded-xl bg-violet px-4 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
-                  >
-                    <Plus size={16} />
-                    Ajouter
-                  </button>
-                </div>
-
-                <ul className="mt-4 space-y-2">
-                  {collabs.map((c, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center justify-between rounded-xl border border-black/5 bg-white px-4 py-2.5 text-sm"
-                    >
-                      <span>
-                        <span className="font-medium text-plum">{c.email}</span>{" "}
-                        <span className="text-slate">· {c.role}</span>
-                      </span>
-                      <button
-                        aria-label="Retirer"
-                        onClick={() => setCollabs((l) => l.filter((_, j) => j !== i))}
-                        className="text-slate hover:text-plum"
-                      >
-                        <X size={16} />
-                      </button>
-                    </li>
-                  ))}
-                  {collabs.length === 0 && (
-                    <li className="rounded-xl border border-dashed border-black/10 px-4 py-6 text-center text-sm text-slate">
-                      Vous pourrez toujours inviter des proches plus tard.
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {/* PARTICULIER — ÉTAPE 4 : Résumé */}
-            {type === "particulier" && step === 4 && (
-              <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-                  Tout est prêt
-                </h1>
-                <p className="mt-2 text-slate">
-                  Vérifiez, puis créez votre espace.
-                </p>
-                <div className="mt-6 space-y-3 rounded-2xl border border-black/5 bg-white p-5 text-sm">
-                  <Row label="Compte" value={account.email || "—"} />
-                  <Row label="Événement" value={event.name || "—"} />
-                  <Row label="Type" value={event.type || "—"} />
-                  <Row label="Date" value={event.date || "À définir"} />
-                  <Row
-                    label="Budget"
-                    value={details.budget ? `${parseInt(details.budget).toLocaleString("fr-FR")}€` : "—"}
-                  />
-                  <Row label="Invités" value={details.guests || "—"} />
-                  <Row label="Équipe" value={`${collabs.length} invité(s)`} />
-                </div>
-              </div>
-            )}
-
             {/* PRO — ÉTAPE 1 : Profil pro */}
             {type === "professionnel" && step === 1 && (
               <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
+                <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
                   Votre profil professionnel
                 </h1>
-                <p className="mt-2 text-slate">
+                <p className="mt-1 text-sm text-slate">
                   Les familles vous trouveront grâce à ces infos.
                 </p>
-                <div className="mt-6 space-y-4">
+                <div className="mt-4 space-y-3">
                   <input
                     placeholder="Nom de l'entreprise"
                     value={pro.company}
@@ -451,26 +274,8 @@ export default function CreerPage() {
               </div>
             )}
 
-            {/* PRO — ÉTAPE 2 : Résumé */}
-            {type === "professionnel" && step === 2 && (
-              <div>
-                <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-                  Profil prêt
-                </h1>
-                <p className="mt-2 text-slate">
-                  Vous pourrez ajouter vos photos et tarifs ensuite.
-                </p>
-                <div className="mt-6 space-y-3 rounded-2xl border border-black/5 bg-white p-5 text-sm">
-                  <Row label="Compte" value={account.email || "—"} />
-                  <Row label="Entreprise" value={pro.company || "—"} />
-                  <Row label="Catégorie" value={pro.category || "—"} />
-                  <Row label="Zone" value={pro.city || "—"} />
-                </div>
-              </div>
-            )}
-
             {/* Navigation */}
-            <div className="mt-8 flex items-center justify-between">
+            <div className="mt-3 flex items-center justify-between">
               {step > 0 ? (
                 <button
                   onClick={back}
@@ -486,111 +291,42 @@ export default function CreerPage() {
               {step < last ? (
                 <button
                   onClick={next}
-                  disabled={!canNext}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
+                  disabled={!canSubmit}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
                 >
-                  {type === "particulier" && step === 3 && collabs.length === 0
-                    ? "Passer cette étape"
-                    : "Continuer"}
-                  <ArrowRight size={16} />
+                  Continuer
                 </button>
               ) : (
                 <button
                   onClick={finish}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
+                  disabled={loading || !canSubmit}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
                 >
                   <PartyPopper size={17} />
-                  {type === "particulier" ? "Créer mon événement" : "Créer mon profil"}
+                  {loading
+                    ? "Création…"
+                    : type === "particulier"
+                    ? "Créer mon compte"
+                    : "Créer mon profil"}
                 </button>
               )}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── Colonne récap (Canva) ── */}
-      <div className="relative hidden overflow-hidden bg-ink lg:flex lg:flex-col lg:justify-center">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(50% 50% at 80% 10%, rgba(255,140,66,0.2), transparent 60%)," +
-              "radial-gradient(55% 55% at 10% 90%, rgba(108,60,225,0.4), transparent 60%)",
-          }}
-        />
-        <div className="relative mx-auto w-full max-w-sm px-10 text-white">
-          <h2 className="font-display text-3xl font-semibold leading-tight">
-            {type === "particulier"
-              ? "Votre événement prend forme."
-              : "Votre vitrine prend forme."}
-          </h2>
-          <div className="mt-8 rounded-3xl bg-white/95 p-5 text-plum shadow-2xl">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate">
-              {type === "particulier" ? "Aperçu de l'événement" : "Aperçu du profil"}
-            </p>
-            {type === "particulier" ? (
-              <>
-                <p className="mt-1 font-display text-xl font-semibold">
-                  {event.name || "Votre événement"}
-                </p>
-                <div className="mt-4 space-y-2.5 text-sm">
-                  <Mini icon={PartyPopper} label="Type" value={event.type || "—"} />
-                  <Mini icon={CalendarDays} label="Date" value={event.date || "À définir"} />
-                  <Mini
-                    icon={Wallet}
-                    label="Budget"
-                    value={details.budget ? `${parseInt(details.budget).toLocaleString("fr-FR")}€` : "—"}
-                  />
-                  <Mini icon={Users} label="Invités" value={details.guests || "—"} />
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="mt-1 font-display text-xl font-semibold">
-                  {pro.company || "Votre entreprise"}
-                </p>
-                <div className="mt-4 space-y-2.5 text-sm">
-                  <Mini icon={Sparkles} label="Catégorie" value={pro.category || "—"} />
-                  <Mini icon={CalendarDays} label="Zone" value={pro.city || "—"} />
-                </div>
-              </>
+            {error && (
+              <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+                {error}
+              </p>
             )}
           </div>
-          <p className="mt-6 text-sm text-white/70">
-            Étape {step + 1} sur {steps.length} — {steps[step]}
+
+          <p className="mt-4 text-center text-sm text-slate">
+            Déjà un compte ?{" "}
+            <a href="/auth" className="font-semibold text-violet">
+              Se connecter
+            </a>
           </p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between border-b border-black/5 pb-3 last:border-0 last:pb-0">
-      <span className="text-slate">{label}</span>
-      <span className="font-semibold text-plum">{value}</span>
-    </div>
-  );
-}
-
-function Mini({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="flex items-center gap-2 text-slate">
-        <Icon size={15} />
-        {label}
-      </span>
-      <span className="font-medium text-plum">{value}</span>
     </div>
   );
 }

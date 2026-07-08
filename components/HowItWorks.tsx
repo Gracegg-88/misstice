@@ -1,58 +1,69 @@
-import { CalendarHeart, Users, PartyPopper } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Reveal from "./Reveal";
 
 const steps = [
   {
-    icon: CalendarHeart,
+    n: 1,
+    img: "/cree.png",
     title: "Créez votre événement",
-    text: "Type, date, budget, nombre d'invités. En 2 minutes, votre espace est prêt et tout est centralisé.",
+    text: "Indiquez les informations essentielles et donnez vie à votre projet en quelques minutes.",
   },
   {
-    icon: Users,
-    title: "Invitez vos proches & trouvez vos prestataires",
-    text: "Partagez les tâches en famille — « Tonton gère le DJ » — et contactez des prestataires vérifiés.",
+    n: 2,
+    img: "/organiser.png",
+    title: "Organisez budget, invités et tâches",
+    text: "Gérez votre budget, suivez votre checklist et centralisez toutes les informations.",
   },
   {
-    icon: PartyPopper,
-    title: "Profitez du jour J",
-    text: "Budget maîtrisé, checklist au vert, invités confirmés. Le reste, c'est juste la fête.",
+    n: 3,
+    img: "/reserve.png",
+    title: "Réservez vos prestataires",
+    text: "Trouvez les meilleurs prestataires, comparez et réservez en toute sérénité.",
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section
-      id="comment-ca-marche"
-      className="mx-auto max-w-content px-5 py-24 sm:px-8"
-    >
-      <Reveal className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-wide text-festif">
-          Comment ça marche
-        </p>
-        <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-plum sm:text-5xl">
-          Trois étapes, zéro casse-tête
-        </h2>
-      </Reveal>
+    <section id="comment-ca-marche" className="pt-6 pb-6 sm:pt-8 sm:pb-8">
+      <div className="mx-auto max-w-content px-5 sm:px-8">
+        <Reveal className="flex items-center justify-center gap-2.5">
+          <Sparkles size={18} className="fill-festif text-festif" />
+          <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+            Comment ça marche&nbsp;?
+          </h2>
+          <Sparkles size={18} className="fill-festif text-festif" />
+        </Reveal>
 
-      <div className="mt-16 grid gap-8 md:grid-cols-3">
-        {steps.map((step, i) => (
-          <Reveal key={step.title} delay={i * 120}>
-            <div className="group h-full rounded-3xl border border-black/5 bg-white p-8 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-violet/5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-soft text-violet transition-colors group-hover:bg-violet group-hover:text-white">
-                <step.icon size={26} />
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {steps.map((step, i) => (
+            <Reveal key={step.n} delay={i * 120} className="h-full">
+              <div className="group flex h-full items-start gap-4 rounded-3xl border border-black/5 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-violet/5">
+                {/* Illustration + pastille numérotée */}
+                <div className="relative shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={step.img}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-24 w-24 object-contain"
+                  />
+                  <span className="absolute -left-1 -top-1 flex h-8 w-8 items-center justify-center rounded-full bg-festif font-display text-base font-bold text-white shadow-md shadow-festif/30">
+                    {step.n}
+                  </span>
+                </div>
+
+                <div className="min-w-0">
+                  <h3 className="font-display text-lg font-semibold leading-snug text-plum">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate">
+                    {step.text}
+                  </p>
+                </div>
               </div>
-              <div className="mt-6 flex items-baseline gap-3">
-                <span className="font-display text-sm font-semibold text-festif">
-                  0{i + 1}
-                </span>
-                <h3 className="font-display text-xl font-semibold text-plum">
-                  {step.title}
-                </h3>
-              </div>
-              <p className="mt-3 leading-relaxed text-slate">{step.text}</p>
-            </div>
-          </Reveal>
-        ))}
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );

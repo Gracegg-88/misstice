@@ -5,6 +5,36 @@
 /* Les animations vivent dans app/animations.css (importé dans le layout). */
 
 /* ─────────────────────────────────────────────
+   IMPRESSION DU DEVIS (Télécharger → PDF navigateur)
+   ───────────────────────────────────────────── */
+@media print {
+  /* On masque tout sauf la fiche devis. */
+  body * {
+    visibility: hidden;
+  }
+  .devis-sheet,
+  .devis-sheet * {
+    visibility: visible;
+  }
+  .devis-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    margin: 12mm;
+  }
+}
+
+/* ─────────────────────────────────────────────
    BASE
    ───────────────────────────────────────────── */
 html {
@@ -15,6 +45,10 @@ body {
   color: #1a1a2e;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Aucun défilement latéral parasite : un élément trop large ne décale plus
+     toute la page (le contenu volontairement large scrolle dans son conteneur
+     overflow-x-auto). */
+  overflow-x: hidden;
 }
 :focus-visible {
   outline: 2px solid #6c3ce1;

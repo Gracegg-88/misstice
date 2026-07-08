@@ -3,23 +3,21 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VendorProfile from "@/components/explorer/VendorProfile";
-import { VENDORS } from "@/components/explorer/vendors";
 import {
-  getPackages,
-  getReviews,
-  ratingBreakdown,
-} from "@/components/explorer/profileData";
+  getVendor,
+  getPublicPackages,
+  getPublicPhotos,
+  getVendorReviews,
+  getReviewStats,
+} from "@/lib/vendors";
+import { getPackages } from "@/components/explorer/profileData";
 
-export function generateStaticParams() {
-  return VENDORS.map((v) => ({ id: String(v.id) }));
-}
-
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
   params: { id: string };
-}): Metadata {
-  const vendor = VENDORS.find((v) => String(v.id) === params.id);
+}): Promise<Metadata> {
+  const vendor = await getVendor(params.id);
   if (!vendor) return { title: "Prestataire — Misstice" };
   return {
     title: `${vendor.name} — ${vendor.category} à ${vendor.city} · Misstice`,
@@ -27,19 +25,40 @@ export function generateMetadata({
   };
 }
 
-export default function VendorPage({ params }: { params: { id: string } }) {
-  const vendor = VENDORS.find((v) => String(v.id) === params.id);
+export default async function VendorPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const vendor = await getVendor(params.id);
   if (!vendor) notFound();
+
+  // Formules & book réels si le prestataire est inscrit, sinon démo.
+  const [realPackages, photos, reviews, stats] = await Promise.all([
+    vendor.userId ? getPublicPackages(vendor.userId) : Promise.resolve([]),
+    vendor.userId ? getPublicPhotos(vendor.userId) : Promise.resolve([]),
+    getVendorReviews(vendor.id),
+    getReviewStats(vendor.id),
+  ]);
+  const packages = realPackages.length ? realPackages : getPackages(vendor);
+
+  // La note affichée reflète les avis réels dès qu'il y en a ; sinon on garde
+  // la note de la fiche (cohérent avec les cartes de l'annuaire).
+  const vendorWithRating =
+    stats.count > 0
+      ? { ...vendor, rating: stats.avg, reviews: stats.count }
+      : vendor;
 
   return (
     <>
       <Header />
       <main>
         <VendorProfile
-          vendor={vendor}
-          packages={getPackages(vendor)}
-          reviews={getReviews(vendor)}
-          breakdown={ratingBreakdown(vendor)}
+          vendor={vendorWithRating}
+          packages={packages}
+          reviews={reviews}
+          breakdown={stats.breakdown}
+          photos={photos}
         />
       </main>
       <Footer />

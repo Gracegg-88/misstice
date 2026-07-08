@@ -2,16 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Sparkles,
-  Eye,
-  EyeOff,
-  CheckCircle2,
-  Wallet,
-  Users,
-  Images,
-  CalendarClock,
-} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import Header from "@/components/Header";
 
 function GoogleIcon() {
   return (
@@ -24,232 +17,216 @@ function GoogleIcon() {
   );
 }
 
-const PERKS = [
-  { icon: Wallet, label: "Budget & checklist toujours à jour" },
-  { icon: Users, label: "Invités & équipe qui collaborent" },
-  { icon: Images, label: "Moodboard d'inspiration (Pinterest, TikTok, vos photos)" },
-  { icon: CalendarClock, label: "Agenda pour vos appels prestataires" },
-];
-
 export default function AuthPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"particulier" | "prestataire">("particulier");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
-  const go = () => {
-    setLoading(true);
-    // Remplacé plus tard par NextAuth (signIn). Pour l'instant on redirige.
-    setTimeout(() => router.push("/dashboard"), 400);
+  const forgot = async () => {
+    setError("");
+    setNotice("");
+    if (!email.trim()) {
+      setError("Saisissez d'abord votre adresse e-mail ci-dessus.");
+      return;
+    }
+    const supabase = createClient();
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      { redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset` }
+    );
+    if (resetErr) {
+      setError(resetErr.message);
+      return;
+    }
+    setNotice(
+      "Si un compte existe pour cette adresse, un lien de réinitialisation vient d'être envoyé."
+    );
   };
 
+  const go = async () => {
+    setError("");
+    setLoading(true);
+    const supabase = createClient();
+    const { error: signInErr } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (signInErr) {
+      setLoading(false);
+      setError(
+        signInErr.message.includes("Invalid login")
+          ? "Email ou mot de passe incorrect."
+          : signInErr.message
+      );
+      return;
+    }
+
+    // Le système détecte le rôle et redirige vers le bon espace.
+    const rawNext = new URLSearchParams(window.location.search).get("next");
+    // Anti open-redirect : uniquement un chemin interne ("/x", pas "//evil").
+    const next =
+      rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//")
+        ? rawNext
+        : null;
+    let dest = next;
+    if (!dest) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user?.id ?? "")
+        .single();
+      dest =
+        profile?.role === "admin"
+          ? "/admin"
+          : profile?.role === "prestataire"
+            ? "/pro"
+            : "/dashboard";
+    }
+    router.push(dest);
+    router.refresh();
+  };
+
+  const goGoogle = async () => {
+    setError("");
+    const supabase = createClient();
+    const { error: oauthErr } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (oauthErr) setError(oauthErr.message);
+  };
+
+  const inputCls =
+    "w-full rounded-xl border border-black/10 bg-white py-2.5 pl-11 pr-4 text-sm text-plum outline-none placeholder:text-slate focus:border-violet";
+
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* ── Colonne formulaire (esprit Notion : calme et clair) ── */}
-      <div className="flex flex-col bg-cream px-5 py-8 sm:px-10">
-        <a href="/" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet text-white">
-            <Sparkles size={17} />
-          </span>
-          <span className="font-display text-xl font-semibold tracking-tight">
-            Misstice
-          </span>
-        </a>
+    <div
+      className="flex h-screen flex-col overflow-hidden bg-cream bg-cover bg-center"
+      style={{ backgroundImage: "url('/background_login.png')" }}
+    >
+      <Header />
 
-        <div className="flex flex-1 items-center justify-center">
-          <div className="ev-fade-in w-full max-w-sm py-10">
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-              Accédez à votre événement
-            </h1>
-            <p className="mt-2 text-slate">
-              Retrouvez votre budget, vos invités et votre équipe, là où vous
-              les avez laissés.
-            </p>
-
-            {/* Sélecteur de profil */}
-            <div className="mt-6 grid grid-cols-2 gap-1 rounded-2xl bg-white p-1">
-              {(["particulier", "prestataire"] as const).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRole(r)}
-                  className={`rounded-xl py-2 text-sm font-semibold capitalize transition-colors ${
-                    role === r
-                      ? "bg-violet text-white"
-                      : "text-slate hover:text-plum"
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-
-            {role === "prestataire" ? (
-              <div className="mt-6 rounded-2xl border border-black/5 bg-white p-5 text-sm text-slate">
-                Vous êtes un professionnel ? Votre espace pro (devis, demandes,
-                agenda) se trouve ici.
-                <a
-                  href="/pro"
-                  className="mt-3 block rounded-xl bg-violet px-4 py-2.5 text-center font-semibold text-white hover:bg-violet-dark"
-                >
-                  Accéder à l&apos;espace pro
-                </a>
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={go}
-                  className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl border border-black/10 bg-white py-3 text-sm font-semibold text-plum transition-colors hover:bg-cream"
-                >
-                  <GoogleIcon />
-                  Continuer avec Google
-                </button>
-
-                <div className="my-5 flex items-center gap-3 text-xs text-slate">
-                  <span className="h-px flex-1 bg-black/10" />
-                  ou avec votre email
-                  <span className="h-px flex-1 bg-black/10" />
-                </div>
-
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    go();
-                  }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <label className="text-sm font-medium text-plum">
-                      Email
-                    </label>
-                    <input
-                      required
-                      type="email"
-                      placeholder="vous@email.com"
-                      className="mt-1.5 w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-plum outline-none focus:border-violet"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium text-plum">
-                        Mot de passe
-                      </label>
-                      <a href="#" className="text-xs font-medium text-violet">
-                        Oublié ?
-                      </a>
-                    </div>
-                    <div className="relative mt-1.5">
-                      <input
-                        required
-                        type={showPwd ? "text" : "password"}
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 pr-11 text-sm text-plum outline-none focus:border-violet"
-                      />
-                      <button
-                        type="button"
-                        aria-label={
-                          showPwd
-                            ? "Masquer le mot de passe"
-                            : "Afficher le mot de passe"
-                        }
-                        onClick={() => setShowPwd((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-plum"
-                      >
-                        {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full rounded-2xl bg-violet py-3.5 text-base font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-70"
-                  >
-                    {loading ? "Connexion…" : "Se connecter"}
-                  </button>
-                </form>
-
-                <p className="mt-6 text-center text-sm text-slate">
-                  Pas encore de compte ?{" "}
-                  <a href="/creer" className="font-semibold text-violet">
-                    Créer un compte
-                  </a>
-                </p>
-              </>
-            )}
+      <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-1">
+        <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 p-5 shadow-xl backdrop-blur-sm sm:p-6">
+          {/* Favicon Misstice (étincelle) */}
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-soft">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="" aria-hidden="true" className="h-5 w-5" />
           </div>
-        </div>
-      </div>
 
-      {/* ── Colonne visuelle (esprit Canva : chaleureux et visuel) ── */}
-      <div className="relative hidden overflow-hidden bg-ink lg:flex lg:flex-col lg:justify-center">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(50% 50% at 75% 15%, rgba(255,140,66,0.22), transparent 60%)," +
-              "radial-gradient(55% 55% at 15% 85%, rgba(108,60,225,0.4), transparent 60%)",
-          }}
-        />
-        <div className="relative mx-auto max-w-md px-10 text-white">
-          <h2 className="font-display text-4xl font-semibold leading-tight">
-            Tout votre événement,
-            <br />
-            au même endroit.
-          </h2>
-          <p className="mt-4 text-white/70">
-            La rigueur d&apos;un Notion, la créativité d&apos;un Canva — pensés
-            pour les fêtes de famille.
+          <h1 className="mt-2.5 text-center font-display text-xl font-semibold tracking-tight text-plum">
+            Connexion à Misstice
+          </h1>
+          <p className="mt-1 text-center text-xs leading-snug text-slate">
+            Vos événements et vos prestataires en un seul endroit.
           </p>
 
-          {/* Aperçu flottant du tableau de bord */}
-          <div className="mt-10 rounded-3xl bg-white/95 p-5 text-plum shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate">
-                  Événement en cours
-                </p>
-                <p className="font-display text-lg font-semibold">
-                  Mariage de Sophie &amp; Marc
-                </p>
-              </div>
-              <span className="rounded-full bg-emerald-soft px-3 py-1 text-xs font-semibold text-emerald">
-                J-93
-              </span>
-            </div>
-            <div className="mt-4">
-              <div className="flex justify-between text-xs">
-                <span className="font-medium">Progression globale</span>
-                <span className="text-slate">54%</span>
-              </div>
-              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-violet-soft">
-                <div className="h-full w-[54%] rounded-full bg-gradient-to-r from-violet to-emerald" />
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              {[
-                { v: "8 750€", l: "Budget" },
-                { v: "129", l: "Invités" },
-                { v: "3", l: "Prestataires" },
-              ].map((s) => (
-                <div key={s.l} className="rounded-xl bg-cream py-2">
-                  <p className="font-display text-base font-semibold">{s.v}</p>
-                  <p className="text-[11px] text-slate">{s.l}</p>
-                </div>
-              ))}
-            </div>
+          {/* Google */}
+          <button
+            type="button"
+            onClick={goGoogle}
+            className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl border border-black/10 bg-white py-2.5 text-sm font-semibold text-plum transition-colors hover:bg-cream"
+          >
+            <GoogleIcon />
+            Continuer avec Google
+          </button>
+
+          <div className="my-2.5 flex items-center gap-3 text-xs text-slate">
+            <span className="h-px flex-1 bg-black/10" />
+            ou connectez-vous avec votre email
+            <span className="h-px flex-1 bg-black/10" />
           </div>
 
-          <ul className="mt-8 space-y-3">
-            {PERKS.map((p) => (
-              <li key={p.label} className="flex items-center gap-3 text-sm">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10">
-                  <p.icon size={16} />
-                </span>
-                {p.label}
-              </li>
-            ))}
-          </ul>
+          <form
+            suppressHydrationWarning
+            onSubmit={(e) => {
+              e.preventDefault();
+              go();
+            }}
+            className="space-y-2"
+          >
+            <div suppressHydrationWarning>
+              <label className="text-sm font-medium text-plum">Adresse email</label>
+              <div className="relative mt-1">
+                <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate" />
+                <input
+                  required
+                  suppressHydrationWarning
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="exemple@domaine.com"
+                  className={inputCls}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-plum">Mot de passe</label>
+              <div className="relative mt-1.5" suppressHydrationWarning>
+                <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate" />
+                <input
+                  required
+                  suppressHydrationWarning
+                  type={showPwd ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className={`${inputCls} pr-11`}
+                />
+                <button
+                  type="button"
+                  aria-label={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  onClick={() => setShowPwd((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-plum"
+                >
+                  {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={forgot}
+                className="mt-1.5 inline-block text-sm font-medium text-violet hover:text-violet-dark"
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
+
+            {error && (
+              <p className="rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+                {error}
+              </p>
+            )}
+
+            {notice && (
+              <p className="rounded-xl bg-emerald-soft px-4 py-3 text-sm text-emerald">
+                {notice}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-violet py-3 text-base font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-70"
+            >
+              {loading ? "Connexion…" : "Se connecter"}
+            </button>
+          </form>
+
+          <p className="mt-3 text-center text-sm text-slate">
+            Pas encore de compte ?{" "}
+            <a href="/creer" className="font-semibold text-violet">
+              Créer un compte
+            </a>
+          </p>
         </div>
       </div>
     </div>

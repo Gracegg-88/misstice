@@ -1,37 +1,53 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, X, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
+import Logo from "@/components/Logo";
+import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
-  { label: "Explorer", href: "/prestataires" },
-  { label: "Comment ça marche", href: "#comment-ca-marche" },
-  { label: "Prestataires", href: "#prestataires" },
+  { label: "Accueil", href: "/" },
+  { label: "Comment ça marche", href: "/#comment-ca-marche" },
+  { label: "FAQ", href: "/#faq" },
+  { label: "Prestataires", href: "/prestataires" },
 ];
+
+type Account = { href: string; createHref: string };
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [account, setAccount] = useState<Account | null>(null);
+
+  // Détecte l'utilisateur connecté pour adapter les boutons.
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      const role = data?.role;
+      const href =
+        role === "admin" ? "/admin" : role === "prestataire" ? "/pro" : "/dashboard";
+      const createHref = role === "particulier" ? "/dashboard/nouveau" : href;
+      setAccount({ href, createHref });
+    });
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/5 bg-cream/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-cream/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-content items-center justify-between px-5 sm:px-8">
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet text-white">
-            <Sparkles size={17} />
-          </span>
-          <span className="font-display text-xl font-semibold tracking-tight">
-            Misstice
-          </span>
-        </a>
+        <Logo />
 
         {/* Nav desktop */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-9 lg:flex">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-slate transition-colors hover:text-plum"
+              className="text-[15px] font-medium text-plum/80 transition-colors hover:text-violet"
             >
               {link.label}
             </a>
@@ -41,21 +57,22 @@ export default function Header() {
         {/* Actions desktop */}
         <div className="hidden items-center gap-3 md:flex">
           <a
-            href="/auth"
-            className="text-sm font-medium text-plum transition-colors hover:text-violet"
+            href={account ? account.href : "/auth"}
+            className="rounded-xl border border-plum/15 bg-white/70 px-5 py-2.5 text-sm font-semibold text-plum transition-colors hover:border-plum/30"
           >
-            Connexion
+            {account ? "Mon compte" : "Connexion"}
           </a>
           <a
-            href="/creer"
-            className="rounded-xl bg-violet px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-violet-dark hover:shadow-md"
+            href={account ? account.createHref : "/creer"}
+            className="inline-flex items-center rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-violet/20 transition-all hover:bg-violet-dark hover:shadow-md"
           >
-            Créer un événement
+            Créer mon événement
           </a>
         </div>
 
         {/* Burger mobile */}
         <button
+          type="button"
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           onClick={() => setOpen((v) => !v)}
           className="flex h-10 w-10 items-center justify-center rounded-xl text-plum md:hidden"
@@ -81,16 +98,18 @@ export default function Header() {
           </nav>
           <div className="mt-3 flex flex-col gap-2 border-t border-black/5 pt-3">
             <a
-              href="/auth"
+              href={account ? account.href : "/auth"}
+              onClick={() => setOpen(false)}
               className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-plum"
             >
-              Connexion
+              {account ? "Mon compte" : "Connexion"}
             </a>
             <a
-              href="/creer"
+              href={account ? account.createHref : "/creer"}
+              onClick={() => setOpen(false)}
               className="rounded-xl bg-violet px-4 py-2.5 text-center text-sm font-semibold text-white"
             >
-              Créer un événement
+              Créer mon événement
             </a>
           </div>
         </div>

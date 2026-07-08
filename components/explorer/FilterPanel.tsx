@@ -1,26 +1,131 @@
 "use client";
 
-import { BadgeCheck, Zap, RotateCcw } from "lucide-react";
-import { CATEGORIES, LANGUAGES } from "./vendors";
+import { useEffect, useRef, useState } from "react";
+import { RotateCcw, ChevronDown, Search, Check, X } from "lucide-react";
 
 export type Filters = {
   categories: string[];
   city: string;
   priceLevels: number[];
   minRating: number;
-  verifiedOnly: boolean;
-  fastReplyOnly: boolean;
-  language: string;
 };
+
+/** Combobox multi-sélection avec recherche (même style que le sélecteur pro). */
+function CategoryMultiSelect({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (c: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  const filtered = options.filter((o) =>
+    o.toLowerCase().includes(query.trim().toLowerCase())
+  );
+
+  const label =
+    selected.length === 0
+      ? "Toutes les catégories"
+      : `${selected.length} sélectionnée${selected.length > 1 ? "s" : ""}`;
+
+  return (
+    <div ref={ref} className="relative mt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
+      >
+        <span className={selected.length ? "text-plum" : "text-slate"}>
+          {label}
+        </span>
+        <ChevronDown size={16} className="shrink-0 text-slate" />
+      </button>
+
+      {open && (
+        <div className="absolute z-30 mt-1 w-full rounded-xl border border-black/10 bg-white p-1.5 shadow-lg">
+          <div className="relative mb-1">
+            <Search
+              size={14}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate"
+            />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Rechercher une catégorie…"
+              className="w-full rounded-lg border border-black/10 bg-cream py-1.5 pl-8 pr-2 text-sm text-plum outline-none focus:border-violet"
+            />
+          </div>
+          <div className="max-h-52 overflow-y-auto">
+            {filtered.map((o) => {
+              const on = selected.includes(o);
+              return (
+                <button
+                  key={o}
+                  type="button"
+                  onClick={() => onToggle(o)}
+                  aria-pressed={on}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-sm transition-colors hover:bg-cream ${
+                    on ? "bg-violet-soft text-violet" : "text-plum"
+                  }`}
+                >
+                  {o}
+                  {on && <Check size={14} className="shrink-0" />}
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="px-3 py-2 text-sm text-slate">
+                Aucune catégorie trouvée.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Catégories sélectionnées → puces retirables */}
+      {selected.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {selected.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => onToggle(c)}
+              className="inline-flex items-center gap-1 rounded-full bg-violet px-2.5 py-1 text-xs font-medium text-white hover:bg-violet-dark"
+            >
+              {c}
+              <X size={12} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function FilterPanel({
   filters,
   setFilters,
+  categories,
   cities,
   onReset,
 }: {
   filters: Filters;
   setFilters: (f: Filters) => void;
+  categories: string[];
   cities: string[];
   onReset: () => void;
 }) {
@@ -42,25 +147,11 @@ export default function FilterPanel({
       {/* Catégorie */}
       <div className={sectionCls}>
         <p className={labelCls}>Catégorie</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {CATEGORIES.map((c) => {
-            const on = filters.categories.includes(c);
-            return (
-              <button
-                key={c}
-                onClick={() => toggleCat(c)}
-                aria-pressed={on}
-                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                  on
-                    ? "bg-violet text-white"
-                    : "bg-cream text-plum hover:bg-violet-soft"
-                }`}
-              >
-                {c}
-              </button>
-            );
-          })}
-        </div>
+        <CategoryMultiSelect
+          options={categories}
+          selected={filters.categories}
+          onToggle={toggleCat}
+        />
       </div>
 
       {/* Localisation */}
@@ -136,57 +227,6 @@ export default function FilterPanel({
             );
           })}
         </div>
-      </div>
-
-      {/* Langues */}
-      <div className={sectionCls}>
-        <p className={labelCls}>Langue parlée</p>
-        <select
-          value={filters.language}
-          onChange={(e) =>
-            setFilters({ ...filters, language: e.target.value })
-          }
-          className="mt-3 w-full rounded-xl border border-black/10 bg-cream px-3 py-2.5 text-sm text-plum outline-none focus:border-violet"
-        >
-          <option value="all">Toutes les langues</option>
-          {LANGUAGES.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Bascules de confiance */}
-      <div className={sectionCls}>
-        <label className="flex cursor-pointer items-center justify-between">
-          <span className="flex items-center gap-2 text-sm font-medium text-plum">
-            <BadgeCheck size={18} className="text-violet" />
-            Vérifiés uniquement
-          </span>
-          <input
-            type="checkbox"
-            checked={filters.verifiedOnly}
-            onChange={(e) =>
-              setFilters({ ...filters, verifiedOnly: e.target.checked })
-            }
-            className="h-5 w-5 accent-violet"
-          />
-        </label>
-        <label className="mt-4 flex cursor-pointer items-center justify-between">
-          <span className="flex items-center gap-2 text-sm font-medium text-plum">
-            <Zap size={18} className="text-festif" />
-            Répond vite (≤ 3h)
-          </span>
-          <input
-            type="checkbox"
-            checked={filters.fastReplyOnly}
-            onChange={(e) =>
-              setFilters({ ...filters, fastReplyOnly: e.target.checked })
-            }
-            className="h-5 w-5 accent-violet"
-          />
-        </label>
       </div>
 
       <button

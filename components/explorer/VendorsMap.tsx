@@ -54,15 +54,28 @@ export default function VendorsMap({ vendors }: { vendors: Vendor[] }) {
       vendors.forEach((v) => {
         const coords = getCoords(v);
         points.push(coords);
-        const popup = `
-          <div style="min-width:180px">
-            <p style="font-family:'Playfair Display',serif;font-weight:600;font-size:16px;color:#1A1A2E;margin:0">${v.name}</p>
-            <p style="font-size:12px;color:#FF8C42;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 10px">${v.category}</p>
-            <a href="/prestataires/${v.id}" style="display:inline-block;background:#6C3CE1;color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 14px;border-radius:10px">Voir le profil</a>
-          </div>`;
+
+        // Construction DOM (textContent) → pas d'injection HTML via name/category.
+        const wrap = document.createElement("div");
+        wrap.style.minWidth = "180px";
+        const title = document.createElement("p");
+        title.textContent = v.name;
+        title.style.cssText =
+          "font-family:'Playfair Display',serif;font-weight:600;font-size:16px;color:#1A1A2E;margin:0";
+        const cat = document.createElement("p");
+        cat.textContent = v.category;
+        cat.style.cssText =
+          "font-size:12px;color:#FF8C42;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 10px";
+        const link = document.createElement("a");
+        link.textContent = "Voir le profil";
+        link.setAttribute("href", `/prestataires/${encodeURIComponent(v.id)}`);
+        link.style.cssText =
+          "display:inline-block;background:#6C3CE1;color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 14px;border-radius:10px";
+        wrap.append(title, cat, link);
+
         L.marker(coords, { icon })
           .addTo(layerRef.current)
-          .bindPopup(popup);
+          .bindPopup(wrap);
       });
 
       if (points.length) {
