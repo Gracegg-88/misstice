@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { EventVendor } from "@/lib/dashboard-types";
+import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 type Status = EventVendor["status"];
 
@@ -62,9 +63,11 @@ const eur = (n: number) => n.toLocaleString("fr-FR") + " €";
 export default function BookedVendorsClient({
   eventId,
   initial,
+  canEdit = true,
 }: {
   eventId: string;
   initial: EventVendor[];
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [vendors, setVendors] = useState<EventVendor[]>(initial);
@@ -83,6 +86,7 @@ export default function BookedVendorsClient({
 
   const addVendor = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     const trimmed = name.trim();
     if (!trimmed) return;
     setSaving(true);
@@ -116,6 +120,7 @@ export default function BookedVendorsClient({
   };
 
   const cycleStatus = async (v: EventVendor) => {
+    if (!canEdit) return;
     const next = STATUSES[(STATUSES.indexOf(v.status) + 1) % STATUSES.length];
     setVendors((vs) =>
       vs.map((x) => (x.id === v.id ? { ...x, status: next } : x))
@@ -136,6 +141,7 @@ export default function BookedVendorsClient({
   };
 
   const removeVendor = async (v: EventVendor) => {
+    if (!canEdit) return;
     const prev = vendors;
     setVendors((vs) => vs.filter((x) => x.id !== v.id));
     const supabase = createClient();
@@ -152,6 +158,7 @@ export default function BookedVendorsClient({
 
   return (
     <div className="mx-auto max-w-6xl">
+      {!canEdit && <ReadOnlyBanner section="les prestataires" />}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
@@ -163,14 +170,16 @@ export default function BookedVendorsClient({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream"
-          >
-            <Plus size={16} />
-            Ajouter un prestataire
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream"
+            >
+              <Plus size={16} />
+              Ajouter un prestataire
+            </button>
+          )}
           <a
             href="/prestataires"
             className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
@@ -219,14 +228,16 @@ export default function BookedVendorsClient({
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 font-display text-lg font-semibold text-plum">
                   {b.name.charAt(0)}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => removeVendor(b)}
-                  aria-label="Supprimer le prestataire"
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/85 text-plum hover:bg-white"
-                >
-                  <Trash2 size={15} />
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => removeVendor(b)}
+                    aria-label="Supprimer le prestataire"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/85 text-plum hover:bg-white"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
               </div>
               <div className="p-5">
                 <div className="flex items-start justify-between gap-2">

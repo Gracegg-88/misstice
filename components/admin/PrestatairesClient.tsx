@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, Trash2, ShieldOff, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Trash2, ShieldOff, ShieldCheck, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -115,6 +115,15 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-2">
+                      <a
+                        href={`/prestataires/${v.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-1.5 text-xs font-semibold text-plum transition-colors hover:border-violet/40"
+                      >
+                        <ExternalLink size={14} />
+                        Fiche
+                      </a>
                       <button
                         type="button"
                         disabled={busy === v.id}

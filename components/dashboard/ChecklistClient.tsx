@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { ChecklistTask } from "@/lib/dashboard-types";
+import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 const FILTERS = ["Toutes", "À faire", "Terminées"] as const;
 
@@ -24,12 +25,14 @@ export default function ChecklistClient({
   initial,
   assignees,
   assignerName,
+  canEdit = true,
 }: {
   eventId: string;
   eventName: string;
   initial: ChecklistTask[];
   assignees: Assignee[];
   assignerName: string;
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [tasks, setTasks] = useState<ChecklistTask[]>(initial);
@@ -54,6 +57,7 @@ export default function ChecklistClient({
   );
 
   const toggle = async (id: string, current: boolean) => {
+    if (!canEdit) return;
     setTasks((p) =>
       p.map((t) => (t.id === id ? { ...t, done: !current } : t))
     );
@@ -73,6 +77,7 @@ export default function ChecklistClient({
   };
 
   const remove = async (id: string) => {
+    if (!canEdit) return;
     const prev = tasks;
     setTasks((p) => p.filter((t) => t.id !== id));
     const supabase = createClient();
@@ -89,6 +94,7 @@ export default function ChecklistClient({
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     if (!label.trim() || saving) return;
     setSaving(true);
     const position =
@@ -145,14 +151,17 @@ export default function ChecklistClient({
             {done} sur {tasks.length} tâches complétées · {pct}%
           </p>
         </div>
-        <button
-          onClick={() => setAdding((v) => !v)}
-          className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          <Plus size={16} />
-          Nouvelle tâche
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setAdding((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            <Plus size={16} />
+            Nouvelle tâche
+          </button>
+        )}
       </div>
+      {!canEdit && <div className="mt-5"><ReadOnlyBanner section="la checklist" /></div>}
 
       {/* Progress */}
       <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-white">
@@ -230,15 +239,17 @@ export default function ChecklistClient({
               style={{ ["--i" as string]: i } as React.CSSProperties}
             >
               <button
+                type="button"
                 role="checkbox"
                 aria-checked={t.done}
                 aria-label={t.label}
+                disabled={!canEdit}
                 onClick={() => toggle(t.id, t.done)}
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
                   t.done
                     ? "border-emerald bg-emerald text-white"
                     : "border-black/20 hover:border-violet"
-                }`}
+                } ${canEdit ? "" : "cursor-default"}`}
               >
                 {t.done && (
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -259,13 +270,15 @@ export default function ChecklistClient({
                 </span>
               )}
               <span className="text-xs text-slate">{formatDue(t.due_date)}</span>
-              <button
-                onClick={() => remove(t.id)}
-                aria-label={`Supprimer ${t.label}`}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate opacity-0 transition-opacity hover:bg-cream hover:text-festif group-hover:opacity-100"
-              >
-                <X size={15} />
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => remove(t.id)}
+                  aria-label={`Supprimer ${t.label}`}
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate opacity-0 transition-opacity hover:bg-cream hover:text-festif group-hover:opacity-100"
+                >
+                  <X size={15} />
+                </button>
+              )}
             </li>
           ))}
           {shown.length === 0 && (

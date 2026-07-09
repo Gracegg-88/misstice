@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
@@ -25,6 +25,16 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  // Lien « Créer un compte » : on propage le paramètre `next` (ex. invitation)
+  // pour que l'inscription redirige au bon endroit ensuite.
+  const [signupHref, setSignupHref] = useState("/creer");
+
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("next");
+    if (raw && raw.startsWith("/") && !raw.startsWith("//")) {
+      setSignupHref(`/creer?next=${encodeURIComponent(raw)}`);
+    }
+  }, []);
 
   const forgot = async () => {
     setError("");
@@ -220,7 +230,7 @@ export default function AuthPage() {
 
           <p className="mt-3 text-center text-sm text-slate">
             Pas encore de compte ?{" "}
-            <a href="/creer" className="font-semibold text-violet">
+            <a href={signupHref} className="font-semibold text-violet">
               Créer un compte
             </a>
           </p>

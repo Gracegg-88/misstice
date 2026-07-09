@@ -6,6 +6,7 @@ import { Search, Heart, Plus, X, Link2, Upload, Trash2, Play } from "lucide-reac
 import { createClient } from "@/lib/supabase/client";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
 import type { InspirationIdea } from "@/lib/dashboard-types";
+import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 const DEFAULT_CATS = [
   "Décoration",
@@ -38,9 +39,11 @@ function detectSource(url: string) {
 export default function InspirationClient({
   eventId,
   initial,
+  canEdit = true,
 }: {
   eventId: string;
   initial: InspirationIdea[];
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [ideas, setIdeas] = useState<InspirationIdea[]>(initial);
@@ -88,6 +91,7 @@ export default function InspirationClient({
   };
 
   const toggleLike = async (id: string) => {
+    if (!canEdit) return;
     const idea = ideas.find((i) => i.id === id);
     if (!idea) return;
     const next = !idea.liked;
@@ -108,6 +112,7 @@ export default function InspirationClient({
   };
 
   const deleteIdea = async (id: string) => {
+    if (!canEdit) return;
     const prev = ideas;
     setIdeas((p) => p.filter((i) => i.id !== id));
     const supabase = createClient();
@@ -151,6 +156,7 @@ export default function InspirationClient({
 
   const importLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     if (!url.trim()) return;
     setSaving(true);
     setError("");
@@ -191,6 +197,7 @@ export default function InspirationClient({
   };
 
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canEdit) return;
     const file = e.target.files?.[0];
     if (!file) return;
     const isVideo = file.type.startsWith("video/");
@@ -261,14 +268,18 @@ export default function InspirationClient({
             {likedCount > 0 ? ` · ${likedCount} ❤️` : ""}
           </p>
         </div>
-        <button
-          onClick={() => setImportOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          <Plus size={16} />
-          Ajouter une idée
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            <Plus size={16} />
+            Ajouter une idée
+          </button>
+        )}
       </div>
+      {!canEdit && <div className="mt-6"><ReadOnlyBanner section="l'inspiration" /></div>}
 
       {/* Recherche */}
       <div className="relative mt-6">
@@ -346,22 +357,28 @@ export default function InspirationClient({
                   </span>
                 </a>
               )}
-              <button
-                aria-label={i.liked ? "Retirer du moodboard" : "Sauvegarder"}
-                onClick={() => toggleLike(i.id)}
-                className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-                  i.liked ? "bg-festif text-white" : "bg-white/90 text-slate hover:text-festif"
-                }`}
-              >
-                <Heart size={15} className={i.liked ? "fill-white" : ""} />
-              </button>
-              <button
-                aria-label="Supprimer l'idée"
-                onClick={() => deleteIdea(i.id)}
-                className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate opacity-0 transition-opacity hover:text-festif group-hover:opacity-100"
-              >
-                <Trash2 size={15} />
-              </button>
+              {canEdit && (
+                <>
+                  <button
+                    type="button"
+                    aria-label={i.liked ? "Retirer du moodboard" : "Sauvegarder"}
+                    onClick={() => toggleLike(i.id)}
+                    className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                      i.liked ? "bg-festif text-white" : "bg-white/90 text-slate hover:text-festif"
+                    }`}
+                  >
+                    <Heart size={15} className={i.liked ? "fill-white" : ""} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Supprimer l'idée"
+                    onClick={() => deleteIdea(i.id)}
+                    className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate opacity-0 transition-opacity hover:text-festif group-hover:opacity-100"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </>
+              )}
               {i.source && (
                 <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-violet">
                   {i.source}

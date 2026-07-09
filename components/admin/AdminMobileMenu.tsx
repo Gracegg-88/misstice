@@ -5,7 +5,11 @@ import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 import AdminNav from "./AdminNav";
 
-export default function AdminMobileMenu() {
+export default function AdminMobileMenu({
+  canManageAdmins = false,
+}: {
+  canManageAdmins?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -40,7 +44,7 @@ export default function AdminMobileMenu() {
               </div>
               {/* Un clic sur un lien ferme la modale */}
               <div onClick={() => setOpen(false)}>
-                <AdminNav />
+                <AdminNav canManageAdmins={canManageAdmins} />
               </div>
             </div>
           </div>,

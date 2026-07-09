@@ -7,6 +7,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/client";
 import type { PlanningMoment } from "@/lib/dashboard-types";
+import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 const PALETTE = ["#6C3CE1", "#FF8C42", "#10B981", "#EC4899", "#3B82F6"];
 
@@ -22,11 +23,13 @@ export default function PlanningClient({
   initial,
   eventName,
   eventDate,
+  canEdit = true,
 }: {
   eventId: string;
   initial: PlanningMoment[];
   eventName: string;
   eventDate: string | null;
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [moments, setMoments] = useState<PlanningMoment[]>(sortMoments(initial));
@@ -73,6 +76,7 @@ export default function PlanningClient({
 
   const addMoment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     if (!title.trim()) return;
     setSaving(true);
     setError("");
@@ -120,6 +124,7 @@ export default function PlanningClient({
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const deleteMoment = async (id: string) => {
+    if (!canEdit) return;
     const prev = moments;
     setMoments((list) => list.filter((m) => m.id !== id));
     const supabase = createClient();
@@ -156,15 +161,18 @@ export default function PlanningClient({
             <span className="capitalize">{dateLabel}</span> · {eventName}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          <Plus size={16} />
-          Ajouter un moment
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            <Plus size={16} />
+            Ajouter un moment
+          </button>
+        )}
       </div>
+      {!canEdit && <div className="mt-6"><ReadOnlyBanner section="le planning" /></div>}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Timeline */}
@@ -214,14 +222,16 @@ export default function PlanningClient({
                     )}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setConfirmId(m.id)}
-                  aria-label="Supprimer ce moment"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-lg text-slate opacity-100 transition hover:bg-cream hover:text-festif lg:opacity-0 lg:group-hover:opacity-100"
-                >
-                  <Trash2 size={16} />
-                </button>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmId(m.id)}
+                    aria-label="Supprimer ce moment"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-lg text-slate opacity-100 transition hover:bg-cream hover:text-festif lg:opacity-0 lg:group-hover:opacity-100"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             </Reveal>
           ))}

@@ -2,25 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Send, Copy, Check, UserPlus, Users, Trash2 } from "lucide-react";
+import { Mail, Send, Copy, Check, UserPlus, Users, Trash2, Eye, Lock } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
 import type { TeamMember } from "@/lib/dashboard-types";
+import { EVENT_SECTIONS } from "@/lib/permissions";
+
+const SECTION_LABEL: Record<string, string> = Object.fromEntries(
+  EVENT_SECTIONS.map((s) => [s.key, s.label])
+);
 
 export default function EquipeClient({
   eventId,
   eventName,
   initial,
+  isOwner,
 }: {
   eventId: string;
   eventName: string;
   initial: TeamMember[];
+  isOwner: boolean;
 }) {
   const router = useRouter();
   const [members, setMembers] = useState<TeamMember[]>(initial);
 
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [permissions, setPermissions] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -42,10 +49,10 @@ export default function EquipeClient({
       .insert({
         event_id: eventId,
         email: cleanEmail,
-        role: role.trim() || null,
+        permissions,
         status: "invited",
       })
-      .select("id, event_id, email, role, user_id, status")
+      .select("id, event_id, email, role, permissions, user_id, status")
       .single();
 
     if (insErr) {
@@ -73,7 +80,7 @@ export default function EquipeClient({
 
     setSending(false);
     setEmail("");
-    setRole("");
+    setPermissions([]);
     if (mailFailed) {
       setError(
         "Collaborateur ajouté, mais l'email n'a pas pu être envoyé. Copiez son lien pour l'inviter manuellement."
@@ -165,9 +172,23 @@ export default function EquipeClient({
                     <p className="truncate font-display text-base font-semibold text-plum">
                       {m.email}
                     </p>
-                    <p className="truncate text-sm text-slate">
-                      {m.role?.trim() || "Rôle non précisé"}
-                    </p>
+                    {m.permissions && m.permissions.length > 0 ? (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {m.permissions.map((p) => (
+                          <span
+                            key={p}
+                            className="rounded-md bg-violet-soft px-1.5 py-0.5 text-[11px] font-medium text-violet"
+                          >
+                            {SECTION_LABEL[p] ?? p}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate">
+                        <Eye size={12} />
+                        Lecture seule
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
@@ -180,28 +201,32 @@ export default function EquipeClient({
                       <span className="rounded-full bg-festif-soft px-2.5 py-1 text-xs font-medium text-festif">
                         Invité
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => copyInvite(m.id)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-semibold text-plum hover:bg-cream"
-                      >
-                        {copiedId === m.id ? (
-                          <Check size={13} />
-                        ) : (
-                          <Copy size={13} />
-                        )}
-                        {copiedId === m.id ? "Copié" : "Lien"}
-                      </button>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          onClick={() => copyInvite(m.id)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-semibold text-plum hover:bg-cream"
+                        >
+                          {copiedId === m.id ? (
+                            <Check size={13} />
+                          ) : (
+                            <Copy size={13} />
+                          )}
+                          {copiedId === m.id ? "Copié" : "Lien"}
+                        </button>
+                      )}
                     </>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setConfirmId(m.id)}
-                    aria-label="Retirer ce membre"
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-slate hover:bg-cream hover:text-festif"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmId(m.id)}
+                      aria-label="Retirer ce membre"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl text-slate hover:bg-cream hover:text-festif"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))
@@ -238,7 +263,14 @@ export default function EquipeClient({
         </div>
       </div>
 
-      {/* Inviter quelqu'un */}
+      {/* Inviter quelqu'un — réservé à l'organisateur de l'événement */}
+      {!isOwner ? (
+        <div className="mt-6 flex items-center gap-3 rounded-3xl border border-black/5 bg-white p-5 text-sm text-slate">
+          <Lock size={18} className="shrink-0 text-violet" />
+          Seul l&apos;organisateur de l&apos;événement peut inviter et gérer
+          l&apos;équipe.
+        </div>
+      ) : (
       <div className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
         <div className="flex items-center gap-2">
           <UserPlus size={18} className="text-violet" />
@@ -247,8 +279,9 @@ export default function EquipeClient({
           </h2>
         </div>
         <p className="mt-1 text-sm text-slate">
-          Ajoutez un proche pour qu&apos;il participe à l&apos;organisation
-          (tâches, budget, invités…).
+          Choisissez les sections que ce collaborateur pourra <strong>modifier</strong>.
+          Il pourra voir tout l&apos;événement, mais ne modifiera que ce que vous
+          cochez (le reste reste en lecture seule).
         </p>
 
         <form onSubmit={invite} className="mt-4 space-y-3">
@@ -265,12 +298,38 @@ export default function EquipeClient({
               className="w-full rounded-xl border border-black/10 bg-cream py-3 pl-11 pr-4 text-sm outline-none focus:border-violet"
             />
           </div>
-          <input
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            placeholder="Rôle (ex : Gère le traiteur)"
-            className="w-full rounded-xl border border-black/10 bg-cream px-4 py-3 text-sm outline-none focus:border-violet"
-          />
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate">
+              Peut modifier
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {EVENT_SECTIONS.map((s) => {
+                const on = permissions.includes(s.key);
+                return (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() =>
+                      setPermissions((p) =>
+                        on ? p.filter((x) => x !== s.key) : [...p, s.key]
+                      )
+                    }
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                      on
+                        ? "bg-violet text-white"
+                        : "border border-black/10 bg-cream text-slate hover:text-plum"
+                    }`}
+                  >
+                    {on && <Check size={13} />}
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-xs text-slate">
+              Aucune section cochée = accès en <strong>lecture seule</strong>.
+            </p>
+          </div>
           {error && <p className="text-sm text-festif">{error}</p>}
           <button
             type="submit"
@@ -298,6 +357,7 @@ export default function EquipeClient({
           rejoindra automatiquement l&apos;événement.
         </p>
       </div>
+      )}
     </div>
   );
 }

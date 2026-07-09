@@ -9,9 +9,11 @@ import type { EventVendor } from "@/lib/dashboard-types";
 export default function VendorsTabs({
   eventId,
   initial,
+  canEdit = true,
 }: {
   eventId: string | null;
   initial: EventVendor[];
+  canEdit?: boolean;
 }) {
   const [tab, setTab] = useState<"event" | "favoris">("event");
 
@@ -44,7 +46,12 @@ export default function VendorsTabs({
       <div className="mt-6">
         {tab === "event" ? (
           eventId ? (
-            <BookedVendorsClient key={eventId} eventId={eventId} initial={initial} />
+            <BookedVendorsClient
+              key={eventId}
+              eventId={eventId}
+              initial={initial}
+              canEdit={canEdit}
+            />
           ) : (
             <div className="rounded-3xl border border-dashed border-black/10 bg-white p-12 text-center">
               <p className="text-sm text-slate">

@@ -90,7 +90,7 @@ export async function getTeam(eventId: string): Promise<TeamMember[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("event_members")
-    .select("id, event_id, email, role, user_id, status")
+    .select("id, event_id, email, role, permissions, user_id, status")
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
   return (data as TeamMember[]) ?? [];

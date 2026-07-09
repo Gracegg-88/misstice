@@ -2,27 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Store, Users, Tags } from "lucide-react";
+import { LayoutDashboard, Store, Users, Tags, ShieldCheck } from "lucide-react";
 
-const GROUPS = [
-  {
-    title: "Pilotage",
-    items: [{ icon: LayoutDashboard, label: "Vue d'ensemble", href: "/admin" }],
-  },
-  {
-    title: "Gestion",
-    items: [
-      { icon: Store, label: "Prestataires", href: "/admin/prestataires" },
-      { icon: Users, label: "Utilisateurs", href: "/admin/utilisateurs" },
-      // Les événements sont privés (visibles seulement des personnes concernées) :
-      // pas de page de détail côté admin, seulement un compteur agrégé.
-      { icon: Tags, label: "Catégories", href: "/admin/categories" },
-    ],
-  },
-];
-
-export default function AdminNav() {
+export default function AdminNav({
+  canManageAdmins = false,
+}: {
+  canManageAdmins?: boolean;
+}) {
   const path = usePathname();
+
+  const GROUPS = [
+    {
+      title: "Pilotage",
+      items: [{ icon: LayoutDashboard, label: "Vue d'ensemble", href: "/admin" }],
+    },
+    {
+      title: "Gestion",
+      items: [
+        { icon: Store, label: "Prestataires", href: "/admin/prestataires" },
+        { icon: Users, label: "Utilisateurs", href: "/admin/utilisateurs" },
+        // Les événements sont privés (visibles seulement des personnes
+        // concernées) : pas de page de détail côté admin, juste un compteur.
+        { icon: Tags, label: "Catégories", href: "/admin/categories" },
+        // Réservé aux super-admins.
+        ...(canManageAdmins
+          ? [{ icon: ShieldCheck, label: "Administrateurs", href: "/admin/administrateurs" }]
+          : []),
+      ],
+    },
+  ];
 
   return (
     <nav className="space-y-2">

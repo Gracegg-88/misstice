@@ -2,6 +2,7 @@ import EmptyState from "@/components/dashboard/EmptyState";
 import InvitesClient from "@/components/dashboard/InvitesClient";
 import { getCurrentEvent } from "@/lib/queries";
 import { getGuests } from "@/lib/dashboard";
+import { getEventAccess, canEditSection } from "@/lib/permissions-server";
 
 export default async function InvitesPage() {
   const event = await getCurrentEvent();
@@ -10,9 +11,18 @@ export default async function InvitesPage() {
     return <EmptyState message="Créez un événement pour gérer vos invités." />;
   }
 
-  const guests = await getGuests(event.id);
+  const [guests, access] = await Promise.all([
+    getGuests(event.id),
+    getEventAccess(event.id),
+  ]);
 
   return (
-    <InvitesClient key={event.id} eventId={event.id} eventName={event.name} initial={guests} />
+    <InvitesClient
+      key={event.id}
+      eventId={event.id}
+      eventName={event.name}
+      initial={guests}
+      canEdit={canEditSection(access, "invites")}
+    />
   );
 }

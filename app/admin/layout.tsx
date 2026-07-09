@@ -21,7 +21,7 @@ export default async function AdminLayout({
       {/* ── Topbar ── */}
       <header className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-black/5 bg-cream/80 px-4 py-2 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2">
-          <AdminMobileMenu />
+          <AdminMobileMenu canManageAdmins={profile.can_manage_admins} />
           <div className="flex min-w-0 items-center gap-1.5">
             <Logo />
             <span className="hidden rounded-md bg-violet px-2 py-0.5 text-xs font-semibold text-white sm:inline">
@@ -36,7 +36,7 @@ export default async function AdminLayout({
         {/* ── Sidebar (compacte, sans scroll) ── */}
         <aside className="hidden w-60 shrink-0 flex-col border-r border-black/5 bg-white lg:flex">
           <div className="p-4">
-            <AdminNav />
+            <AdminNav canManageAdmins={profile.can_manage_admins} />
           </div>
           {/* L'illustration remplit tout l'espace restant, bord à bord */}
           <div className="relative flex-1 overflow-hidden">

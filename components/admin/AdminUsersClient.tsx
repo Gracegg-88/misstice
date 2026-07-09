@@ -20,7 +20,6 @@ const ROLE_STYLE: Record<string, string> = {
   prestataire: "bg-emerald-soft text-emerald",
   particulier: "bg-festif-soft text-festif",
 };
-const ROLES = ["particulier", "prestataire", "admin"];
 
 export default function AdminUsersClient({
   users,
@@ -48,14 +47,6 @@ export default function AdminUsersClient({
     }
     router.refresh();
     return true;
-  };
-
-  const setRole = (u: AdminUser, role: string) => {
-    if (role === u.role) return;
-    const supabase = createClient();
-    void run(u.id, () =>
-      supabase.rpc("admin_set_role", { p_target: u.id, p_role: role })
-    );
   };
 
   const toggleBan = (u: AdminUser) => {
@@ -130,29 +121,15 @@ export default function AdminUsersClient({
                     </td>
                     <td className="px-5 py-3 text-slate">{u.email}</td>
                     <td className="px-5 py-3">
-                      {isSelf ? (
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
-                            ROLE_STYLE[u.role] ?? "bg-black/5 text-slate"
-                          }`}
-                        >
-                          {u.role}
-                        </span>
-                      ) : (
-                        <select
-                          value={u.role}
-                          disabled={busy === u.id}
-                          onChange={(e) => setRole(u, e.target.value)}
-                          aria-label={`Rôle de ${u.email}`}
-                          className="rounded-xl border border-black/10 bg-cream px-2.5 py-1.5 text-xs font-medium capitalize text-plum outline-none focus:border-violet"
-                        >
-                          {ROLES.map((r) => (
-                            <option key={r} value={r}>
-                              {r}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      {/* Rôle en lecture seule : la gestion admin ↔ super-admin
+                          se fait sur la page « Administrateurs ». */}
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                          ROLE_STYLE[u.role] ?? "bg-black/5 text-slate"
+                        }`}
+                      >
+                        {u.role}
+                      </span>
                     </td>
                     <td className="px-5 py-3">
                       {isSelf ? (

@@ -25,13 +25,18 @@ export default function CreerPage() {
   const [type, setType] = useState<"particulier" | "professionnel">("particulier");
   const [step, setStep] = useState(0);
   const [showPwd, setShowPwd] = useState(false);
+  // Destination après inscription (ex. /invitation/<id> pour rejoindre une équipe).
+  const [nextParam, setNextParam] = useState<string | null>(null);
 
   // Présélection du parcours prestataire via ?type=pro (depuis « Je suis
   // prestataire » / « Devenir prestataire »). Lu au montage pour éviter tout
-  // décalage d'hydratation.
+  // décalage d'hydratation. On récupère aussi `next` (invitation).
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("type");
+    const sp = new URLSearchParams(window.location.search);
+    const t = sp.get("type");
     if (t === "pro" || t === "professionnel") setType("professionnel");
+    const n = sp.get("next");
+    if (n && n.startsWith("/") && !n.startsWith("//")) setNextParam(n);
   }, []);
 
   // données
@@ -103,6 +108,14 @@ export default function CreerPage() {
     }
 
     try {
+      // Inscription via une invitation : on va d'abord accepter l'invitation
+      // (page /invitation/<id>), qui redirige ensuite vers le dashboard avec
+      // l'événement rejoint sélectionné.
+      if (nextParam) {
+        router.push(nextParam);
+        return;
+      }
+
       if (type === "professionnel") {
         // La fiche prestataire (vendor_profiles + vendors annuaire) est créée
         // automatiquement par le trigger handle_new_user à partir des

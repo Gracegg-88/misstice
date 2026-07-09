@@ -73,6 +73,7 @@ export type TeamMember = {
   event_id: string;
   email: string;
   role: string | null;
+  permissions: string[];
   user_id: string | null;
   status: "invited" | "accepted";
 };

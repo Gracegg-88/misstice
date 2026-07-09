@@ -6,6 +6,7 @@ import { Search, Plus, X, Mail, Phone, Check, Trash2, Copy } from "lucide-react"
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
 import type { Guest } from "@/lib/dashboard-types";
+import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 type Status = Guest["status"];
 
@@ -27,10 +28,12 @@ export default function InvitesClient({
   eventId,
   eventName,
   initial,
+  canEdit = true,
 }: {
   eventId: string;
   eventName: string;
   initial: Guest[];
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [guests, setGuests] = useState<Guest[]>(initial);
@@ -145,6 +148,7 @@ export default function InvitesClient({
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     if (!form.name.trim()) return;
     setSaving(true);
     setError("");
@@ -188,6 +192,7 @@ export default function InvitesClient({
 
   // Fait passer un invité au statut suivant (cycle) et persiste.
   const cycleStatus = async (g: Guest) => {
+    if (!canEdit) return;
     const order = STATUSES.map((s) => s.value);
     const next = order[(order.indexOf(g.status) + 1) % order.length];
     setGuests((p) => p.map((x) => (x.id === g.id ? { ...x, status: next } : x)));
@@ -211,6 +216,7 @@ export default function InvitesClient({
   );
 
   const remove = async (id: string) => {
+    if (!canEdit) return;
     const prev = guests;
     setGuests((p) => p.filter((x) => x.id !== id));
     const supabase = createClient();
@@ -249,14 +255,18 @@ export default function InvitesClient({
             {guests.length} invités · {totalPeople} personnes au total (avec +1)
           </p>
         </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          <Plus size={16} />
-          Ajouter un invité
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            <Plus size={16} />
+            Ajouter un invité
+          </button>
+        )}
       </div>
+      {!canEdit && <div className="mt-6"><ReadOnlyBanner section="les invités" /></div>}
 
       {/* Stat cards (flip au survol : recto = nombre, verso = part du total) */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

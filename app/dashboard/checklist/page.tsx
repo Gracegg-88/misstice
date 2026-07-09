@@ -2,6 +2,7 @@ import ChecklistClient from "@/components/dashboard/ChecklistClient";
 import EmptyState from "@/components/dashboard/EmptyState";
 import { getCurrentEvent, getProfile } from "@/lib/queries";
 import { getChecklist, getTeam } from "@/lib/dashboard";
+import { getEventAccess, canEditSection } from "@/lib/permissions-server";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ChecklistPage() {
@@ -11,10 +12,11 @@ export default async function ChecklistPage() {
     return <EmptyState message="Créez un événement pour gérer votre checklist." />;
   }
 
-  const [tasks, team, profile] = await Promise.all([
+  const [tasks, team, profile, access] = await Promise.all([
     getChecklist(event.id),
     getTeam(event.id),
     getProfile(),
+    getEventAccess(event.id),
   ]);
 
   const supabase = createClient();
@@ -50,6 +52,7 @@ export default async function ChecklistPage() {
       initial={tasks}
       assignees={assignees}
       assignerName={profile?.full_name?.trim() || "L'organisateur"}
+      canEdit={canEditSection(access, "checklist")}
     />
   );
 }

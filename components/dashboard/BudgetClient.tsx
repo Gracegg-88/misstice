@@ -6,6 +6,7 @@ import { Wallet, TrendingUp, Plus, X, SlidersHorizontal, Trash2 } from "lucide-r
 import CountUp from "@/components/animations/CountUp";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
+import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 type Cat = {
   id: string;
@@ -26,11 +27,13 @@ export default function BudgetClient({
   eventName,
   budgetTotal,
   categories,
+  canEdit = true,
 }: {
   eventId: string;
   eventName: string;
   budgetTotal: number;
   categories: Cat[];
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const cats = categories;
@@ -76,6 +79,7 @@ export default function BudgetClient({
 
   const addExpense = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     const v = Math.round(parseFloat(amount.replace(",", ".")) * 100) / 100;
     if (!v || v <= 0 || !cat) return;
     setSaving(true);
@@ -100,6 +104,7 @@ export default function BudgetClient({
 
   const saveBudgets = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) return;
     setSavingBudgets(true);
     setError("");
     const supabase = createClient();
@@ -146,6 +151,7 @@ export default function BudgetClient({
   };
 
   const addCategory = async () => {
+    if (!canEdit) return;
     const name = newName.trim();
     if (!name) return;
     setBusyCat(true);
@@ -175,7 +181,7 @@ export default function BudgetClient({
   const [deleting, setDeleting] = useState(false);
 
   const deleteCategory = async () => {
-    if (!confirmCat) return;
+    if (!canEdit || !confirmCat) return;
     setDeleting(true);
     setError("");
     const supabase = createClient();
@@ -211,25 +217,28 @@ export default function BudgetClient({
             {eventName} · budget total {eur(total)}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setEditOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream"
-          >
-            <SlidersHorizontal size={16} />
-            Définir les budgets
-          </button>
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-          >
-            <Plus size={16} />
-            Ajouter une dépense
-          </button>
-        </div>
+        {canEdit && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream"
+            >
+              <SlidersHorizontal size={16} />
+              Définir les budgets
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+            >
+              <Plus size={16} />
+              Ajouter une dépense
+            </button>
+          </div>
+        )}
       </div>
+      {!canEdit && <div className="mt-6"><ReadOnlyBanner section="le budget" /></div>}
 
       {/* Stat cards */}
       <div className="mt-6 grid gap-4 sm:grid-cols-3">

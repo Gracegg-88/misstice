@@ -14,6 +14,7 @@ export type Profile = {
   full_name: string | null;
   role: "particulier" | "prestataire" | "admin";
   avatar_url: string | null;
+  can_manage_admins: boolean;
 };
 
 export type AdminStats = {
@@ -55,7 +56,7 @@ export async function getProfile(): Promise<Profile | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, role, avatar_url")
+    .select("id, full_name, role, avatar_url, can_manage_admins")
     .eq("id", user.id)
     .single();
 

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Export logo Misstice (PNG)</title>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a2e; color: #fff;
+           display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 32px; }
+    h1 { font-size: 18px; font-weight: 600; }
+    canvas { border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,.4); background: #fff; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+    button { border: 0; border-radius: 12px; padding: 12px 22px; font-size: 14px; font-weight: 700;
+             cursor: pointer; background: #6C3CE1; color: #fff; }
+    button.alt { background: #fff; color: #1a1a2e; }
+    p { max-width: 420px; text-align: center; font-size: 13px; color: #b8b8c8; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>Logo Misstice — 512 × 512 PNG</h1>
+  <canvas id="c" width="512" height="512"></canvas>
+  <div class="row">
+    <button id="dl">Télécharger le PNG</button>
+    <button class="alt" id="bg">Changer le fond (violet clair / blanc)</button>
+  </div>
+  <p>Utilise ce PNG pour l'écran de consentement Google (App logo).
+     Fond « violet clair » recommandé ; « blanc » si tu préfères neutre.</p>
+
+  <script>
+    // Étincelle Misstice (même tracé que app/icon.svg), sur fond carré.
+    const SPARKLE =
+      "M32 3 Q32 32 61 32 Q32 32 32 61 Q32 32 3 32 Q32 32 32 3 Z";
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+    const backgrounds = ["#F1ECFF", "#FFFFFF"]; // violet clair, blanc
+    let bgIndex = 0;
+
+    function draw() {
+      const S = 512;
+      ctx.clearRect(0, 0, S, S);
+      // Fond plein (Google recadre en carré/cercle).
+      ctx.fillStyle = backgrounds[bgIndex];
+      ctx.fillRect(0, 0, S, S);
+      // Étincelle centrée : viewBox 64 -> on met à l'échelle ~ 58% et on centre.
+      const scale = (S * 0.58) / 64;
+      const drawn = 64 * scale;
+      ctx.save();
+      ctx.translate((S - drawn) / 2, (S - drawn) / 2);
+      ctx.scale(scale, scale);
+      const p = new Path2D(SPARKLE);
+      ctx.fillStyle = "#FF8C42";
+      ctx.fill(p);
+      ctx.restore();
+    }
+
+    document.getElementById("dl").onclick = () => {
+      const a = document.createElement("a");
+      a.download = "misstice-logo-512.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    };
+    document.getElementById("bg").onclick = () => {
+      bgIndex = (bgIndex + 1) % backgrounds.length;
+      draw();
+    };
+    draw();
+  </script>
+</body>
+</html>
