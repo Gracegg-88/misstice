@@ -21,8 +21,11 @@ export type Conversation = {
   vendor_id: string | null;
   vendor_name: string | null;
   particulier_name: string | null;
+  // Avatar de la famille dénormalisé (le prestataire ne peut pas lire son profil).
+  particulier_avatar: string | null;
   demande: DemandeDetails | null;
   status: string | null;
+  last_message: string | null;
   event_id: string | null;
   subject: string | null;
   last_message_at: string;
@@ -31,6 +34,8 @@ export type Conversation = {
 export type ConversationListItem = Conversation & {
   role: "particulier" | "prestataire";
   otherName: string;
+  // Photo de l'autre partie (famille dénormalisée ou image du prestataire).
+  otherAvatar: string | null;
 };
 
 export type Message = {

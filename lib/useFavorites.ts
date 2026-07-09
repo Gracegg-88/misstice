@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-// Favoris prestataires persistés localement (pas de compte requis).
+// Favoris prestataires. Réservés aux utilisateurs connectés : un clic sur le
+// cœur sans session renvoie vers le formulaire de connexion.
 const KEY = "misstice_favorites";
 
 function read(): string[] {
@@ -25,13 +27,27 @@ function write(ids: string[]) {
 
 export function useFavorites() {
   const [ids, setIds] = useState<string[]>([]);
+  // null = statut d'authentification encore inconnu.
+  const authed = useRef<boolean | null>(null);
 
-  // Hydrate depuis localStorage après le montage (évite le mismatch SSR).
+  // Hydrate depuis localStorage + détecte la session après le montage.
   useEffect(() => {
     setIds(read());
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      authed.current = !!user;
+    });
   }, []);
 
   const toggle = useCallback((id: string) => {
+    // Pas connecté → on redirige vers la connexion (retour sur la page courante).
+    if (authed.current === false) {
+      const next = encodeURIComponent(
+        window.location.pathname + window.location.search
+      );
+      window.location.href = `/auth?next=${next}`;
+      return;
+    }
     setIds((prev) => {
       const next = prev.includes(id)
         ? prev.filter((x) => x !== id)

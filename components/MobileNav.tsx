@@ -1,22 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { Menu, X, Home } from "lucide-react";
+import ModeSwitch from "@/components/ModeSwitch";
 
 type NavItem = { label: string; href: string; icon: React.ElementType };
 
-/** Tiroir de navigation mobile (les sidebars sont masquées en < lg). */
+/** Menu de navigation mobile en modale (les sidebars sont masquées en < lg). */
 export default function MobileNav({
   items,
   rootHref,
   homeHref = "/",
   homeLabel = "Retour à l'accueil",
+  switchMode,
 }: {
   items: NavItem[];
   rootHref: string;
   homeHref?: string;
   homeLabel?: string;
+  switchMode?: "pro" | "particulier";
 }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
@@ -37,14 +41,15 @@ export default function MobileNav({
         <Menu size={22} />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-[70] lg:hidden">
+      {open && createPortal(
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 lg:hidden">
           <div
-            className="absolute inset-0 bg-plum/40"
+            className="absolute inset-0 bg-plum/50 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute left-0 top-0 flex h-full w-64 flex-col overflow-y-auto bg-white p-4 shadow-xl">
-            <div className="mb-3 flex justify-end">
+          <div className="relative flex max-h-[85vh] w-full max-w-sm flex-col overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-plum">Menu</span>
               <button
                 type="button"
                 aria-label="Fermer"
@@ -54,6 +59,15 @@ export default function MobileNav({
                 <X size={18} />
               </button>
             </div>
+
+            {switchMode && (
+              <div
+                className="mb-3 flex justify-center"
+                onClick={() => setOpen(false)}
+              >
+                <ModeSwitch current={switchMode} />
+              </div>
+            )}
 
             <nav
               className="flex flex-col gap-1"
@@ -82,13 +96,14 @@ export default function MobileNav({
             <a
               href={homeHref}
               onClick={() => setOpen(false)}
-              className="mt-auto flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate hover:bg-violet-soft hover:text-violet"
+              className="mt-3 flex items-center gap-2.5 rounded-xl border-t border-black/5 px-3 py-2.5 pt-4 text-sm font-medium text-slate hover:bg-violet-soft hover:text-violet"
             >
               <Home size={18} />
               {homeLabel}
             </a>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

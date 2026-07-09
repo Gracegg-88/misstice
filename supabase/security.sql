@@ -242,12 +242,19 @@ returns trigger
 language plpgsql security definer set search_path = public
 as $$
 begin
-  new.particulier_id   := old.particulier_id;
-  new.prestataire_id   := old.prestataire_id;
-  new.vendor_id        := old.vendor_id;
-  new.particulier_name := old.particulier_name;
-  new.demande          := old.demande;
-  new.created_at       := old.created_at;
+  -- Identités et date de création : toujours immuables.
+  new.particulier_id := old.particulier_id;
+  new.prestataire_id := old.prestataire_id;
+  new.vendor_id      := old.vendor_id;
+  new.created_at     := old.created_at;
+  -- La demande et le nom du client ne sont modifiables que par le CLIENT
+  -- lui-même (nouvelle demande dans la même conversation) ; le prestataire ne
+  -- peut pas les altérer.
+  if auth.uid() is distinct from old.particulier_id then
+    new.demande            := old.demande;
+    new.particulier_name   := old.particulier_name;
+    new.particulier_avatar := old.particulier_avatar;
+  end if;
   return new;
 end;
 $$;

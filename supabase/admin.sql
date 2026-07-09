@@ -34,13 +34,33 @@ drop policy if exists "profiles_admin_read" on public.profiles;
 create policy "profiles_admin_read" on public.profiles
   for select using (public.is_admin());
 
+-- Confidentialité : les événements (et leurs dépenses) ne sont visibles QUE des
+-- personnes concernées (propriétaire + membres acceptés). L'admin n'a PAS accès
+-- au détail — seulement à des compteurs agrégés (fonctions ci-dessous).
 drop policy if exists "events_admin_read" on public.events;
-create policy "events_admin_read" on public.events
-  for select using (public.is_admin());
-
 drop policy if exists "budget_expenses_admin_read" on public.budget_expenses;
-create policy "budget_expenses_admin_read" on public.budget_expenses
-  for select using (public.is_admin());
+
+-- Compteur agrégé d'événements pour les stats admin (aucun détail exposé).
+create or replace function public.admin_events_count()
+returns integer
+language sql security definer set search_path = public stable
+as $$
+  select case
+    when public.is_admin() then (select count(*)::int from public.events)
+    else 0
+  end;
+$$;
+grant execute on function public.admin_events_count() to authenticated;
+
+-- Horodatages de création (pour le graphe d'activité) — sans nom/budget/invités.
+create or replace function public.admin_events_created_since(p_since timestamptz)
+returns setof timestamptz
+language sql security definer set search_path = public stable
+as $$
+  select created_at from public.events
+  where public.is_admin() and created_at >= p_since;
+$$;
+grant execute on function public.admin_events_created_since(timestamptz) to authenticated;
 
 -- 5. CATÉGORIES DE PRESTATAIRE — gérées depuis l'admin
 create table if not exists public.vendor_categories (

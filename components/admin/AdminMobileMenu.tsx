@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 import AdminNav from "./AdminNav";
 
@@ -18,30 +19,33 @@ export default function AdminMobileMenu() {
         <Menu size={22} />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-[70] lg:hidden">
-          <div
-            className="absolute inset-0 bg-plum/40"
-            onClick={() => setOpen(false)}
-          />
-          <div className="absolute left-0 top-0 h-full w-64 overflow-y-auto bg-white p-4 shadow-xl">
-            <div className="mb-4 flex justify-end">
-              <button
-                type="button"
-                aria-label="Fermer"
-                onClick={() => setOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-cream text-plum"
-              >
-                <X size={18} />
-              </button>
+      {open &&
+        createPortal(
+          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 lg:hidden">
+            <div
+              className="absolute inset-0 bg-plum/50 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+            <div className="relative flex max-h-[85vh] w-full max-w-sm flex-col overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-semibold text-plum">Menu</span>
+                <button
+                  type="button"
+                  aria-label="Fermer"
+                  onClick={() => setOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-cream text-plum"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {/* Un clic sur un lien ferme la modale */}
+              <div onClick={() => setOpen(false)}>
+                <AdminNav />
+              </div>
             </div>
-            {/* Un clic sur un lien ferme le tiroir */}
-            <div onClick={() => setOpen(false)}>
-              <AdminNav />
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

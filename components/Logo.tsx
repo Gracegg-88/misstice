@@ -12,7 +12,7 @@ export default function Logo({
   const color = variant === "dark" ? "text-white" : "text-violet";
   return (
     <a href="/" className={`group inline-flex items-center ${className}`} aria-label="Misstice — accueil">
-      <span className={`relative font-display text-2xl font-bold tracking-tight ${color}`}>
+      <span className={`relative font-display text-xl font-bold tracking-tight sm:text-2xl ${color}`}>
         {/* Étincelle au-dessus du M */}
         <svg
           aria-hidden

@@ -74,9 +74,7 @@ export default function InvitationPage({
       style={{ backgroundImage: "url('/background_login.png')" }}
     >
       <div className="absolute left-5 top-5 sm:left-8 sm:top-6">
-        <a href="/" aria-label="Accueil">
-          <Logo />
-        </a>
+        <Logo />
       </div>
 
       <div className="flex flex-1 items-center justify-center px-5">

@@ -16,11 +16,13 @@ type Ev = { id: string; name: string; event_date: string | null };
 export default function DashboardTopbar({
   name,
   role,
+  image = null,
   events = [],
   currentEventId = null,
 }: {
   name?: string;
   role?: string;
+  image?: string | null;
   events?: Ev[];
   currentEventId?: string | null;
 }) {
@@ -39,9 +41,17 @@ export default function DashboardTopbar({
 
   return (
     <header className="z-40 shrink-0 border-b border-black/5 bg-cream/80 backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between gap-3 px-5 sm:px-8">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <MobileNav items={DASHBOARD_NAV} rootHref="/dashboard" />
+      <div className="flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
+          <MobileNav
+            items={DASHBOARD_NAV}
+            rootHref="/dashboard"
+            switchMode={
+              role === "prestataire" || role === "admin"
+                ? "particulier"
+                : undefined
+            }
+          />
           <Logo />
           {(role === "prestataire" || role === "admin") && (
             <span className="hidden rounded-md bg-violet px-2 py-0.5 text-xs font-semibold text-white sm:inline">
@@ -51,10 +61,12 @@ export default function DashboardTopbar({
           <EventSwitcher events={events} currentId={currentEventId} />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           {/* Bascule d'espace — comptes ayant aussi un espace pro. */}
           {(role === "prestataire" || role === "admin") && (
-            <ModeSwitch current="particulier" />
+            <div className="hidden sm:block">
+              <ModeSwitch current="particulier" />
+            </div>
           )}
 
           <NotificationBell />
@@ -66,10 +78,19 @@ export default function DashboardTopbar({
             onClick={() => setMenu((v) => !v)}
             className="flex items-center gap-2 rounded-xl border border-black/5 bg-white px-2 py-1.5 hover:border-black/10"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet text-sm font-semibold text-white">
-              {initial}
-            </span>
-            <span className="hidden text-sm font-medium text-plum sm:block">
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={image}
+                alt=""
+                className="h-7 w-7 rounded-lg object-cover"
+              />
+            ) : (
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet text-sm font-semibold text-white">
+                {initial}
+              </span>
+            )}
+            <span className="hidden max-w-[9rem] truncate text-sm font-medium text-plum sm:block">
               {displayName}
             </span>
             <ChevronDown size={15} className="text-slate" />

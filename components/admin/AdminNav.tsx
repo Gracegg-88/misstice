@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Store,
-  Users,
-  CalendarDays,
-  Tags,
-} from "lucide-react";
+import { LayoutDashboard, Store, Users, Tags } from "lucide-react";
 
 const GROUPS = [
   {
@@ -20,7 +14,8 @@ const GROUPS = [
     items: [
       { icon: Store, label: "Prestataires", href: "/admin/prestataires" },
       { icon: Users, label: "Utilisateurs", href: "/admin/utilisateurs" },
-      { icon: CalendarDays, label: "Événements", href: "/admin/evenements" },
+      // Les événements sont privés (visibles seulement des personnes concernées) :
+      // pas de page de détail côté admin, seulement un compteur agrégé.
       { icon: Tags, label: "Catégories", href: "/admin/categories" },
     ],
   },

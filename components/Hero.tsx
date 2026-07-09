@@ -1,4 +1,4 @@
-import { Users, Sparkles } from "lucide-react";
+import { Users } from "lucide-react";
 
 export default function Hero() {
   return (
@@ -6,22 +6,23 @@ export default function Hero() {
       className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-cream bg-cover bg-top bg-no-repeat"
       style={{ backgroundImage: "url('/background.png')" }}
     >
-      <div className="relative mx-auto grid w-full max-w-content items-center gap-10 px-5 py-8 sm:px-8 lg:grid-cols-[0.92fr_1.08fr]">
+      <div className="relative mx-auto grid w-full max-w-content items-center gap-10 px-4 py-10 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:py-12">
         {/* ── Colonne texte ── */}
         <div className="animate-fade-up">
           <span className="inline-flex items-center gap-2 rounded-full border border-festif/20 bg-white/70 px-4 py-1.5 text-sm font-medium text-festif backdrop-blur-sm">
-            <Sparkles size={15} className="fill-festif" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="" aria-hidden="true" className="h-4 w-4" />
             On transforme le stress de l&apos;organisation en plaisir.
           </span>
 
-          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl lg:text-[52px]">
+          <h1 className="mt-5 max-w-[14ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl lg:text-[52px]">
             Organisez vos plus beaux événements,{" "}
             <span className="bg-gradient-to-r from-festif to-[#FFB27A] bg-clip-text text-transparent">
               sans stress.
             </span>
           </h1>
 
-          <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate">
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate sm:text-lg">
             Budget, invités, checklist, équipe et prestataires réunis dans une
             seule plateforme.
           </p>
@@ -34,7 +35,7 @@ export default function Hero() {
               Créer mon événement
             </a>
             <a
-              href="/creer"
+              href="/creer?type=pro"
               className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/15 bg-white/70 px-7 py-4 text-base font-semibold text-plum backdrop-blur-sm transition-colors hover:border-plum/30"
             >
               Je suis prestataire

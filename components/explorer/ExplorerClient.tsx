@@ -47,7 +47,7 @@ const SORTS = [
 // Cartes de confiance (réponses aux reproches du secteur).
 const PROMISES = [
   { icon: Scale, title: "Classement au mérite", text: "Jamais d'achat de position. L'ordre dépend des notes et des avis, pas du portefeuille." },
-  { icon: Eye, title: "Avis vérifiés, tous publiés", text: "Positifs comme négatifs, issus de vraies prestations et jamais supprimés contre paiement." },
+  { icon: Eye, title: "Tous les avis publiés", text: "Positifs comme négatifs, jamais supprimés contre paiement — vous lisez de vrais retours." },
   { icon: ShieldCheck, title: "Prestataires contrôlés", text: "Le badge « Vérifié » signifie pièces et références réellement contrôlées." },
   { icon: MailX, title: "Zéro spam, zéro faux lead", text: "Vous contactez qui vous voulez. Les pros reçoivent de vraies demandes, pas du bruit." },
 ];
@@ -75,6 +75,13 @@ export default function ExplorerClient({
 
   const scrollToResults = () =>
     resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // Change de page ET remonte en haut des résultats (sinon on ne voit pas le
+  // changement, on reste au niveau des boutons de pagination).
+  const goToPage = (p: number) => {
+    setPage(p);
+    scrollToResults();
+  };
 
   // Réinitialise TOUT : filtres, recherche, tri et pagination.
   const resetAll = () => {
@@ -155,16 +162,34 @@ export default function ExplorerClient({
         </div>
       </section>
 
-      {/* ── BARRE DE RECHERCHE ── */}
+      {/* ── CARTES DE CONFIANCE ── */}
       <div className="mx-auto max-w-content px-5 sm:px-8">
+        <div className="relative z-10 -mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {PROMISES.map((p) => (
+            <div
+              key={p.title}
+              className="flex items-start gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm shadow-violet/5"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
+                <p.icon size={18} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-plum">{p.title}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-slate">{p.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── BARRE DE RECHERCHE (après les cartes) ── */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             scrollToResults();
           }}
-          className="relative z-10 -mt-8 flex flex-col gap-3 rounded-2xl border border-black/5 bg-white p-3 shadow-lg shadow-violet/5 sm:flex-row sm:items-center"
+          className="mt-6 flex flex-col gap-3 rounded-2xl border border-black/5 bg-white p-3 shadow-lg shadow-violet/5 sm:flex-row sm:items-center"
         >
-          <div className="relative flex-1">
+          <div className="relative min-w-0 flex-1">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate" />
             <input
               value={query}
@@ -179,30 +204,12 @@ export default function ExplorerClient({
 
           <button
             type="submit"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark"
           >
             <Search size={16} />
             Rechercher
           </button>
         </form>
-
-        {/* Rangée de cartes de confiance */}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {PROMISES.map((p) => (
-            <div
-              key={p.title}
-              className="flex items-start gap-3 rounded-2xl border border-black/5 bg-white p-4"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
-                <p.icon size={18} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-plum">{p.title}</p>
-                <p className="mt-0.5 text-xs leading-relaxed text-slate">{p.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* ── RÉSULTATS ── */}
@@ -226,13 +233,13 @@ export default function ExplorerClient({
 
           {/* Colonne résultats */}
           <div className="min-w-0 flex-1">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <p className="text-sm text-slate">
                 <span className="font-semibold text-plum">{results.length}</span>{" "}
                 prestataire{results.length > 1 ? "s" : ""} trouvé{results.length > 1 ? "s" : ""}
               </p>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <select
                   aria-label="Trier les résultats"
                   value={sort}
@@ -240,7 +247,7 @@ export default function ExplorerClient({
                     setSort(e.target.value);
                     setPage(1);
                   }}
-                  className={selectCls}
+                  className={`${selectCls} min-w-0 flex-1 sm:flex-none`}
                 >
                   {SORTS.map((s) => (
                     <option key={s.v} value={s.v}>{s.l}</option>
@@ -248,7 +255,7 @@ export default function ExplorerClient({
                 </select>
 
                 {/* Bascule Liste / Carte */}
-                <div className="flex rounded-xl border border-black/10 bg-white p-1">
+                <div className="flex shrink-0 rounded-xl border border-black/10 bg-white p-1">
                   <button
                     type="button"
                     onClick={() => setView("liste")}
@@ -276,7 +283,7 @@ export default function ExplorerClient({
                 <button
                   type="button"
                   onClick={() => setDrawerOpen(true)}
-                  className="flex items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum lg:hidden"
+                  className="flex shrink-0 items-center gap-2 rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum lg:hidden"
                 >
                   <SlidersHorizontal size={16} />
                   Filtres
@@ -327,7 +334,7 @@ export default function ExplorerClient({
                       type="button"
                       aria-label="Page précédente"
                       disabled={currentPage === 1}
-                      onClick={() => setPage(currentPage - 1)}
+                      onClick={() => goToPage(currentPage - 1)}
                       className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-plum transition-colors hover:bg-white disabled:opacity-40"
                     >
                       <ChevronLeft size={18} />
@@ -336,7 +343,7 @@ export default function ExplorerClient({
                       <button
                         key={p}
                         type="button"
-                        onClick={() => setPage(p)}
+                        onClick={() => goToPage(p)}
                         className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
                           p === currentPage
                             ? "bg-violet text-white"
@@ -350,7 +357,7 @@ export default function ExplorerClient({
                       type="button"
                       aria-label="Page suivante"
                       disabled={currentPage === totalPages}
-                      onClick={() => setPage(currentPage + 1)}
+                      onClick={() => goToPage(currentPage + 1)}
                       className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-plum transition-colors hover:bg-white disabled:opacity-40"
                     >
                       <ChevronRight size={18} />

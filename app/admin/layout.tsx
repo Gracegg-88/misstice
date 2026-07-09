@@ -19,12 +19,12 @@ export default async function AdminLayout({
   return (
     <div className="flex h-screen flex-col bg-cream">
       {/* ── Topbar ── */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-black/5 bg-cream/80 px-5 backdrop-blur-md sm:px-8">
-        <div className="flex items-center gap-2">
+      <header className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-black/5 bg-cream/80 px-4 py-2 backdrop-blur-md sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-2">
           <AdminMobileMenu />
-          <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 items-center gap-1.5">
             <Logo />
-            <span className="rounded-md bg-violet px-2 py-0.5 text-xs font-semibold text-white">
+            <span className="hidden rounded-md bg-violet px-2 py-0.5 text-xs font-semibold text-white sm:inline">
               Admin
             </span>
           </div>
@@ -51,7 +51,7 @@ export default async function AdminLayout({
         </aside>
 
         {/* ── Contenu (seule zone qui défile) ── */}
-        <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8 sm:px-8">
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {children}
         </main>
       </div>

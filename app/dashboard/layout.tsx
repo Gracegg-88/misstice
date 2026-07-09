@@ -21,12 +21,13 @@ export default async function DashboardLayout({
       <DashboardTopbar
         name={profile.full_name ?? undefined}
         role={profile.role}
+        image={profile.avatar_url}
         events={events}
         currentEventId={current?.id ?? null}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8 sm:px-8">
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {children}
         </main>
       </div>

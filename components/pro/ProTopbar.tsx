@@ -13,9 +13,11 @@ import { PRO_NAV } from "@/components/pro/nav";
 export default function ProTopbar({
   name = "Mon activité",
   image = null,
+  publicHref = "/prestataires",
 }: {
   name?: string;
   image?: string | null;
+  publicHref?: string;
 }) {
   const [menu, setMenu] = useState(false);
   const router = useRouter();
@@ -30,17 +32,25 @@ export default function ProTopbar({
 
   return (
     <header className="z-40 shrink-0 border-b border-black/5 bg-cream/80 backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between px-5 sm:px-8">
-        <div className="flex items-center gap-1.5">
-          <MobileNav items={PRO_NAV} rootHref="/pro" homeLabel="Voir mon profil public" />
+      <div className="flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <MobileNav
+            items={PRO_NAV}
+            rootHref="/pro"
+            homeHref={publicHref}
+            homeLabel="Voir mon profil public"
+            switchMode="pro"
+          />
           <Logo />
           <span className="hidden rounded-md bg-violet px-2 py-0.5 text-xs font-semibold text-white sm:inline">
             Prestataire
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <ModeSwitch current="pro" />
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="hidden sm:block">
+            <ModeSwitch current="pro" />
+          </div>
           <NotificationBell />
           <div className="relative">
             <button
@@ -60,7 +70,7 @@ export default function ProTopbar({
                   {initial}
                 </span>
               )}
-              <span className="hidden max-w-[10rem] truncate text-sm font-medium text-plum sm:block">
+              <span className="hidden max-w-[9rem] truncate text-sm font-medium text-plum sm:block">
                 {name}
               </span>
               <ChevronDown size={15} className="text-slate" />

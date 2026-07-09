@@ -13,7 +13,7 @@ const columns = [
   {
     title: "Prestataires",
     links: [
-      { label: "Devenir prestataire", href: "/creer" },
+      { label: "Devenir prestataire", href: "/creer?type=pro" },
       { label: "Espace pro", href: "/pro" },
       { label: "Connexion", href: "/auth" },
     ],

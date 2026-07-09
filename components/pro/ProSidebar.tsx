@@ -56,7 +56,8 @@ export default function ProSidebar({
           )}
         </div>
 
-        <nav className="mt-3 flex flex-1 flex-col gap-1">
+        {/* Navigation — items compacts, groupés en haut (comme le particulier) */}
+        <nav className="mt-3 flex flex-col gap-1">
           {NAV.map((item) => {
             const active =
               item.href === "/pro" ? path === "/pro" : path.startsWith(item.href);
@@ -65,21 +66,21 @@ export default function ProSidebar({
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-1 items-center gap-2.5 rounded-xl px-3 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                   active
                     ? "bg-violet text-white"
                     : "text-slate hover:bg-violet-soft hover:text-violet"
                 }`}
               >
                 <item.icon size={18} />
-                <span className="flex-1">{item.label}</span>
+                {item.label}
               </a>
             );
           })}
         </nav>
 
-        {/* Carte « Voir mon profil public » (même style que le dashboard particulier) */}
-        <div className="relative mt-4 flex h-24 shrink-0 items-end overflow-hidden rounded-2xl ring-1 ring-black/5">
+        {/* Carte « Voir mon profil public » — poussée en bas (comme le particulier) */}
+        <div className="relative mt-auto flex h-20 shrink-0 items-end overflow-hidden rounded-2xl ring-1 ring-black/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/sidebar_particulier.png"
@@ -89,7 +90,7 @@ export default function ProSidebar({
           />
           <a
             href={publicHref}
-            className="relative z-10 flex w-full items-center justify-center gap-2 rounded-t-2xl bg-violet px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark"
+            className="relative z-10 flex w-full items-center justify-center gap-2 rounded-t-2xl bg-violet px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-dark"
           >
             <ExternalLink size={15} />
             Voir mon profil public

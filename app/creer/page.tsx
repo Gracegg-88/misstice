@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/Header";
@@ -18,13 +18,21 @@ function GoogleIcon() {
 }
 
 const inputCls =
-  "w-full rounded-xl border border-black/10 bg-cream px-4 py-2 text-sm text-plum outline-none focus:border-violet";
+  "w-full rounded-xl border border-black/10 bg-cream px-4 py-1.5 text-sm text-plum outline-none focus:border-violet";
 
 export default function CreerPage() {
   const router = useRouter();
   const [type, setType] = useState<"particulier" | "professionnel">("particulier");
   const [step, setStep] = useState(0);
   const [showPwd, setShowPwd] = useState(false);
+
+  // Présélection du parcours prestataire via ?type=pro (depuis « Je suis
+  // prestataire » / « Devenir prestataire »). Lu au montage pour éviter tout
+  // décalage d'hydratation.
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("type");
+    if (t === "pro" || t === "professionnel") setType("professionnel");
+  }, []);
 
   // données
   const [account, setAccount] = useState({ name: "", email: "", password: "" });
@@ -123,14 +131,11 @@ export default function CreerPage() {
       : pro.company.trim() !== "" && pro.category.trim() !== "";
 
   return (
-    <div
-      className="flex h-screen flex-col overflow-hidden bg-cream bg-cover bg-center"
-      style={{ backgroundImage: "url('/background_login.png')" }}
-    >
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream bg-cover bg-center bg-no-repeat bg-[url('/background_signup_mobile.png')] sm:bg-[url('/background_login.png')]">
       <Header />
 
       <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-2">
-        <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 p-4 shadow-xl backdrop-blur-sm">
+        <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-sm">
           {/* Stepper (seulement pour le parcours pro, à 2 étapes) */}
           {steps.length > 1 && (
             <div className="flex w-full items-center">
@@ -174,7 +179,7 @@ export default function CreerPage() {
                 </p>
 
                 {/* Type de compte */}
-                <div className="mt-3 grid grid-cols-2 gap-1 rounded-2xl bg-cream p-1">
+                <div className="mt-2 grid grid-cols-2 gap-1 rounded-2xl bg-cream p-1">
                   {(["particulier", "professionnel"] as const).map((t) => (
                     <button
                       key={t}
@@ -182,7 +187,7 @@ export default function CreerPage() {
                         setType(t);
                         setStep(0);
                       }}
-                      className={`rounded-xl py-2 text-sm font-semibold capitalize transition-colors ${
+                      className={`rounded-xl py-1.5 text-sm font-semibold capitalize transition-colors ${
                         type === t ? "bg-violet text-white" : "text-slate hover:text-plum"
                       }`}
                     >
@@ -193,12 +198,12 @@ export default function CreerPage() {
 
                 <button
                   onClick={goGoogle}
-                  className="mt-3 flex w-full items-center justify-center gap-3 rounded-xl border border-black/10 bg-white py-2 text-sm font-semibold text-plum hover:bg-cream"
+                  className="mt-2 flex w-full items-center justify-center gap-3 rounded-xl border border-black/10 bg-white py-1.5 text-sm font-semibold text-plum hover:bg-cream"
                 >
                   <GoogleIcon />
                   Continuer avec Google
                 </button>
-                <div className="my-2.5 flex items-center gap-3 text-xs text-slate">
+                <div className="my-2 flex items-center gap-3 text-xs text-slate">
                   <span className="h-px flex-1 bg-black/10" />
                   ou avec votre email
                   <span className="h-px flex-1 bg-black/10" />
@@ -275,11 +280,11 @@ export default function CreerPage() {
             )}
 
             {/* Navigation */}
-            <div className="mt-3 flex items-center justify-between">
+            <div className="mt-2.5 flex items-center justify-between">
               {step > 0 ? (
                 <button
                   onClick={back}
-                  className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate hover:text-plum"
+                  className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-slate hover:text-plum"
                 >
                   <ArrowLeft size={16} />
                   Retour
@@ -292,7 +297,7 @@ export default function CreerPage() {
                 <button
                   onClick={next}
                   disabled={!canSubmit}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
                 >
                   Continuer
                 </button>
@@ -300,7 +305,7 @@ export default function CreerPage() {
                 <button
                   onClick={finish}
                   disabled={loading || !canSubmit}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
                 >
                   <PartyPopper size={17} />
                   {loading
@@ -319,7 +324,7 @@ export default function CreerPage() {
             )}
           </div>
 
-          <p className="mt-4 text-center text-sm text-slate">
+          <p className="mt-3 text-center text-sm text-slate">
             Déjà un compte ?{" "}
             <a href="/auth" className="font-semibold text-violet">
               Se connecter

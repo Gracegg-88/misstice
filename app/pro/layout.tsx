@@ -23,7 +23,7 @@ export default async function ProLayout({
 
   return (
     <div className="flex h-screen flex-col bg-cream">
-      <ProTopbar name={name} image={vendor?.image ?? null} />
+      <ProTopbar name={name} image={vendor?.image ?? null} publicHref={publicHref} />
       <div className="flex flex-1 overflow-hidden">
         <ProSidebar
           name={name}
@@ -33,7 +33,7 @@ export default async function ProLayout({
           image={vendor?.image ?? null}
           publicHref={publicHref}
         />
-        <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8 sm:px-8">
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {children}
         </main>
       </div>

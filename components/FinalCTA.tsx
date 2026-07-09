@@ -46,7 +46,7 @@ export default function FinalCTA() {
                 Créer mon événement
               </a>
               <a
-                href="/creer"
+                href="/creer?type=pro"
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-violet/30 bg-white/70 px-6 py-3 text-sm font-semibold text-violet backdrop-blur-sm transition-colors hover:bg-white"
               >
                 <Users size={17} />

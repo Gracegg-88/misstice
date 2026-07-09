@@ -24,18 +24,16 @@ export default async function AdminOverview() {
   const sinceISO = since.toISOString();
 
   const [
-    { data: recentEvents },
     { data: profRows },
-    { data: eventRows },
+    { data: eventDates },
     { data: vendorRows },
   ] = await Promise.all([
-    supabase.from("events").select("id, name, type, event_date").order("created_at", { ascending: false }).limit(3),
     supabase.from("profiles").select("role, created_at").gte("created_at", sinceISO),
-    supabase.from("events").select("created_at").gte("created_at", sinceISO),
+    // Événements privés : pas de lecture directe. On ne récupère que les
+    // horodatages de création (agrégés, sans détail) pour le graphe d'activité.
+    supabase.rpc("admin_events_created_since", { p_since: sinceISO }),
     supabase.from("vendors").select("created_at").gte("created_at", sinceISO),
   ]);
-
-  const events = (recentEvents as { id: string; name: string; type: string | null; event_date: string | null }[]) ?? [];
 
   // Libellés + répartition par jour
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -60,7 +58,7 @@ export default async function AdminOverview() {
   const usersSpark = bucket(profs.map((p) => p.created_at));
   const familiesSpark = bucket(profs.filter((p) => p.role === "particulier").map((p) => p.created_at));
   const vendorsSpark = bucket(((vendorRows as { created_at: string }[]) ?? []).map((v) => v.created_at));
-  const eventsSpark = bucket(((eventRows as { created_at: string }[]) ?? []).map((e) => e.created_at));
+  const eventsSpark = bucket((eventDates as string[] | null) ?? []);
   const activity = usersSpark.map((v, i) => v + eventsSpark[i]);
   const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 
@@ -82,7 +80,6 @@ export default async function AdminOverview() {
   const quick = [
     { icon: Tags, label: "Gérer les catégories", href: "/admin/categories" },
     { icon: Users, label: "Voir les utilisateurs", href: "/admin/utilisateurs" },
-    { icon: CalendarDays, label: "Voir les événements", href: "/admin/evenements" },
     { icon: Store, label: "Voir les prestataires", href: "/admin/prestataires" },
   ];
 
@@ -184,38 +181,19 @@ export default async function AdminOverview() {
           </Link>
         </div>
 
-        {/* Derniers événements */}
+        {/* Événements (agrégé — le détail reste privé aux personnes concernées) */}
         <div className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
-          <p className="font-display text-lg font-semibold text-plum">Derniers événements créés</p>
-          {events.length === 0 ? (
-            <div className="flex flex-col items-center py-6 text-center">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">
-                <CalendarDays size={22} />
-              </span>
-              <p className="mt-3 text-sm font-semibold text-plum">Aucun événement</p>
-              <p className="mt-1 text-xs text-slate">Les nouveaux événements apparaîtront ici.</p>
-            </div>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {events.map((e) => (
-                <li key={e.id} className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-soft text-violet">
-                    <CalendarDays size={16} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-plum">{e.name}</p>
-                    <p className="text-xs text-slate">{e.type ?? "Événement"}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-          <Link
-            href="/admin/evenements"
-            className="mt-4 block text-center text-sm font-semibold text-violet hover:text-violet-dark"
-          >
-            Voir tous les événements
-          </Link>
+          <p className="font-display text-lg font-semibold text-plum">Événements</p>
+          <p className="mt-6 text-center font-display text-4xl font-semibold text-plum">
+            {s.events}
+          </p>
+          <p className="mt-1 text-center text-sm text-slate">
+            événement{s.events > 1 ? "s" : ""} sur la plateforme
+          </p>
+          <p className="mt-4 flex items-center justify-center gap-1.5 rounded-xl bg-cream px-3 py-2 text-center text-xs text-slate">
+            <ShieldCheck size={14} className="shrink-0 text-violet" />
+            Contenu privé : visible uniquement des personnes concernées.
+          </p>
         </div>
 
         {/* Actions rapides */}

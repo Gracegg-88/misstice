@@ -145,7 +145,9 @@ export async function getAdminStats(): Promise<AdminStats> {
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "particulier"),
     // Prestataires RÉELS (comptes), pas les 18 fiches démo de l'annuaire.
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "prestataire"),
-    supabase.from("events").select("*", { count: "exact", head: true }),
+    // Les événements sont privés : l'admin n'y a pas accès en lecture directe.
+    // On récupère seulement le compteur agrégé via une fonction SECURITY DEFINER.
+    supabase.rpc("admin_events_count"),
     // En attente = fiches réelles (liées à un compte) non vérifiées.
     supabase
       .from("vendors")
@@ -158,7 +160,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     users: users.count ?? 0,
     families: families.count ?? 0,
     vendors: vendors.count ?? 0,
-    events: events.count ?? 0,
+    events: (events.data as number | null) ?? 0,
     pendingVerification: pending.count ?? 0,
   };
 }

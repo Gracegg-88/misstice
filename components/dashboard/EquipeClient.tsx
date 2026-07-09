@@ -48,17 +48,40 @@ export default function EquipeClient({
       .select("id, event_id, email, role, user_id, status")
       .single();
 
-    setSending(false);
     if (insErr) {
+      setSending(false);
       setError(insErr.message);
       return;
     }
 
     if (data) setMembers((prev) => [...prev, data as TeamMember]);
+
+    // Envoi de l'email d'invitation à l'adresse saisie.
+    let mailFailed = false;
+    if (data) {
+      try {
+        const res = await fetch("/api/send-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId: (data as TeamMember).id }),
+        });
+        if (!res.ok) mailFailed = true;
+      } catch {
+        mailFailed = true;
+      }
+    }
+
+    setSending(false);
     setEmail("");
     setRole("");
-    setSent(true);
-    setTimeout(() => setSent(false), 3000);
+    if (mailFailed) {
+      setError(
+        "Collaborateur ajouté, mais l'email n'a pas pu être envoyé. Copiez son lien pour l'inviter manuellement."
+      );
+    } else {
+      setSent(true);
+      setTimeout(() => setSent(false), 3000);
+    }
     router.refresh();
   };
 
@@ -132,7 +155,7 @@ export default function EquipeClient({
             members.map((m) => (
               <div
                 key={m.id}
-                className="flex items-center justify-between gap-3 rounded-3xl border border-black/5 bg-white p-5"
+                className="flex flex-col gap-3 rounded-3xl border border-black/5 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet text-sm font-semibold text-white">
@@ -147,7 +170,7 @@ export default function EquipeClient({
                     </p>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
                   {m.status === "accepted" ? (
                     <span className="rounded-full bg-emerald-soft px-2.5 py-1 text-xs font-medium text-emerald">
                       Membre
@@ -256,11 +279,12 @@ export default function EquipeClient({
           >
             {sent ? (
               <>
-                <Check size={18} /> Ajouté — copiez son lien
+                <Check size={18} /> Invitation envoyée
               </>
             ) : (
               <>
-                <Send size={17} /> {sending ? "Ajout…" : "Ajouter le collaborateur"}
+                <Send size={17} />{" "}
+                {sending ? "Envoi…" : "Inviter le collaborateur"}
               </>
             )}
           </button>
@@ -268,9 +292,10 @@ export default function EquipeClient({
 
         {/* Aide sur le lien d'invitation */}
         <p className="mt-4 border-t border-black/5 pt-4 text-center text-xs text-slate">
-          Après l&apos;invitation, cliquez sur « Lien » à côté du membre pour
-          copier son lien personnel et le lui envoyer. En l&apos;ouvrant (et en
-          se connectant), il rejoindra automatiquement l&apos;événement.
+          Un email d&apos;invitation est envoyé automatiquement à l&apos;adresse
+          saisie. Vous pouvez aussi cliquer sur « Lien » à côté du membre pour
+          copier son lien personnel. En l&apos;ouvrant (et en se connectant), il
+          rejoindra automatiquement l&apos;événement.
         </p>
       </div>
     </div>

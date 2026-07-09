@@ -11,6 +11,7 @@ import {
   getReviewStats,
 } from "@/lib/vendors";
 import { getPackages } from "@/components/explorer/profileData";
+import { getCurrentEvent } from "@/lib/queries";
 
 export async function generateMetadata({
   params,
@@ -27,20 +28,33 @@ export async function generateMetadata({
 
 export default async function VendorPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: { devis?: string };
 }) {
   const vendor = await getVendor(params.id);
   if (!vendor) notFound();
 
   // Formules & book réels si le prestataire est inscrit, sinon démo.
-  const [realPackages, photos, reviews, stats] = await Promise.all([
+  const [realPackages, photos, reviews, stats, currentEvent] = await Promise.all([
     vendor.userId ? getPublicPackages(vendor.userId) : Promise.resolve([]),
     vendor.userId ? getPublicPhotos(vendor.userId) : Promise.resolve([]),
     getVendorReviews(vendor.id),
     getReviewStats(vendor.id),
+    getCurrentEvent(),
   ]);
   const packages = realPackages.length ? realPackages : getPackages(vendor);
+
+  // Pré-remplissage de la demande de devis avec l'événement en cours (le cas
+  // échéant) — utile depuis le dashboard particulier.
+  const prefill = currentEvent
+    ? {
+        type: currentEvent.type,
+        date: currentEvent.event_date,
+        guests: currentEvent.guest_count || null,
+      }
+    : null;
 
   // La note affichée reflète les avis réels dès qu'il y en a ; sinon on garde
   // la note de la fiche (cohérent avec les cartes de l'annuaire).
@@ -59,6 +73,8 @@ export default async function VendorPage({
           reviews={reviews}
           breakdown={stats.breakdown}
           photos={photos}
+          prefill={prefill}
+          autoDevis={searchParams?.devis === "1"}
         />
       </main>
       <Footer />

@@ -32,6 +32,10 @@ create table if not exists public.conversations (
 alter table public.conversations
   add column if not exists particulier_name text;
 
+-- Idem pour la photo de profil du client (affichée côté prestataire).
+alter table public.conversations
+  add column if not exists particulier_avatar text;
+
 -- Détails de la demande de devis (besoin, date, lieu, invités, coordonnées).
 -- Servent à pré-remplir le devis côté prestataire.
 alter table public.conversations
@@ -49,6 +53,14 @@ update public.conversations c
   where p.id = c.particulier_id
     and (c.particulier_name is null or c.particulier_name = '')
     and coalesce(p.full_name, '') <> '';
+
+-- Backfill des avatars des conversations existantes.
+update public.conversations c
+  set particulier_avatar = p.avatar_url
+  from public.profiles p
+  where p.id = c.particulier_id
+    and c.particulier_avatar is null
+    and coalesce(p.avatar_url, '') <> '';
 
 create index if not exists conversations_particulier_idx on public.conversations (particulier_id);
 create index if not exists conversations_prestataire_idx on public.conversations (prestataire_id);
@@ -100,14 +112,26 @@ create policy "msg_insert" on public.messages
     sender_id = auth.uid() and public.is_conversation_participant(conversation_id)
   );
 
--- 4. Bump last_message_at à chaque message (SECURITY DEFINER pour ignorer RLS).
+-- Aperçu du dernier message (affiché dans la liste des conversations).
+alter table public.conversations
+  add column if not exists last_message text;
+
+-- 4. Bump last_message_at + aperçu à chaque message (SECURITY DEFINER → ignore RLS).
 create or replace function public.bump_conversation()
 returns trigger
 language plpgsql security definer set search_path = public
 as $$
 begin
   update public.conversations
-    set last_message_at = now()
+    set last_message_at = now(),
+        -- On masque le marqueur technique des messages « devis ».
+        last_message = case
+          when new.body ~ '^\[\[devis:' then '📄 Devis'
+          when new.body ~ '^\[\[img:'   then '📷 Photo'
+          when new.body ~ '^\[\[vid:'   then '📹 Vidéo'
+          when new.body ~ '^\[\[doc:'   then '📎 Document'
+          else left(new.body, 120)
+        end
     where id = new.conversation_id;
   return new;
 end;

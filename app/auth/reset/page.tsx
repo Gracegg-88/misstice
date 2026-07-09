@@ -60,10 +60,7 @@ export default function ResetPasswordPage() {
     "w-full rounded-xl border border-black/10 bg-white py-3 pl-11 pr-11 text-sm text-plum outline-none placeholder:text-slate focus:border-violet";
 
   return (
-    <div
-      className="flex h-screen flex-col overflow-hidden bg-cream bg-cover bg-center"
-      style={{ backgroundImage: "url('/background_login.png')" }}
-    >
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream bg-cover bg-center bg-no-repeat bg-[url('/background_login_mobile.png')] sm:bg-[url('/background_login.png')]">
       <Header />
 
       <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-4">

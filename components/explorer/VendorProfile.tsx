@@ -10,7 +10,6 @@ import {
   MapPin,
   Heart,
   MessageSquare,
-  CalendarPlus,
   Lock,
   X,
   Check,
@@ -42,61 +41,42 @@ function Stars({ value, size = 16 }: { value: number; size?: number }) {
 }
 
 
+export type QuotePrefill = {
+  type: string | null;
+  date: string | null;
+  guests: number | null;
+};
+
 export default function VendorProfile({
   vendor,
   packages,
   reviews,
   breakdown,
   photos = [],
+  prefill = null,
+  autoDevis = false,
 }: {
   vendor: Vendor;
   packages: Pkg[];
   reviews: Review[];
   breakdown: { stars: number; pct: number }[];
   photos?: string[];
+  prefill?: QuotePrefill | null;
+  autoDevis?: boolean;
 }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const { has: favHas, toggle: favToggle } = useFavorites();
   const saved = favHas(vendor.id);
-  const [quoteOpen, setQuoteOpen] = useState(false);
-  const [eventOpen, setEventOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(autoDevis);
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const [addedEvent, setAddedEvent] = useState<string | null>(null);
-  const [myEvents, setMyEvents] = useState<{ id: string; name: string }[]>([]);
-  const [addErr, setAddErr] = useState("");
 
-  // Vraie session + événements de l'utilisateur (pour « Ajouter à mon événement »).
+  // Vraie session (pour conditionner l'accès à la demande de devis).
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
-        setLoggedIn(false);
-        return;
-      }
-      setLoggedIn(true);
-      const { data } = await supabase.from("events").select("id, name");
-      setMyEvents((data as { id: string; name: string }[]) ?? []);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setLoggedIn(!!user);
     });
   }, []);
-
-  // Rattache réellement le prestataire à l'événement choisi.
-  const addToEvent = async (eventId: string, eventName: string) => {
-    setAddErr("");
-    const supabase = createClient();
-    const { error } = await supabase.from("event_vendors").insert({
-      event_id: eventId,
-      vendor_id: vendor.id,
-      name: vendor.name,
-      category: vendor.category,
-      status: "en attente",
-    });
-    if (error) {
-      setAddErr(error.message);
-      return;
-    }
-    setAddedEvent(eventName);
-    setEventOpen(false);
-  };
 
   // Comptabilise une vue de fiche (une fois par session), pour les stats pro.
   // Uniquement pour les fiches liées à un compte (les démos ne comptent pas).
@@ -130,7 +110,7 @@ export default function VendorProfile({
         style={{ backgroundImage: "url('/hero_details.png')" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
-        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8">
+        <div className="relative mx-auto max-w-content px-4 py-8 sm:px-8">
           <a
             href="/prestataires"
             className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-sm font-medium text-plum shadow-sm hover:bg-white"
@@ -139,9 +119,9 @@ export default function VendorProfile({
             Retour
           </a>
 
-          <div className="mt-8 flex items-start justify-between gap-6">
+          <div className="mt-8 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
             <div className="min-w-0 max-w-2xl flex-1">
-              <div className="flex items-end gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                 {vendor.img ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -186,18 +166,12 @@ export default function VendorProfile({
               {/* Actions principales */}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
+                  type="button"
                   onClick={() => setQuoteOpen(true)}
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-violet-dark"
                 >
                   <MessageSquare size={18} />
                   Demander un devis
-                </button>
-                <button
-                  onClick={() => setEventOpen(true)}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-plum/15 bg-white/80 px-6 py-3.5 text-base font-semibold text-plum backdrop-blur-sm transition-colors hover:border-plum/30"
-                >
-                  <CalendarPlus size={18} />
-                  {addedEvent ? "Ajouté à votre événement ✓" : "Ajouter à mon événement"}
                 </button>
               </div>
             </div>
@@ -205,7 +179,7 @@ export default function VendorProfile({
             <button
               aria-label={saved ? "Retirer des favoris" : "Sauvegarder"}
               onClick={() => favToggle(vendor.id)}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border backdrop-blur-sm transition-colors ${
+              className={`flex h-11 w-11 shrink-0 self-start items-center justify-center rounded-2xl border backdrop-blur-sm transition-colors lg:self-auto ${
                 saved
                   ? "border-violet bg-violet text-white"
                   : "border-black/10 bg-white/80 text-plum hover:border-violet/40"
@@ -217,12 +191,12 @@ export default function VendorProfile({
         </div>
       </div>
 
-      <div className="mx-auto max-w-content px-5 pt-8 sm:px-8">
+      <div className="mx-auto max-w-content px-4 pt-8 sm:px-8">
         {/* Stat cards */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[
             { icon: Euro, label: "À partir de", value: vendor.priceFrom.replace("dès ", ""), tint: "bg-festif-soft text-festif" },
-            { icon: Star, label: "Avis vérifiés", value: String(vendor.reviews), tint: "bg-festif-soft text-festif" },
+            { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-festif-soft text-festif" },
           ].map((s) => (
             <div
               key={s.label}
@@ -277,7 +251,7 @@ export default function VendorProfile({
               <h2 className="font-display text-2xl font-semibold text-plum">
                 Services &amp; tarifs
               </h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
                 {packages.map((p) => (
                   <div
                     key={p.name}
@@ -365,7 +339,7 @@ export default function VendorProfile({
               {vendor.reviews > 0 ? (
                 <>
                   {/* Résumé + répartition */}
-                  <div className="mt-4 flex flex-col gap-6 rounded-2xl border border-black/5 bg-white p-6 sm:flex-row sm:items-center">
+                  <div className="mt-4 flex flex-col gap-6 rounded-2xl border border-black/5 bg-white p-5 sm:flex-row sm:items-center sm:p-6">
                     <div className="text-center sm:w-40 sm:shrink-0">
                       <p className="font-display text-5xl font-semibold text-plum">
                         {vendor.rating.toFixed(1)}
@@ -440,7 +414,7 @@ export default function VendorProfile({
 
           {/* Aside sticky */}
           <aside className="lg:col-span-1">
-            <div className="sticky top-24 space-y-4">
+            <div className="space-y-4 lg:sticky lg:top-24">
               <div className="rounded-3xl border border-black/5 bg-white p-6">
                 <p className="flex items-baseline gap-1">
                   <span className="font-display text-2xl font-semibold text-plum">
@@ -457,16 +431,11 @@ export default function VendorProfile({
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setQuoteOpen(true)}
                   className="mt-5 w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark"
                 >
                   Demander un devis
-                </button>
-                <button
-                  onClick={() => setEventOpen(true)}
-                  className="mt-2.5 w-full rounded-2xl border border-plum/15 px-6 py-3 text-sm font-semibold text-plum hover:border-plum/30"
-                >
-                  Ajouter à mon événement
                 </button>
                 <p className="mt-4 text-center text-xs text-slate">
                   Devis gratuit et sans engagement.
@@ -511,60 +480,14 @@ export default function VendorProfile({
       {/* ── Modale devis ── */}
       {quoteOpen && (
         <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis — ${vendor.name}`}>
-          <QuoteForm vendor={vendor} onDone={() => setQuoteOpen(false)} />
+          <QuoteForm
+            vendor={vendor}
+            prefill={prefill}
+            onDone={() => setQuoteOpen(false)}
+          />
         </Modal>
       )}
 
-      {/* ── Modale ajouter à un événement ── */}
-      {eventOpen && (
-        <Modal onClose={() => setEventOpen(false)} title="Ajouter à mon événement">
-          {!loggedIn ? (
-            <div className="text-center">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet text-white">
-                <Lock size={22} />
-              </span>
-              <p className="mt-3 font-semibold text-plum">
-                Connectez-vous pour ajouter ce prestataire
-              </p>
-              <p className="mt-1 text-sm text-slate">
-                Il faut un compte pour rattacher un prestataire à votre
-                événement.
-              </p>
-              <a
-                href={`/auth?next=/prestataires/${vendor.id}`}
-                className="mt-4 inline-block w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
-              >
-                Se connecter
-              </a>
-            </div>
-          ) : myEvents.length === 0 ? (
-            <div className="text-center">
-              <p className="font-semibold text-plum">Aucun événement</p>
-              <p className="mt-1 text-sm text-slate">
-                Créez d&apos;abord un événement pour y rattacher ce prestataire.
-              </p>
-              <a
-                href="/dashboard/nouveau"
-                className="mt-4 inline-block w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
-              >
-                Créer un événement
-              </a>
-            </div>
-          ) : (
-            <EventPicker events={myEvents} onConfirm={addToEvent} error={addErr} />
-          )}
-        </Modal>
-      )}
-
-      {/* Confirmation d'ajout */}
-      {addedEvent && (
-        <div className="fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-2xl bg-plum px-5 py-3 text-sm text-white shadow-lg">
-          <span className="inline-flex items-center gap-2">
-            <Check size={16} className="text-emerald" />
-            {vendor.name} ajouté à « {addedEvent} »
-          </span>
-        </div>
-      )}
     </div>
   );
 }
@@ -730,14 +653,36 @@ function ReviewForm({ vendorId }: { vendorId: string }) {
   );
 }
 
-function QuoteForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void }) {
+// Normalise le type d'événement de la base vers l'une des options du select.
+function matchEventType(type: string | null): string {
+  if (!type) return "";
+  const t = type.toLowerCase();
+  if (t.includes("mariage")) return "Mariage";
+  if (t.includes("anniversaire")) return "Anniversaire";
+  if (t.includes("baptême") || t.includes("bapteme")) return "Baptême";
+  if (t.includes("gala") || t.includes("soirée") || t.includes("soiree"))
+    return "Gala / soirée";
+  return "Autre";
+}
+
+function QuoteForm({
+  vendor,
+  onDone,
+  prefill = null,
+}: {
+  vendor: Vendor;
+  onDone: () => void;
+  prefill?: QuotePrefill | null;
+}) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [eventType, setEventType] = useState("");
-  const [date, setDate] = useState("");
+  const [eventType, setEventType] = useState(matchEventType(prefill?.type ?? null));
+  const [date, setDate] = useState(prefill?.date ?? "");
   const [location, setLocation] = useState("");
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>(
+    prefill?.guests ? { invites: String(prefill.guests) } : {}
+  );
   const [wanted, setWanted] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -860,38 +805,66 @@ function QuoteForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void }) {
         : demandeItems(vendor.category, answers),
     };
 
-    // Nom de la famille — dénormalisé sur la conversation car le prestataire
-    // ne peut pas lire le profil du particulier (RLS).
+    // Nom + avatar de la famille — dénormalisés sur la conversation car le
+    // prestataire ne peut pas lire le profil du particulier (RLS).
     const { data: me } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, avatar_url")
       .eq("id", userId)
       .maybeSingle();
-    const clientName =
-      (me as { full_name: string | null } | null)?.full_name?.trim() || null;
+    const meRow = me as { full_name: string | null; avatar_url: string | null } | null;
+    const clientName = meRow?.full_name?.trim() || null;
+    const clientAvatar = meRow?.avatar_url || null;
 
-    const { data: conv, error: cErr } = await supabase
+    // Une seule conversation par binôme (client ↔ prestataire). Si la même
+    // personne redemande un devis, on RÉUTILISE la conversation existante.
+    const { data: existingRows } = await supabase
       .from("conversations")
-      .insert({
-        particulier_id: userId,
-        prestataire_id: vendor.userId,
-        vendor_id: vendor.id,
-        vendor_name: vendor.name,
-        particulier_name: clientName,
-        demande,
-        subject: `Demande de devis — ${vendor.name}`,
-      })
       .select("id")
-      .single();
-    if (cErr || !conv) {
-      setSending(false);
-      setError(cErr?.message ?? "Impossible de démarrer la conversation.");
-      return;
+      .eq("particulier_id", userId)
+      .eq("prestataire_id", vendor.userId)
+      .order("last_message_at", { ascending: false })
+      .limit(1);
+    const existing = (existingRows as { id: string }[] | null)?.[0];
+
+    let convId: string;
+    if (existing) {
+      convId = existing.id;
+      // Met à jour la demande → le prochain devis se pré-remplit avec.
+      await supabase
+        .from("conversations")
+        .update({
+          demande,
+          particulier_name: clientName,
+          particulier_avatar: clientAvatar,
+        })
+        .eq("id", convId);
+    } else {
+      const { data: conv, error: cErr } = await supabase
+        .from("conversations")
+        .insert({
+          particulier_id: userId,
+          prestataire_id: vendor.userId,
+          vendor_id: vendor.id,
+          vendor_name: vendor.name,
+          particulier_name: clientName,
+          particulier_avatar: clientAvatar,
+          demande,
+          subject: `Demande de devis — ${vendor.name}`,
+        })
+        .select("id")
+        .single();
+      if (cErr || !conv) {
+        setSending(false);
+        setError(cErr?.message ?? "Impossible de démarrer la conversation.");
+        return;
+      }
+      convId = conv.id;
     }
 
     const { error: mErr } = await supabase
       .from("messages")
-      .insert({ conversation_id: conv.id, sender_id: userId, body });
+      .insert({ conversation_id: convId, sender_id: userId, body });
     if (mErr) {
       setSending(false);
       setError(mErr.message);
@@ -899,7 +872,7 @@ function QuoteForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void }) {
     }
 
     onDone();
-    router.push(`/dashboard/messages/${conv.id}`);
+    router.push(`/dashboard/messages/${convId}`);
   };
 
   return (
@@ -1032,58 +1005,3 @@ function QuoteForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void }) {
   );
 }
 
-function EventPicker({
-  events,
-  onConfirm,
-  error,
-}: {
-  events: { id: string; name: string }[];
-  onConfirm: (id: string, name: string) => void | Promise<void>;
-  error?: string;
-}) {
-  const [choice, setChoice] = useState(events[0]?.id ?? "");
-  const [busy, setBusy] = useState(false);
-  const selected = events.find((e) => e.id === choice) ?? events[0];
-  return (
-    <div>
-      <p className="text-sm text-slate">
-        À quel événement voulez-vous rattacher ce prestataire ?
-      </p>
-      <div className="mt-4 space-y-2">
-        {events.map((ev) => (
-          <label
-            key={ev.id}
-            className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-colors ${
-              choice === ev.id
-                ? "border-violet bg-violet-soft text-violet"
-                : "border-black/10 text-plum hover:border-violet/40"
-            }`}
-          >
-            <input
-              type="radio"
-              name="event"
-              checked={choice === ev.id}
-              onChange={() => setChoice(ev.id)}
-              className="accent-violet"
-            />
-            {ev.name}
-          </label>
-        ))}
-      </div>
-      {error && <p className="mt-3 text-sm text-festif">{error}</p>}
-      <button
-        type="button"
-        disabled={busy || !selected}
-        onClick={async () => {
-          if (!selected) return;
-          setBusy(true);
-          await onConfirm(selected.id, selected.name);
-          setBusy(false);
-        }}
-        className="mt-5 w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
-      >
-        {busy ? "Ajout…" : "Ajouter à cet événement"}
-      </button>
-    </div>
-  );
-}

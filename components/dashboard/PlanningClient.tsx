@@ -218,7 +218,7 @@ export default function PlanningClient({
                   type="button"
                   onClick={() => setConfirmId(m.id)}
                   aria-label="Supprimer ce moment"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-lg text-slate opacity-0 transition hover:bg-cream hover:text-festif group-hover:opacity-100"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-lg text-slate opacity-100 transition hover:bg-cream hover:text-festif lg:opacity-0 lg:group-hover:opacity-100"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -279,7 +279,7 @@ export default function PlanningClient({
       {open && (
         <div className="fixed inset-0 z-[75] flex items-end justify-center bg-plum/50 sm:items-center sm:p-6">
           <div className="absolute inset-0" onClick={() => setOpen(false)} />
-          <div className="relative w-full max-w-md rounded-t-3xl bg-white p-6 sm:rounded-3xl">
+          <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-6 sm:rounded-3xl">
             <div className="mb-5 flex items-center justify-between">
               <h3 className="font-display text-xl font-semibold text-plum">
                 Ajouter un moment

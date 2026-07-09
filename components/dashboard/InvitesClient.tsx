@@ -240,7 +240,7 @@ export default function InvitesClient({
         onCancel={() => setConfirmGuest(null)}
       />
     <div className="mx-auto max-w-6xl">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
             Invités
@@ -259,7 +259,7 @@ export default function InvitesClient({
       </div>
 
       {/* Stat cards (flip au survol : recto = nombre, verso = part du total) */}
-      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
           { l: "Confirmés", v: counts["confirmé"], c: "bg-emerald", back: "bg-emerald/90" },
           { l: "En attente", v: counts["en attente"], c: "bg-festif", back: "bg-festif/90" },
@@ -314,7 +314,8 @@ export default function InvitesClient({
 
       {/* Table */}
       <div className="mt-4 overflow-hidden rounded-3xl border border-black/5 bg-white">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[48rem] text-sm">
           <thead>
             <tr className="border-b border-black/5 text-left text-xs uppercase tracking-wide text-slate">
               <th className="px-5 py-3 font-medium">Invité</th>
@@ -424,6 +425,7 @@ export default function InvitesClient({
             ))}
           </tbody>
         </table>
+        </div>
         {shown.length === 0 && (
           <p className="px-5 py-10 text-center text-sm text-slate">Aucun invité ne correspond.</p>
         )}
@@ -454,7 +456,7 @@ export default function InvitesClient({
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <input
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -468,7 +470,7 @@ export default function InvitesClient({
                   className="rounded-xl border border-black/10 bg-cream px-3 py-2.5 text-sm outline-none focus:border-violet"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <input
                   value={form.group_label}
                   onChange={(e) => setForm({ ...form, group_label: e.target.value })}

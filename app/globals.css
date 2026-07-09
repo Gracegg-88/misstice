@@ -40,6 +40,11 @@
 html {
   scroll-behavior: smooth;
 }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 body {
   background-color: #fafaf9;
   color: #1a1a2e;
@@ -49,6 +54,14 @@ body {
      toute la page (le contenu volontairement large scrolle dans son conteneur
      overflow-x-auto). */
   overflow-x: hidden;
+}
+img,
+svg,
+video,
+canvas,
+iframe {
+  display: block;
+  max-width: 100%;
 }
 :focus-visible {
   outline: 2px solid #6c3ce1;

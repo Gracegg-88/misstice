@@ -12,7 +12,23 @@ export type {
 } from "@/lib/messaging-types";
 
 const CONV_COLS =
-  "id, particulier_id, prestataire_id, vendor_id, vendor_name, particulier_name, demande, status, event_id, subject, last_message_at";
+  "id, particulier_id, prestataire_id, vendor_id, vendor_name, particulier_name, particulier_avatar, demande, status, last_message, event_id, subject, last_message_at";
+
+// On joint l'image de la fiche prestataire (table publique) pour l'afficher
+// côté famille. La table vendors est lisible par tous → la jointure passe le RLS.
+const CONV_SELECT = `${CONV_COLS}, vendors(image)`;
+
+type VendorEmbed = { image: string | null };
+type ConvRow = Conversation & {
+  vendors?: VendorEmbed | VendorEmbed[] | null;
+};
+
+// Avatar de l'autre partie selon le point de vue.
+function otherAvatarFor(c: ConvRow, iAmPrestataire: boolean): string | null {
+  if (iAmPrestataire) return c.particulier_avatar ?? null;
+  const v = Array.isArray(c.vendors) ? c.vendors[0] : c.vendors;
+  return v?.image ?? null;
+}
 
 /** Conversations de l'utilisateur courant (famille ou prestataire). */
 export async function getMyConversations(): Promise<ConversationListItem[]> {
@@ -24,9 +40,9 @@ export async function getMyConversations(): Promise<ConversationListItem[]> {
 
   const { data } = await supabase
     .from("conversations")
-    .select(CONV_COLS)
+    .select(CONV_SELECT)
     .order("last_message_at", { ascending: false });
-  const convs = (data as Conversation[]) ?? [];
+  const convs = (data as unknown as ConvRow[]) ?? [];
 
   return convs.map((c) => {
     const iAmPrestataire = c.prestataire_id === user.id;
@@ -34,10 +50,11 @@ export async function getMyConversations(): Promise<ConversationListItem[]> {
       ...c,
       role: iAmPrestataire ? "prestataire" : "particulier",
       // Le prestataire ne peut pas lire le profil de la famille (RLS) : on
-      // s'appuie sur le nom dénormalisé enregistré à la création.
+      // s'appuie sur le nom / l'avatar dénormalisés enregistrés à la création.
       otherName: iAmPrestataire
         ? c.particulier_name?.trim() || "Client"
         : c.vendor_name || "Prestataire",
+      otherAvatar: otherAvatarFor(c, iAmPrestataire),
     };
   });
 }
@@ -54,11 +71,11 @@ export async function getConversation(
 
   const { data } = await supabase
     .from("conversations")
-    .select(CONV_COLS)
+    .select(CONV_SELECT)
     .eq("id", id)
     .maybeSingle();
   if (!data) return null;
-  const c = data as Conversation;
+  const c = data as unknown as ConvRow;
 
   const iAmPrestataire = c.prestataire_id === user.id;
   const otherName = iAmPrestataire
@@ -70,6 +87,7 @@ export async function getConversation(
       ...c,
       role: iAmPrestataire ? "prestataire" : "particulier",
       otherName,
+      otherAvatar: otherAvatarFor(c, iAmPrestataire),
     },
     userId: user.id,
   };

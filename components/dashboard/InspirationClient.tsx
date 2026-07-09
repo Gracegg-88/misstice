@@ -401,7 +401,7 @@ export default function InspirationClient({
               resetForm();
             }}
           />
-          <div className="relative w-full max-w-md rounded-t-3xl bg-white p-6 sm:rounded-3xl">
+          <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-6 sm:rounded-3xl">
             <div className="mb-5 flex items-center justify-between">
               <h3 className="font-display text-xl font-semibold text-plum">
                 Ajouter une idée
@@ -425,18 +425,42 @@ export default function InspirationClient({
                 placeholder="Titre (optionnel)"
                 className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
               />
-              <input
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="Catégorie — choisir ou créer"
-                list="insp-categories"
-                className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
-              />
-              <datalist id="insp-categories">
-                {catOptions.map((c) => (
-                  <option key={c} value={c} />
-                ))}
-              </datalist>
+              <div>
+                <input
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Catégorie — choisir ci-dessous ou créer"
+                  list="insp-categories"
+                  className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
+                />
+                <datalist id="insp-categories">
+                  {catOptions.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+                {/* Sélecteur visible des catégories existantes (mobile-friendly). */}
+                {catOptions.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {catOptions.map((c) => {
+                      const active = category.trim() === c;
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setCategory(active ? "" : c)}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                            active
+                              ? "bg-violet text-white"
+                              : "bg-cream text-slate hover:text-plum"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             <p className="mt-5 text-sm font-medium text-plum">

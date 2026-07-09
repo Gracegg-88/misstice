@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 import Reveal from "./Reveal";
 
 const steps = [
@@ -27,11 +26,13 @@ export default function HowItWorks() {
     <section id="comment-ca-marche" className="pt-6 pb-6 sm:pt-8 sm:pb-8">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="flex items-center justify-center gap-2.5">
-          <Sparkles size={18} className="fill-festif text-festif" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" aria-hidden="true" className="h-[18px] w-[18px]" />
           <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
             Comment ça marche&nbsp;?
           </h2>
-          <Sparkles size={18} className="fill-festif text-festif" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" aria-hidden="true" className="h-[18px] w-[18px]" />
         </Reveal>
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
