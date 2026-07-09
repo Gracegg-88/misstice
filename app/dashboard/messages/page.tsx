@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessagesSquare, Store, ArrowRight } from "lucide-react";
+import { MessagesSquare, Store } from "lucide-react";
 
 // Panneau de droite quand aucune conversation n'est ouverte (desktop).
 export default function MessagesEmpty() {
@@ -21,7 +21,6 @@ export default function MessagesEmpty() {
       >
         <Store size={17} />
         Trouver un prestataire &amp; demander un devis
-        <ArrowRight size={16} />
       </Link>
     </div>
   );

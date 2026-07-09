@@ -855,11 +855,28 @@ function QuoteForm({
         .select("id")
         .single();
       if (cErr || !conv) {
-        setSending(false);
-        setError(cErr?.message ?? "Impossible de démarrer la conversation.");
-        return;
+        // Course possible : une conversation existe déjà pour ce binôme
+        // (index unique). On la récupère et on la réutilise au lieu d'échouer.
+        const { data: dup } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("particulier_id", userId)
+          .eq("prestataire_id", vendor.userId)
+          .limit(1);
+        const dupId = (dup as { id: string }[] | null)?.[0]?.id;
+        if (!dupId) {
+          setSending(false);
+          setError(cErr?.message ?? "Impossible de démarrer la conversation.");
+          return;
+        }
+        convId = dupId;
+        await supabase
+          .from("conversations")
+          .update({ demande, particulier_name: clientName, particulier_avatar: clientAvatar })
+          .eq("id", convId);
+      } else {
+        convId = conv.id;
       }
-      convId = conv.id;
     }
 
     const { error: mErr } = await supabase

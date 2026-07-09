@@ -33,7 +33,7 @@ export default async function ProLayout({
           image={vendor?.image ?? null}
           publicHref={publicHref}
         />
-        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {children}
         </main>
       </div>

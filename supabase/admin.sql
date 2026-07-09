@@ -86,19 +86,9 @@ insert into public.vendor_categories (name, position) values
   ('Salle de réception', 5), ('Pâtissier', 6), ('Wedding planner', 7), ('Fleuriste', 8)
 on conflict (name) do nothing;
 
--- 6. LISTE DES UTILISATEURS pour l'admin (avec email, réservé aux admins)
-create or replace function public.admin_list_users()
-returns table (id uuid, full_name text, role text, email text, created_at timestamptz)
-language sql
-security definer set search_path = public
-stable
-as $$
-  select p.id, p.full_name, p.role, u.email::text, p.created_at
-  from public.profiles p
-  join auth.users u on u.id = p.id
-  where public.is_admin()
-  order by p.created_at desc;
-$$;
+-- 6. LISTE DES UTILISATEURS pour l'admin : voir la section 10 (version enrichie
+--    avec l'état "banni"). L'ancienne définition à 5 colonnes est supprimée ici
+--    pour éviter le conflit « cannot change return type » au re-run.
 
 -- 7. Écriture admin sur les fiches prestataires (vérifier / suspendre / retirer)
 drop policy if exists "vendor_profiles_admin_update" on public.vendor_profiles;
@@ -161,25 +151,10 @@ as $$
 $$;
 grant execute on function public.admin_list_users() to authenticated;
 
--- Changer le rôle d'un compte.
-create or replace function public.admin_set_role(p_target uuid, p_role text)
-returns void
-language plpgsql security definer set search_path = public
-as $$
-begin
-  if not public.is_admin() then
-    raise exception 'Non autorisé';
-  end if;
-  if p_target = auth.uid() then
-    raise exception 'Impossible de changer son propre rôle';
-  end if;
-  if p_role not in ('particulier', 'prestataire', 'admin') then
-    raise exception 'Rôle invalide';
-  end if;
-  update public.profiles set role = p_role where id = p_target;
-end;
-$$;
-grant execute on function public.admin_set_role(uuid, text) to authenticated;
+-- Changer le rôle d'un compte : VOLONTAIREMENT RETIRÉ. Un admin ne doit pas
+-- pouvoir transformer un particulier en prestataire (ou inversement). La gestion
+-- admin ↔ super-admin passe par super-admin.sql (sadmin_promote / revoke / manage).
+drop function if exists public.admin_set_role(uuid, text);
 
 -- Bannir / débannir (bloque la connexion via auth.users.banned_until).
 create or replace function public.admin_set_banned(p_target uuid, p_banned boolean)

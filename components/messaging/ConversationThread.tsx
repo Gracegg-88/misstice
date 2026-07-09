@@ -40,12 +40,14 @@ export default function ConversationThread({
   conversationId,
   userId,
   otherName,
+  otherAvatar = null,
   initial,
   basePath,
 }: {
   conversationId: string;
   userId: string;
   otherName: string;
+  otherAvatar?: string | null;
   initial: Message[];
   basePath?: string;
 }) {
@@ -174,9 +176,18 @@ export default function ConversationThread({
             <ArrowLeft size={18} />
           </Link>
         )}
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet text-sm font-semibold text-white">
-          {(otherName.trim()[0] || "?").toUpperCase()}
-        </span>
+        {otherAvatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={otherAvatar}
+            alt=""
+            className="h-9 w-9 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet text-sm font-semibold text-white">
+            {(otherName.trim()[0] || "?").toUpperCase()}
+          </span>
+        )}
         <p className="font-display text-lg font-semibold text-plum">{otherName}</p>
       </div>
 
