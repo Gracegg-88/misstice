@@ -816,27 +816,29 @@ function QuoteForm({
     const clientName = meRow?.full_name?.trim() || null;
     const clientAvatar = meRow?.avatar_url || null;
 
-    // Une seule conversation par binôme (client ↔ prestataire). Si la même
-    // personne redemande un devis, on RÉUTILISE la conversation existante.
+    // UNE SEULE conversation par binôme (x ↔ y) : on RÉUTILISE si elle existe.
+    // Chaque nouvelle demande va dans la MÊME conversation (elle pourra porter
+    // plusieurs devis). On met à jour la demande courante (pré-remplissage) et
+    // on remet le statut à « Nouvelle ».
     const { data: existingRows } = await supabase
       .from("conversations")
       .select("id")
       .eq("particulier_id", userId)
       .eq("prestataire_id", vendor.userId)
-      .order("last_message_at", { ascending: false })
+      .order("created_at", { ascending: true })
       .limit(1);
     const existing = (existingRows as { id: string }[] | null)?.[0];
 
     let convId: string;
     if (existing) {
       convId = existing.id;
-      // Met à jour la demande → le prochain devis se pré-remplit avec.
       await supabase
         .from("conversations")
         .update({
           demande,
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
+          status: null,
         })
         .eq("id", convId);
     } else {
@@ -855,28 +857,11 @@ function QuoteForm({
         .select("id")
         .single();
       if (cErr || !conv) {
-        // Course possible : une conversation existe déjà pour ce binôme
-        // (index unique). On la récupère et on la réutilise au lieu d'échouer.
-        const { data: dup } = await supabase
-          .from("conversations")
-          .select("id")
-          .eq("particulier_id", userId)
-          .eq("prestataire_id", vendor.userId)
-          .limit(1);
-        const dupId = (dup as { id: string }[] | null)?.[0]?.id;
-        if (!dupId) {
-          setSending(false);
-          setError(cErr?.message ?? "Impossible de démarrer la conversation.");
-          return;
-        }
-        convId = dupId;
-        await supabase
-          .from("conversations")
-          .update({ demande, particulier_name: clientName, particulier_avatar: clientAvatar })
-          .eq("id", convId);
-      } else {
-        convId = conv.id;
+        setSending(false);
+        setError(cErr?.message ?? "Impossible de démarrer la conversation.");
+        return;
       }
+      convId = conv.id;
     }
 
     const { error: mErr } = await supabase
