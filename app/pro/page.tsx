@@ -328,9 +328,18 @@ export default async function ProOverviewPage() {
                     href={`/pro/messagerie/${r.id}`}
                     className="flex items-center gap-3"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-soft text-sm font-semibold text-violet">
-                      {(r.otherName.trim()[0] || "?").toUpperCase()}
-                    </span>
+                    {r.otherAvatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.otherAvatar}
+                        alt=""
+                        className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-soft text-sm font-semibold text-violet">
+                        {(r.otherName.trim()[0] || "?").toUpperCase()}
+                      </span>
+                    )}
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-plum">
                         {r.otherName}

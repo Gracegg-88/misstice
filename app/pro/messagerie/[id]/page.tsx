@@ -24,6 +24,7 @@ export default async function ProMessageThreadPage({
       }}
       initial={messages}
       basePath="/pro/messagerie"
+      otherLastReadAt={res.otherLastReadAt}
     />
   );
 }

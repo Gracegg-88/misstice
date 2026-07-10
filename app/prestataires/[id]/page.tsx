@@ -81,6 +81,7 @@ export default async function VendorPage({
           photos={photos}
           prefill={prefill}
           autoDevis={searchParams?.devis === "1"}
+          currentEventId={currentEvent?.id ?? null}
         />
       </main>
       <Footer />

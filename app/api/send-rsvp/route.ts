@@ -38,11 +38,15 @@ export async function POST(request: Request) {
   const guestId = rsvpUrl.split("/rsvp/")[1]?.split(/[/?#]/)[0] ?? "";
   const { data: guest } = await supabase
     .from("guests")
-    .select("name, email, events(name)")
+    .select("name, email, events(name, invitation_card_url)")
     .eq("id", guestId)
     .maybeSingle();
   const g = guest as
-    | { name: string; email: string | null; events: { name: string } | null }
+    | {
+        name: string;
+        email: string | null;
+        events: { name: string; invitation_card_url: string | null } | null;
+      }
     | null;
   if (!g) {
     return NextResponse.json({ error: "Invité introuvable." }, { status: 403 });
@@ -57,26 +61,55 @@ export async function POST(request: Request) {
   const name = g.name;
   const email = g.email;
   const eventName = g.events?.name ?? "";
+  const cardUrl = g.events?.invitation_card_url ?? null;
   const evt = eventName || "notre événement";
   const subject = `${eventName ? evt + " — " : ""}Confirmez votre présence`;
 
-  const html = emailShell(`
-    <h1 style="margin:0 0 8px;font-size:22px;color:#1A1A2E">Bonjour ${escapeHtml(
-      name || ""
-    )},</h1>
-    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#6B7280">
-      Vous êtes convié·e à <strong>${escapeHtml(
-        evt
-      )}</strong>. Merci de nous indiquer si vous serez présent·e.
-    </p>
-    <a href="${escapeAttr(rsvpUrl)}"
-       style="display:inline-block;background:#6C3CE1;color:#fff;text-decoration:none;
-              padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px">
-      Répondre à l'invitation
-    </a>
-    <p style="margin:22px 0 0;font-size:12px;color:#9ca3af">
-      Ou copiez ce lien : <br>${escapeHtml(rsvpUrl)}
-    </p>`);
+  // Liens directs Accepter / Décliner (la page RSVP lit le paramètre `r`).
+  const sep = rsvpUrl.includes("?") ? "&" : "?";
+  const yesUrl = `${rsvpUrl}${sep}r=confirm%C3%A9`;
+  const noUrl = `${rsvpUrl}${sep}r=d%C3%A9clin%C3%A9`;
+
+  const buttons = `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto"><tr>
+      <td style="padding:6px">
+        <a href="${escapeAttr(yesUrl)}"
+           style="display:inline-block;background:#6C3CE1;color:#fff;text-decoration:none;
+                  padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px">
+          ✓ Je confirme
+        </a>
+      </td>
+      <td style="padding:6px">
+        <a href="${escapeAttr(noUrl)}"
+           style="display:inline-block;background:#fff;color:#1A1A2E;text-decoration:none;border:1px solid #e5e7eb;
+                  padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px">
+          Je décline
+        </a>
+      </td>
+    </tr></table>`;
+
+  // Si l'organisateur a téléversé une carte, on l'affiche directement dans
+  // l'email ; sinon message générique.
+  const html = cardUrl
+    ? emailShell(`
+        <p style="margin:0 0 14px;font-size:15px;color:#6B7280">Bonjour ${escapeHtml(name || "")},</p>
+        <img src="${escapeAttr(cardUrl)}" alt="Invitation"
+             style="display:block;width:100%;max-width:520px;border-radius:14px;margin:0 0 20px" />
+        <p style="margin:0 0 16px;font-size:15px;color:#6B7280">Merci de nous indiquer si vous serez présent·e :</p>
+        ${buttons}
+        <p style="margin:22px 0 0;font-size:12px;color:#9ca3af">
+          Ou ouvrez l'invitation : <br>${escapeHtml(rsvpUrl)}
+        </p>`)
+    : emailShell(`
+        <h1 style="margin:0 0 8px;font-size:22px;color:#1A1A2E">Bonjour ${escapeHtml(name || "")},</h1>
+        <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#6B7280">
+          Vous êtes convié·e à <strong>${escapeHtml(evt)}</strong>. Merci de nous
+          indiquer si vous serez présent·e.
+        </p>
+        ${buttons}
+        <p style="margin:22px 0 0;font-size:12px;color:#9ca3af">
+          Ou copiez ce lien : <br>${escapeHtml(rsvpUrl)}
+        </p>`);
 
   const text =
     `Bonjour ${name || ""},\n\n` +

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Send, Copy, Check, UserPlus, Users, Trash2, Eye, Lock } from "lucide-react";
+import { Mail, Send, Copy, Check, UserPlus, Users, Trash2, Eye, Lock, MessagesSquare } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
 import type { TeamMember } from "@/lib/dashboard-types";
@@ -17,11 +18,13 @@ export default function EquipeClient({
   eventName,
   initial,
   isOwner,
+  organizer = null,
 }: {
   eventId: string;
   eventName: string;
   initial: TeamMember[];
   isOwner: boolean;
+  organizer?: { name: string; email: string } | null;
 }) {
   const router = useRouter();
   const [members, setMembers] = useState<TeamMember[]>(initial);
@@ -136,16 +139,46 @@ export default function EquipeClient({
         }}
         onCancel={() => setConfirmId(null)}
       />
-      <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-        Équipe
-      </h1>
-      <p className="mt-1 text-sm text-slate">
-        {members.length} collaborateur{members.length > 1 ? "s" : ""} · {eventName}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
+            Équipe
+          </h1>
+          <p className="mt-1 text-sm text-slate">
+            {members.length} collaborateur{members.length > 1 ? "s" : ""} · {eventName}
+          </p>
+        </div>
+        <Link
+          href={`/dashboard/messages/equipe/${eventId}`}
+          className="inline-flex items-center gap-2 rounded-2xl bg-violet px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-dark"
+        >
+          <MessagesSquare size={17} />
+          Discussion d&apos;équipe
+        </Link>
+      </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Membres */}
         <div className="space-y-3 lg:col-span-2">
+          {/* Organisateur de l'événement (fait partie de l'équipe). */}
+          {organizer && (
+            <div className="flex items-center justify-between gap-3 rounded-3xl border border-violet/20 bg-violet-soft/40 p-4 sm:p-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet text-sm font-semibold text-white">
+                  {(organizer.name.trim()[0] || "?").toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate font-display text-base font-semibold text-plum">
+                    {organizer.email}
+                  </p>
+                  <p className="truncate text-xs text-slate">{organizer.name}</p>
+                </div>
+              </div>
+              <span className="shrink-0 rounded-full bg-violet px-2.5 py-1 text-xs font-semibold text-white">
+                Organisateur
+              </span>
+            </div>
+          )}
           {members.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-black/10 bg-white p-8 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">

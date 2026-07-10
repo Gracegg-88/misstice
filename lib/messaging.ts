@@ -38,11 +38,19 @@ export async function getMyConversations(): Promise<ConversationListItem[]> {
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
-    .from("conversations")
-    .select(CONV_SELECT)
-    .order("last_message_at", { ascending: false });
+  const [{ data }, { data: unreadRows }] = await Promise.all([
+    supabase
+      .from("conversations")
+      .select(CONV_SELECT)
+      .order("last_message_at", { ascending: false }),
+    supabase.rpc("my_unread_counts"),
+  ]);
   const convs = (data as unknown as ConvRow[]) ?? [];
+  const unreadByConv = new Map<string, number>(
+    ((unreadRows as { conversation_id: string; unread: number }[]) ?? []).map(
+      (r) => [r.conversation_id, Number(r.unread)]
+    )
+  );
 
   return convs.map((c) => {
     const iAmPrestataire = c.prestataire_id === user.id;
@@ -55,14 +63,33 @@ export async function getMyConversations(): Promise<ConversationListItem[]> {
         ? c.particulier_name?.trim() || "Client"
         : c.vendor_name || "Prestataire",
       otherAvatar: otherAvatarFor(c, iAmPrestataire),
+      unread: unreadByConv.get(c.id) ?? 0,
     };
   });
+}
+
+/** Total des messages non lus (pour le badge de la sidebar). */
+export async function getUnreadTotal(): Promise<number> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return 0;
+  const { data } = await supabase.rpc("my_unread_counts");
+  return ((data as { unread: number }[]) ?? []).reduce(
+    (s, r) => s + Number(r.unread),
+    0
+  );
 }
 
 /** Une conversation (avec le nom de l'autre partie) + l'id de l'utilisateur. */
 export async function getConversation(
   id: string
-): Promise<{ conv: ConversationListItem; userId: string } | null> {
+): Promise<{
+  conv: ConversationListItem;
+  userId: string;
+  otherLastReadAt: string | null;
+} | null> {
   const supabase = createClient();
   const {
     data: { user },
@@ -82,14 +109,25 @@ export async function getConversation(
     ? c.particulier_name?.trim() || "Client"
     : c.vendor_name || "Prestataire";
 
+  // Dernière lecture de l'autre partie → accusé « Vu » sur mes messages.
+  const otherId = iAmPrestataire ? c.particulier_id : c.prestataire_id;
+  const { data: readRow } = await supabase
+    .from("conversation_reads")
+    .select("last_read_at")
+    .eq("conversation_id", id)
+    .eq("user_id", otherId)
+    .maybeSingle();
+
   return {
     conv: {
       ...c,
       role: iAmPrestataire ? "prestataire" : "particulier",
       otherName,
       otherAvatar: otherAvatarFor(c, iAmPrestataire),
+      unread: 0,
     },
     userId: user.id,
+    otherLastReadAt: (readRow as { last_read_at: string } | null)?.last_read_at ?? null,
   };
 }
 

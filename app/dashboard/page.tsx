@@ -11,6 +11,7 @@ import {
 import ChecklistCard from "@/components/dashboard/ChecklistCard";
 import { getCurrentEvent, getBudgetCategories, getProfile } from "@/lib/queries";
 import { getChecklist, getEventVendors, getGuests } from "@/lib/dashboard";
+import { getMyConversations } from "@/lib/messaging";
 
 const eur = (n: number) => n.toLocaleString("fr-FR") + "€";
 
@@ -43,12 +44,21 @@ export default async function DashboardOverview() {
   }
 
   const cats = await getBudgetCategories(event.id);
-  const [tasks, bookedVendors, guests, profile] = await Promise.all([
-    getChecklist(event.id),
-    getEventVendors(event.id),
-    getGuests(event.id),
-    getProfile(),
-  ]);
+  const [tasks, bookedVendors, guests, profile, conversations] =
+    await Promise.all([
+      getChecklist(event.id),
+      getEventVendors(event.id),
+      getGuests(event.id),
+      getProfile(),
+      getMyConversations(),
+    ]);
+  // vendor_id → conversation (pour ouvrir la discussion depuis la carte).
+  const convByVendor = new Map<string, string>();
+  for (const c of conversations) {
+    if (c.role === "particulier" && c.vendor_id && !convByVendor.has(c.vendor_id)) {
+      convByVendor.set(c.vendor_id, c.id);
+    }
+  }
   const guestsConfirmed = guests.filter((g) => g.status === "confirmé").length;
   const guestsPending = guests.filter(
     (g) => g.status === "invité" || g.status === "en attente"
@@ -272,6 +282,12 @@ export default async function DashboardOverview() {
               </li>
             ))}
           </ul>
+          <Link
+            href="/dashboard/budget"
+            className="mt-4 inline-block text-sm font-semibold text-violet hover:text-violet-dark"
+          >
+            Gérer le budget
+          </Link>
         </div>
 
         {/* Invités */}
@@ -322,29 +338,69 @@ export default async function DashboardOverview() {
             </div>
           ) : (
             <ul className="mt-5 space-y-3">
-              {bookedVendors.slice(0, 5).map((v) => (
-                <li
-                  key={v.id}
-                  className="flex items-center justify-between gap-2"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-plum">{v.name}</p>
-                    <p className="text-xs text-slate">{v.category ?? "—"}</p>
-                  </div>
-                  <span
-                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                      v.status === "confirmé"
-                        ? "bg-emerald-soft text-emerald"
-                        : "bg-festif-soft text-festif"
-                    }`}
+              {bookedVendors.slice(0, 5).map((v) => {
+                const convId = v.vendor_id
+                  ? convByVendor.get(v.vendor_id)
+                  : undefined;
+                return (
+                  <li
+                    key={v.id}
+                    className="flex items-center justify-between gap-2"
                   >
-                    {v.status === "confirmé" && <BadgeCheck size={13} />}
-                    {v.status}
-                  </span>
-                </li>
-              ))}
+                    <div className="flex min-w-0 items-center gap-3">
+                      {v.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={v.image}
+                          alt=""
+                          className="h-9 w-9 shrink-0 rounded-xl object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-sm font-semibold text-violet">
+                          {v.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        {convId ? (
+                          <Link
+                            href={`/dashboard/messages/${convId}`}
+                            className="block truncate text-sm font-semibold text-plum hover:text-violet hover:underline"
+                          >
+                            {v.name}
+                          </Link>
+                        ) : (
+                          <p className="truncate text-sm font-semibold text-plum">
+                            {v.name}
+                          </p>
+                        )}
+                        <p className="truncate text-xs text-slate">
+                          {v.category ?? "—"}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
+                        v.status === "confirmé"
+                          ? "bg-emerald-soft text-emerald"
+                          : v.status === "refusé"
+                            ? "bg-black/5 text-slate"
+                            : "bg-festif-soft text-festif"
+                      }`}
+                    >
+                      {v.status === "confirmé" && <BadgeCheck size={13} />}
+                      {v.status}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
+          <Link
+            href="/dashboard/prestataires"
+            className="mt-4 inline-block text-sm font-semibold text-violet hover:text-violet-dark"
+          >
+            Voir les prestataires
+          </Link>
         </div>
       </div>
 

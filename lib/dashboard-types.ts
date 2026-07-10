@@ -29,8 +29,23 @@ export type EventVendor = {
   vendor_id: string | null;
   name: string;
   category: string | null;
-  status: "confirmé" | "en attente" | "devis reçu";
+  // Statut = agrégat des devis (annuaire) ou saisi à la main (hors annuaire).
+  status: "confirmé" | "en attente" | "refusé";
   price: number | null;
+  // Image de la fiche annuaire liée (si prestataire de l'annuaire).
+  image: string | null;
+};
+
+// Devis REÇU par un particulier (envoyé par un prestataire dans une conversation).
+export type ReceivedQuote = {
+  id: string;
+  conversation_id: string | null;
+  presta_name: string | null;
+  presta_category: string | null;
+  amount: number;
+  status: "envoyé" | "accepté" | "refusé" | "expiré";
+  quote_number: string | null;
+  created_at: string;
 };
 
 export type PlanningMoment = {

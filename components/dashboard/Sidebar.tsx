@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Home } from "lucide-react";
 import { DASHBOARD_NAV as NAV } from "./nav";
 
-export default function Sidebar() {
+export default function Sidebar({ unread = 0 }: { unread?: number }) {
   const path = usePathname();
 
   return (
@@ -17,6 +17,7 @@ export default function Sidebar() {
               item.href === "/dashboard"
                 ? path === "/dashboard"
                 : path.startsWith(item.href);
+            const badge = item.href === "/dashboard/messages" ? unread : 0;
             return (
               <a
                 key={item.href}
@@ -29,7 +30,16 @@ export default function Sidebar() {
                 }`}
               >
                 <item.icon size={18} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {badge > 0 && (
+                  <span
+                    className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold ${
+                      active ? "bg-white/25 text-white" : "bg-violet text-white"
+                    }`}
+                  >
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                )}
               </a>
             );
           })}

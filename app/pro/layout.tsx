@@ -3,6 +3,7 @@ import ProTopbar from "@/components/pro/ProTopbar";
 import ProSidebar from "@/components/pro/ProSidebar";
 import { getProfile } from "@/lib/queries";
 import { getMyVendor } from "@/lib/pro";
+import { getUnreadTotal } from "@/lib/messaging";
 
 export default async function ProLayout({
   children,
@@ -15,7 +16,7 @@ export default async function ProLayout({
     redirect("/dashboard");
   }
 
-  const vendor = await getMyVendor();
+  const [vendor, unread] = await Promise.all([getMyVendor(), getUnreadTotal()]);
   const name = vendor?.company || profile.full_name?.trim() || "Mon activité";
   const publicHref = vendor?.vendorId
     ? `/prestataires/${vendor.vendorId}`
@@ -32,6 +33,7 @@ export default async function ProLayout({
           verified={vendor?.verified ?? false}
           image={vendor?.image ?? null}
           publicHref={publicHref}
+          unread={unread}
         />
         <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
           {children}

@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Calendar, MessageSquare, Send, FileText, ChevronDown } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { Calendar, MessageSquare, Send, FileText } from "lucide-react";
 import type { ConversationListItem } from "@/lib/messaging-types";
 import type { Quote } from "@/lib/pro-types";
 
@@ -17,28 +14,12 @@ const ALL_STATUSES: DemandeStatus[] = [
   "Refusée",
 ];
 
-// Statut de demande → statut de devis (pour garder le devis synchronisé).
-const TO_QUOTE: Record<DemandeStatus, Quote["status"] | null> = {
-  Nouvelle: null,
-  "Devis envoyé": "envoyé",
-  Acceptée: "accepté",
-  Refusée: "refusé",
-};
-
 const STYLE: Record<DemandeStatus, string> = {
   Nouvelle: "bg-festif-soft text-festif",
   "Devis envoyé": "bg-violet-soft text-violet",
   Acceptée: "bg-emerald-soft text-emerald",
   Refusée: "bg-black/5 text-slate",
 };
-
-const FILTERS: ("Toutes" | DemandeStatus)[] = [
-  "Toutes",
-  "Nouvelle",
-  "Devis envoyé",
-  "Acceptée",
-  "Refusée",
-];
 
 // Statut d'un devis existant → statut affiché de la demande.
 function quoteToStatus(status: Quote["status"]): DemandeStatus {
@@ -85,18 +66,7 @@ export default function DemandesClient({
   quotes: Quote[];
   embedded?: boolean;
 }) {
-  const router = useRouter();
-  const [filter, setFilter] = useState<"Toutes" | DemandeStatus>("Toutes");
-  const [menuFor, setMenuFor] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
-  // Surcouche optimiste : conversation_id → statut choisi.
-  const [override, setOverride] = useState<Record<string, DemandeStatus>>({});
-
-  // Index des devis par conversation.
-  // quotes est trié du plus récent au plus ancien → on garde le PREMIER vu
-  // (le plus récent) pour chaque conversation, pas l'ancien.
+  // Index des devis par conversation (le plus récent d'abord).
   const quoteByConv = new Map<string, Quote>();
   for (const q of quotes) {
     if (q.conversation_id && !quoteByConv.has(q.conversation_id)) {
@@ -104,64 +74,18 @@ export default function DemandesClient({
     }
   }
 
+  // Indicateur (lecture seule) : la gestion se fait dans « Mes devis ».
   const statusOf = (c: ConversationListItem): DemandeStatus => {
-    if (override[c.id]) return override[c.id];
     if (c.status && (ALL_STATUSES as string[]).includes(c.status))
       return c.status as DemandeStatus;
     const q = quoteByConv.get(c.id);
     return q ? quoteToStatus(q.status) : "Nouvelle";
   };
 
-  const changeStatus = async (
-    c: ConversationListItem,
-    status: DemandeStatus
-  ) => {
-    setMenuFor(null);
-    if (busy) return;
-    setOverride((o) => ({ ...o, [c.id]: status }));
-    setBusy(true);
-    setError("");
-    const supabase = createClient();
-
-    const { error: upErr } = await supabase
-      .from("conversations")
-      .update({ status })
-      .eq("id", c.id);
-
-    // Garde le devis existant synchronisé avec le statut choisi.
-    const q = quoteByConv.get(c.id);
-    const qStatus = TO_QUOTE[status];
-    if (!upErr && q && qStatus && q.status !== qStatus) {
-      await supabase.from("quotes").update({ status: qStatus }).eq("id", q.id);
-    }
-
-    setBusy(false);
-    if (upErr) {
-      setError(upErr.message);
-      setOverride((o) => {
-        const n = { ...o };
-        delete n[c.id];
-        return n;
-      });
-      return;
-    }
-    router.refresh();
-  };
-
-  const shown = convs.filter(
-    (c) => filter === "Toutes" || statusOf(c) === filter
-  );
+  const shown = convs;
 
   return (
     <div className={embedded ? "" : "mx-auto max-w-4xl"}>
-      {/* Ferme le menu de statut au clic à l'extérieur. */}
-      {menuFor && (
-        <div
-          className="fixed inset-0 z-10"
-          onClick={() => setMenuFor(null)}
-        />
-      )}
-      {error && <p className="mb-3 text-sm text-festif">{error}</p>}
       {!embedded && (
         <>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
@@ -174,23 +98,7 @@ export default function DemandesClient({
         </>
       )}
 
-      <div className={`${embedded ? "" : "mt-6 "}flex flex-wrap gap-2`}>
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-              filter === f
-                ? "bg-violet text-white"
-                : "bg-white text-slate hover:text-plum"
-            }`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-6 space-y-4">
+      <div className={`${embedded ? "" : "mt-6 "}space-y-4`}>
         {shown.map((c) => {
           const status = statusOf(c);
           const quote = quoteByConv.get(c.id);
@@ -201,9 +109,18 @@ export default function DemandesClient({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-soft font-semibold text-violet">
-                    {initials(c.otherName)}
-                  </span>
+                  {c.otherAvatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={c.otherAvatar}
+                      alt=""
+                      className="h-11 w-11 shrink-0 rounded-2xl object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-soft font-semibold text-violet">
+                      {initials(c.otherName)}
+                    </span>
+                  )}
                   <div>
                     <p className="font-display text-lg font-semibold text-plum">
                       {c.otherName}
@@ -214,37 +131,13 @@ export default function DemandesClient({
                   </div>
                 </div>
 
-                {/* Badge de statut → bouton pour changer le statut. */}
-                <div className="relative shrink-0">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setMenuFor(menuFor === c.id ? null : c.id)
-                    }
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${STYLE[status]}`}
-                  >
-                    {status}
-                    <ChevronDown size={12} />
-                  </button>
-                  {menuFor === c.id && (
-                    <div className="absolute right-0 z-20 mt-1 w-40 rounded-xl border border-black/10 bg-white p-1 shadow-lg">
-                      {ALL_STATUSES.map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => changeStatus(c, s)}
-                          className={`block w-full rounded-lg px-3 py-1.5 text-left text-xs font-medium transition-colors ${
-                            s === status
-                              ? "bg-violet-soft text-violet"
-                              : "text-plum hover:bg-cream"
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {/* Indicateur simple (lecture seule) : la gestion des statuts
+                    de devis se fait dans « Mes devis ». */}
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${STYLE[status]}`}
+                >
+                  {status}
+                </span>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate">

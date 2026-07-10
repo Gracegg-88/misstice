@@ -11,6 +11,7 @@ export default function ProSidebar({
   verified,
   image,
   publicHref,
+  unread = 0,
 }: {
   name: string;
   category: string | null;
@@ -18,6 +19,7 @@ export default function ProSidebar({
   verified: boolean;
   image: string | null;
   publicHref: string;
+  unread?: number;
 }) {
   const path = usePathname();
   const initial = (name.trim()[0] || "P").toUpperCase();
@@ -61,6 +63,7 @@ export default function ProSidebar({
           {NAV.map((item) => {
             const active =
               item.href === "/pro" ? path === "/pro" : path.startsWith(item.href);
+            const badge = item.href === "/pro/messagerie" ? unread : 0;
             return (
               <a
                 key={item.href}
@@ -73,7 +76,16 @@ export default function ProSidebar({
                 }`}
               >
                 <item.icon size={18} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {badge > 0 && (
+                  <span
+                    className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold ${
+                      active ? "bg-white/25 text-white" : "bg-violet text-white"
+                    }`}
+                  >
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                )}
               </a>
             );
           })}

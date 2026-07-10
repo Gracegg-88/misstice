@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
   Clock,
-  FileText,
+  XCircle,
   Search,
   Phone,
   Plus,
@@ -20,25 +20,25 @@ import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
 type Status = EventVendor["status"];
 
-const STATUSES: Status[] = ["confirmé", "en attente", "devis reçu"];
+const STATUSES: Status[] = ["en attente", "confirmé", "refusé"];
 
 const LABEL: Record<Status, string> = {
   confirmé: "Confirmé",
   "en attente": "En attente",
-  "devis reçu": "Devis reçu",
+  refusé: "Refusé",
 };
 
 const STYLE: Record<Status, string> = {
   confirmé: "bg-emerald-soft text-emerald",
   "en attente": "bg-festif-soft text-festif",
-  "devis reçu": "bg-violet-soft text-violet",
+  refusé: "bg-black/5 text-slate",
 };
 
 const FILTERS: { key: "Tous" | Status; label: string }[] = [
   { key: "Tous", label: "Tous" },
-  { key: "confirmé", label: "Confirmé" },
   { key: "en attente", label: "En attente" },
-  { key: "devis reçu", label: "Devis reçu" },
+  { key: "confirmé", label: "Confirmé" },
+  { key: "refusé", label: "Refusé" },
 ];
 
 // Dégradés dérivés de façon déterministe (pas de colonne « gradient » en base).
@@ -63,10 +63,12 @@ const eur = (n: number) => n.toLocaleString("fr-FR") + " €";
 export default function BookedVendorsClient({
   eventId,
   initial,
+  convByVendor = {},
   canEdit = true,
 }: {
   eventId: string;
   initial: EventVendor[];
+  convByVendor?: Record<string, string>;
   canEdit?: boolean;
 }) {
   const router = useRouter();
@@ -81,8 +83,15 @@ export default function BookedVendorsClient({
   const [price, setPrice] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
-  const shown = vendors.filter((v) => filter === "Tous" || v.status === filter);
+  const q = query.trim().toLowerCase();
+  const shown = vendors.filter(
+    (v) =>
+      (filter === "Tous" || v.status === filter) &&
+      (!q ||
+        `${v.name} ${v.category ?? ""}`.toLowerCase().includes(q))
+  );
 
   const addVendor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,20 +189,34 @@ export default function BookedVendorsClient({
               Ajouter un prestataire
             </button>
           )}
-          <a
-            href="/prestataires"
-            className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-          >
-            <Search size={16} />
-            Trouver un prestataire
-          </a>
+          {canEdit && (
+            <a
+              href="/prestataires"
+              className="inline-flex items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+            >
+              <Search size={16} />
+              Trouver un prestataire
+            </a>
+          )}
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      {/* Recherche */}
+      <div className="relative mt-6">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Rechercher un prestataire…"
+          className="w-full rounded-2xl border border-black/10 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-violet"
+        />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button
             key={f.key}
+            type="button"
             onClick={() => setFilter(f.key)}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               filter === f.key
@@ -220,20 +243,33 @@ export default function BookedVendorsClient({
               className="overflow-hidden rounded-3xl border border-black/5 bg-white"
             >
               <div
-                className={`flex h-28 items-end justify-between bg-gradient-to-br ${gradientFor(
+                className={`relative flex h-28 items-end justify-between bg-gradient-to-br ${gradientFor(
                   b,
                   i
                 )} p-4`}
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 font-display text-lg font-semibold text-plum">
-                  {b.name.charAt(0)}
+                {b.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={b.image}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+                <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white/90 font-display text-lg font-semibold text-plum">
+                  {b.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.image} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    b.name.charAt(0)
+                  )}
                 </span>
                 {canEdit && (
                   <button
                     type="button"
                     onClick={() => removeVendor(b)}
                     aria-label="Supprimer le prestataire"
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/85 text-plum hover:bg-white"
+                    className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/85 text-plum hover:bg-white"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -249,40 +285,64 @@ export default function BookedVendorsClient({
                       {b.category ?? "Sans catégorie"}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => cycleStatus(b)}
-                    title="Changer le statut"
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${STYLE[b.status]}`}
-                  >
-                    {b.status === "confirmé" && <BadgeCheck size={13} />}
-                    {b.status === "en attente" && <Clock size={13} />}
-                    {b.status === "devis reçu" && <FileText size={13} />}
-                    {LABEL[b.status]}
-                    <RefreshCw size={11} className="opacity-60" />
-                  </button>
+                  {b.vendor_id ? (
+                    // Prestataire de l'annuaire : statut AUTO (suit les devis).
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${STYLE[b.status]}`}
+                      title="Statut mis à jour automatiquement selon les devis"
+                    >
+                      {b.status === "confirmé" && <BadgeCheck size={13} />}
+                      {b.status === "en attente" && <Clock size={13} />}
+                      {b.status === "refusé" && <XCircle size={13} />}
+                      {LABEL[b.status]}
+                    </span>
+                  ) : (
+                    // Prestataire hors annuaire : statut modifiable à la main.
+                    <button
+                      type="button"
+                      onClick={() => cycleStatus(b)}
+                      title="Changer le statut"
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${STYLE[b.status]}`}
+                    >
+                      {b.status === "confirmé" && <BadgeCheck size={13} />}
+                      {b.status === "en attente" && <Clock size={13} />}
+                      {b.status === "refusé" && <XCircle size={13} />}
+                      {LABEL[b.status]}
+                      <RefreshCw size={11} className="opacity-60" />
+                    </button>
+                  )}
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-black/5 pt-4">
                   <span className="text-sm font-semibold text-violet">
                     {b.price != null ? eur(Number(b.price)) : "—"}
                   </span>
-                  {b.vendor_id ? (
-                    <Link
-                      href={`/prestataires/${b.vendor_id}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-plum/15 px-3 py-1.5 text-sm font-semibold text-plum hover:border-plum/30"
-                    >
-                      <Phone size={14} />
-                      Contacter
-                    </Link>
-                  ) : (
-                    <span
-                      title="Prestataire hors annuaire"
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-black/5 px-3 py-1.5 text-sm font-semibold text-slate/50"
-                    >
-                      <Phone size={14} />
-                      Contacter
-                    </span>
-                  )}
+                  {/* « Contacter » ouvre la conversation (masqué en lecture seule). */}
+                  {canEdit &&
+                    (b.vendor_id && convByVendor[b.vendor_id] ? (
+                      <Link
+                        href={`/dashboard/messages/${convByVendor[b.vendor_id]}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-plum/15 px-3 py-1.5 text-sm font-semibold text-plum hover:border-plum/30"
+                      >
+                        <Phone size={14} />
+                        Contacter
+                      </Link>
+                    ) : b.vendor_id ? (
+                      <Link
+                        href={`/prestataires/${b.vendor_id}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-plum/15 px-3 py-1.5 text-sm font-semibold text-plum hover:border-plum/30"
+                      >
+                        <Phone size={14} />
+                        Contacter
+                      </Link>
+                    ) : (
+                      <span
+                        title="Prestataire hors annuaire"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-black/5 px-3 py-1.5 text-sm font-semibold text-slate/50"
+                      >
+                        <Phone size={14} />
+                        Contacter
+                      </span>
+                    ))}
                 </div>
               </div>
             </div>

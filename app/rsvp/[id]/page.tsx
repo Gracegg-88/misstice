@@ -23,6 +23,7 @@ type Info = {
   location: string | null;
   dress_code: string | null;
   plus_one: boolean;
+  invitation_card_url: string | null;
 };
 
 export default function RsvpPage({ params }: { params: { id: string } }) {
@@ -48,6 +49,23 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
         setAnswer(row.status);
       }
       setState("ready");
+
+      // Réponse directe depuis l'email (bouton Accepter / Décliner → ?r=…).
+      const r = new URLSearchParams(window.location.search).get("r");
+      if (
+        (r === "confirmé" || r === "décliné") &&
+        row.status !== "confirmé" &&
+        row.status !== "décliné"
+      ) {
+        const { data: ok } = await supabase.rpc("rsvp_guest", {
+          p_guest_id: id,
+          p_status: r,
+        });
+        if (ok) {
+          setAnswer(r);
+          setJustSaved(true);
+        }
+      }
     })();
   }, [id]);
 
@@ -154,14 +172,27 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
               <h1 className="mt-2 font-display text-xl font-semibold tracking-tight text-plum">
                 {info.event_name}
               </h1>
-              <div className="mx-auto mt-1 flex items-center justify-center gap-2 text-festif">
-                <span className="h-px w-6 bg-festif/40" />
-                <span className="text-sm">✦</span>
-                <span className="h-px w-6 bg-festif/40" />
-              </div>
-              <p className="mt-1 text-xs text-slate">
-                Une célébration chaleureuse préparée avec soin.
-              </p>
+
+              {/* Carte d'invitation téléversée (remplace le décor générique). */}
+              {info.invitation_card_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={info.invitation_card_url}
+                  alt="Invitation"
+                  className="mt-3 w-full rounded-2xl border border-black/5"
+                />
+              ) : (
+                <>
+                  <div className="mx-auto mt-1 flex items-center justify-center gap-2 text-festif">
+                    <span className="h-px w-6 bg-festif/40" />
+                    <span className="text-sm">✦</span>
+                    <span className="h-px w-6 bg-festif/40" />
+                  </div>
+                  <p className="mt-1 text-xs text-slate">
+                    Une célébration chaleureuse préparée avec soin.
+                  </p>
+                </>
+              )}
 
               {/* Message personnalisé */}
               <p className="mt-3 text-sm font-semibold text-plum">
@@ -175,8 +206,8 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                     : "Nous serions honorés de votre présence. Merci de nous indiquer si vous serez des nôtres."}
               </p>
 
-              {/* Cartes infos */}
-              {infoCards.length > 0 && (
+              {/* Cartes infos (masquées si une carte visuelle est fournie) */}
+              {!info.invitation_card_url && infoCards.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {infoCards.map((c) => (
                     <div

@@ -2,9 +2,10 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, X, Mail, Phone, Check, Trash2, Copy } from "lucide-react";
+import { Search, Plus, X, Mail, Phone, Check, Trash2, Copy, Image as ImageIcon } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
+import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
 import type { Guest } from "@/lib/dashboard-types";
 import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
@@ -28,11 +29,13 @@ export default function InvitesClient({
   eventId,
   eventName,
   initial,
+  cardUrl = null,
   canEdit = true,
 }: {
   eventId: string;
   eventName: string;
   initial: Guest[];
+  cardUrl?: string | null;
   canEdit?: boolean;
 }) {
   const router = useRouter();
@@ -43,6 +46,39 @@ export default function InvitesClient({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  // Carte d'invitation (image) envoyée dans l'email RSVP.
+  const [card, setCard] = useState<string | null>(cardUrl);
+  const [cardBusy, setCardBusy] = useState(false);
+  const cardRef = useRef<HTMLInputElement>(null);
+
+  const onCardUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (cardRef.current) cardRef.current.value = "";
+    if (!file || !canEdit) return;
+    if (file.size > 8 * 1024 * 1024) {
+      setError("Carte trop lourde (max 8 Mo).");
+      return;
+    }
+    setCardBusy(true);
+    setError("");
+    try {
+      const up = await uploadToCloudinary(file);
+      const supabase = createClient();
+      const { error: upErr } = await supabase
+        .from("events")
+        .update({ invitation_card_url: up.url })
+        .eq("id", eventId);
+      if (upErr) {
+        setError(upErr.message);
+      } else {
+        setCard(up.url);
+        router.refresh();
+      }
+    } catch {
+      setError("Téléversement de la carte échoué.");
+    }
+    setCardBusy(false);
+  };
 
   const copyRsvp = (id: string) => {
     const link =
@@ -268,6 +304,51 @@ export default function InvitesClient({
       </div>
       {!canEdit && <div className="mt-6"><ReadOnlyBanner section="les invités" /></div>}
 
+      {/* Carte d'invitation (envoyée dans l'email RSVP) */}
+      {canEdit && cloudinaryConfigured() && (
+        <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-black/5 bg-white p-5 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
+            {card ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={card}
+                alt="Carte d'invitation"
+                className="h-20 w-28 shrink-0 rounded-xl border border-black/5 object-cover"
+              />
+            ) : (
+              <span className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-cream text-slate">
+                <ImageIcon size={26} />
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="font-display text-base font-semibold text-plum">
+                Carte d&apos;invitation
+              </p>
+              <p className="mt-0.5 text-sm text-slate">
+                Elle s&apos;affiche directement dans l&apos;email RSVP, avec les
+                boutons Accepter / Décliner.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => cardRef.current?.click()}
+            disabled={cardBusy}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+          >
+            <ImageIcon size={16} />
+            {cardBusy ? "Envoi…" : card ? "Changer la carte" : "Ajouter une carte"}
+          </button>
+          <input
+            ref={cardRef}
+            type="file"
+            accept="image/*"
+            onChange={onCardUpload}
+            className="hidden"
+          />
+        </div>
+      )}
+
       {/* Stat cards (flip au survol : recto = nombre, verso = part du total) */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
@@ -368,19 +449,30 @@ export default function InvitesClient({
                   {g.group_label ?? "—"}
                 </td>
                 <td className="px-5 py-3">
-                  <button
-                    type="button"
-                    onClick={() => cycleStatus(g)}
-                    title="Changer le statut"
-                    className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold transition-opacity hover:opacity-80 ${STATUS_META[g.status].style}`}
-                  >
-                    {STATUS_META[g.status].label}
-                  </button>
+                  {canEdit ? (
+                    <button
+                      type="button"
+                      onClick={() => cycleStatus(g)}
+                      title="Changer le statut"
+                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold transition-opacity hover:opacity-80 ${STATUS_META[g.status].style}`}
+                    >
+                      {STATUS_META[g.status].label}
+                    </button>
+                  ) : (
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_META[g.status].style}`}
+                    >
+                      {STATUS_META[g.status].label}
+                    </span>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-center text-slate">
                   {g.plus_one ? <Check size={16} className="mx-auto text-emerald" /> : "—"}
                 </td>
                 <td className="px-5 py-3">
+                  {!canEdit ? (
+                    <p className="text-center text-slate">—</p>
+                  ) : (
                   <div className="flex items-center justify-center gap-1">
                     {g.email && (
                       <button
@@ -430,6 +522,7 @@ export default function InvitesClient({
                       <Trash2 size={15} />
                     </button>
                   </div>
+                  )}
                 </td>
               </tr>
             ))}

@@ -69,11 +69,18 @@ export default function CreerPage() {
     const supabase = createClient();
     const role = type === "professionnel" ? "prestataire" : "particulier";
 
+    // Après confirmation d'email, on renvoie vers la destination voulue
+    // (ex. la page d'invitation) via /auth/callback qui gère le `next`.
+    const emailRedirectTo = `${window.location.origin}/auth/callback${
+      nextParam ? `?next=${encodeURIComponent(nextParam)}` : ""
+    }`;
+
     // 1. Création du compte (le profil est créé automatiquement par un trigger).
     const { data: signUp, error: signUpErr } = await supabase.auth.signUp({
       email: account.email.trim(),
       password: account.password,
       options: {
+        emailRedirectTo,
         data: {
           full_name: account.name.trim(),
           role,
@@ -101,8 +108,9 @@ export default function CreerPage() {
     if (!signUp.session) {
       setLoading(false);
       setError(
-        "Compte créé ! Vérifiez votre boîte mail pour confirmer, puis connectez-vous. " +
-          "(Astuce dev : désactivez « Confirm email » dans Supabase → Auth pour aller plus vite.)"
+        nextParam
+          ? "Compte créé ! Vérifiez votre boîte mail : le lien de confirmation vous amènera directement à votre invitation."
+          : "Compte créé ! Vérifiez votre boîte mail pour confirmer, puis connectez-vous."
       );
       return;
     }

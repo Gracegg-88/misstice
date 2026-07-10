@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CalendarDays,
-  Check,
-  Plus,
-  Trash2,
-  Users,
-  ArrowRight,
-  X,
-} from "lucide-react";
+import { CalendarDays, Check, Plus, Trash2, Users, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { ManagedEvent } from "@/app/dashboard/evenements/page";
 
@@ -134,7 +126,6 @@ export default function EventsManagerClient({
                     className="inline-flex items-center gap-1.5 rounded-xl border border-plum/15 px-3 py-2 text-sm font-semibold text-plum hover:border-plum/30"
                   >
                     Ouvrir
-                    <ArrowRight size={14} />
                   </button>
                 )}
                 {e.isOwner && (

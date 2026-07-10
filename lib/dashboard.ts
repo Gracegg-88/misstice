@@ -7,6 +7,7 @@ import type {
   VendorCall,
   InspirationIdea,
   TeamMember,
+  ReceivedQuote,
 } from "@/lib/dashboard-types";
 
 // Ré-export pour compatibilité (les composants client importent plutôt depuis
@@ -49,10 +50,36 @@ export async function getEventVendors(eventId: string): Promise<EventVendor[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("event_vendors")
-    .select("id, event_id, vendor_id, name, category, status, price")
+    .select("id, event_id, vendor_id, name, category, status, price, vendors(image)")
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
-  return (data as EventVendor[]) ?? [];
+
+  type Row = Omit<EventVendor, "image"> & {
+    vendors?: { image: string | null } | { image: string | null }[] | null;
+  };
+  return ((data as unknown as Row[]) ?? []).map((r) => {
+    const v = Array.isArray(r.vendors) ? r.vendors[0] : r.vendors;
+    return { ...r, image: v?.image ?? null };
+  });
+}
+
+// Devis reçus par le particulier connecté (via ses conversations). Le RLS
+// (quotes_select) filtre aux conversations dont il est participant. On exclut
+// les devis qu'il aurait lui-même émis (compte à double rôle).
+export async function getReceivedQuotes(): Promise<ReceivedQuote[]> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("quotes")
+    .select(
+      "id, conversation_id, presta_name, presta_category, amount, status, quote_number, created_at"
+    )
+    .neq("prestataire_id", user.id)
+    .order("created_at", { ascending: false });
+  return (data as ReceivedQuote[]) ?? [];
 }
 
 export async function getPlanning(eventId: string): Promise<PlanningMoment[]> {

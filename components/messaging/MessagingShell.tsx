@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import ConversationList from "./ConversationList";
 import type { ConversationListItem } from "@/lib/messaging-types";
+import type { TeamThread } from "@/lib/team-chat";
 
 /**
  * Messagerie façon app : liste à gauche + conversation à droite (desktop).
@@ -14,11 +15,13 @@ export default function MessagingShell({
   basePath,
   emptyText,
   children,
+  teams = [],
 }: {
   conversations: ConversationListItem[];
   basePath: string;
   emptyText: string;
   children: React.ReactNode;
+  teams?: TeamThread[];
 }) {
   const path = usePathname();
   const router = useRouter();
@@ -50,6 +53,7 @@ export default function MessagingShell({
           basePath={basePath}
           activeId={activeId}
           emptyText={emptyText}
+          teams={teams}
         />
       </div>
 

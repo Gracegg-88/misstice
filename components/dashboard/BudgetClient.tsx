@@ -400,8 +400,8 @@ export default function BudgetClient({
       {editOpen && (
         <div className="fixed inset-0 z-[75] flex items-end justify-center bg-plum/50 sm:items-center sm:p-6">
           <div className="absolute inset-0" onClick={() => setEditOpen(false)} />
-          <div className="relative w-full max-w-md rounded-t-3xl bg-white p-6 sm:rounded-3xl">
-            <div className="mb-5 flex items-center justify-between">
+          <div className="relative w-full max-w-md rounded-t-3xl bg-white px-6 py-4 sm:rounded-3xl">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="font-display text-xl font-semibold text-plum">
                 Définir les budgets
               </h3>
@@ -456,7 +456,7 @@ export default function BudgetClient({
             </div>
 
             <form onSubmit={saveBudgets} className="space-y-3">
-              <div className="max-h-[45vh] space-y-3 overflow-y-auto pr-1">
+              <div className="max-h-[34vh] space-y-2 overflow-y-auto pr-1">
                 {cats.map((c) => (
                   <div key={c.id} className="flex items-center gap-2">
                     <span

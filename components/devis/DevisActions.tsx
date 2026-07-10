@@ -62,24 +62,54 @@ export default function DevisActions({
         .eq("id", conversationId);
     }
 
-    // À l'acceptation : rattache automatiquement le prestataire à l'événement
-    // (sans doublon).
-    if (next === "accepté" && autoAdd) {
+    // Le statut du prestataire sur l'événement suit ses devis (agrégat) :
+    //  • accepté  → « confirmé » (on fait toujours monter, jamais redescendre),
+    //  • refusé   → « refusé » UNIQUEMENT s'il n'est pas déjà « confirmé »
+    //    (un autre devis refusé ne dé-emploie pas un prestataire confirmé).
+    if (autoAdd) {
       const { data: existing } = await supabase
         .from("event_vendors")
-        .select("id")
+        .select("id, status")
         .eq("event_id", autoAdd.eventId)
         .eq("vendor_id", autoAdd.vendorId)
         .maybeSingle();
-      if (!existing) {
-        await supabase.from("event_vendors").insert({
-          event_id: autoAdd.eventId,
-          vendor_id: autoAdd.vendorId,
-          name: autoAdd.name,
-          category: autoAdd.category,
-          status: "confirmé",
-          price: autoAdd.price,
-        });
+      const ex = existing as { id: string; status: string } | null;
+
+      if (next === "accepté") {
+        if (ex) {
+          await supabase
+            .from("event_vendors")
+            .update({ status: "confirmé", price: autoAdd.price })
+            .eq("id", ex.id);
+        } else {
+          await supabase.from("event_vendors").insert({
+            event_id: autoAdd.eventId,
+            vendor_id: autoAdd.vendorId,
+            name: autoAdd.name,
+            category: autoAdd.category,
+            status: "confirmé",
+            price: autoAdd.price,
+          });
+        }
+      } else {
+        // refusé
+        if (ex) {
+          if (ex.status !== "confirmé") {
+            await supabase
+              .from("event_vendors")
+              .update({ status: "refusé" })
+              .eq("id", ex.id);
+          }
+        } else {
+          await supabase.from("event_vendors").insert({
+            event_id: autoAdd.eventId,
+            vendor_id: autoAdd.vendorId,
+            name: autoAdd.name,
+            category: autoAdd.category,
+            status: "refusé",
+            price: autoAdd.price,
+          });
+        }
       }
     }
 

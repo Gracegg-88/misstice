@@ -11,6 +11,7 @@ import {
   Camera,
   Images,
   Loader2,
+  X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
@@ -45,6 +46,7 @@ export default function ConversationThread({
   quoteAction = null,
   initial,
   basePath,
+  otherLastReadAt = null,
 }: {
   conversationId: string;
   userId: string;
@@ -57,15 +59,25 @@ export default function ConversationThread({
   quoteAction?: { label: string; href: string } | null;
   initial: Message[];
   basePath?: string;
+  // Dernière lecture de l'autre partie → accusé « Vu » sur mes messages.
+  otherLastReadAt?: string | null;
 }) {
   const [messages, setMessages] = useState<Message[]>(initial);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sendError, setSendError] = useState("");
+  // Pièce jointe EN ATTENTE : aperçu dans la barre, envoyée au clic sur Envoyer.
+  const [pending, setPending] = useState<{
+    file: File;
+    url: string;
+    asDoc: boolean;
+  } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  // Inputs DÉDIÉS (attributs fixes) : plus fiable sur mobile que muter `capture`.
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const docRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -96,6 +108,12 @@ export default function ConversationThread({
     };
   }, [conversationId]);
 
+  // Marque la conversation comme lue à l'ouverture (et à chaque nouveau message).
+  useEffect(() => {
+    const supabase = createClient();
+    void supabase.rpc("mark_conversation_read", { p_conv: conversationId });
+  }, [conversationId, messages.length]);
+
   // Insère un message (texte ou marqueur) et l'ajoute localement.
   const pushMessage = async (text: string): Promise<boolean> => {
     const supabase = createClient();
@@ -116,52 +134,83 @@ export default function ConversationThread({
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = body.trim();
-    if (!text || sending) return;
+    if ((!text && !pending) || sending) return;
     setSending(true);
     setSendError("");
-    const ok = await pushMessage(text);
-    setSending(false);
-    if (!ok) {
-      setSendError("Message non envoyé. Réessayez.");
-      return;
+    // 1) Pièce jointe en attente (le cas échéant).
+    if (pending) {
+      const okFile = await sendPending();
+      if (!okFile) {
+        setSending(false);
+        return;
+      }
     }
-    setBody("");
+    // 2) Texte éventuel.
+    if (text) {
+      const ok = await pushMessage(text);
+      if (!ok) {
+        setSending(false);
+        setSendError("Message non envoyé. Réessayez.");
+        return;
+      }
+      setBody("");
+    }
+    setSending(false);
   };
 
-  // Ouvre le sélecteur de fichier avec le bon filtre (menu « + »).
-  const openPicker = (accept: string, capture?: string) => {
+  // Ouvre l'input dédié correspondant (menu « + »).
+  const openPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
     setMenuOpen(false);
-    const input = fileRef.current;
-    if (!input) return;
-    input.accept = accept;
-    if (capture) input.setAttribute("capture", capture);
-    else input.removeAttribute("capture");
-    input.value = "";
-    input.click();
+    if (ref.current) {
+      ref.current.value = "";
+      ref.current.click();
+    }
   };
 
-  const onAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (fileRef.current) fileRef.current.value = "";
+  // Sélection d'un fichier : on le MET EN ATTENTE (aperçu), sans envoyer.
+  const onAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
+    // Fichier venu du bouton « Document » → envoyé en pièce jointe même si image.
+    const asDoc = input === docRef.current;
     const isVideo = file.type.startsWith("video/");
-    const isImage = file.type.startsWith("image/");
     const maxMo = isVideo ? 50 : 15;
     if (file.size > maxMo * 1024 * 1024) {
       setSendError(`Fichier trop lourd (max ${maxMo} Mo).`);
       return;
     }
-    setUploading(true);
     setSendError("");
+    if (pending) URL.revokeObjectURL(pending.url);
+    setPending({ file, url: URL.createObjectURL(file), asDoc });
+  };
+
+  const clearPending = () => {
+    if (pending) URL.revokeObjectURL(pending.url);
+    setPending(null);
+  };
+
+  // Envoie la pièce jointe en attente (upload → marqueur).
+  const sendPending = async (): Promise<boolean> => {
+    if (!pending) return true;
+    const { file, asDoc } = pending;
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
     try {
       const up = await uploadToCloudinary(file);
-      if (isImage) await pushMessage(`[[img:${up.url}]]`);
-      else if (isVideo) await pushMessage(`[[vid:${up.url}]]`);
-      else await pushMessage(`[[doc:${up.url}|${file.name}]]`);
-    } catch (err) {
-      setSendError(err instanceof Error ? err.message : "Envoi du fichier échoué.");
-    } finally {
-      setUploading(false);
+      const marker = asDoc
+        ? `[[doc:${up.url}|${file.name}]]`
+        : isImage
+          ? `[[img:${up.url}]]`
+          : isVideo
+            ? `[[vid:${up.url}]]`
+            : `[[doc:${up.url}|${file.name}]]`;
+      const ok = await pushMessage(marker);
+      if (ok) clearPending();
+      return ok;
+    } catch {
+      setSendError("Envoi du fichier échoué.");
+      return false;
     }
   };
 
@@ -170,6 +219,19 @@ export default function ConversationThread({
       hour: "2-digit",
       minute: "2-digit",
     });
+
+  // Index du DERNIER de mes messages déjà lu par l'autre → « Vu » dessous.
+  const readTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : 0;
+  let seenIdx = -1;
+  if (readTs > 0) {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.sender_id === userId && new Date(m.created_at).getTime() <= readTs) {
+        seenIdx = i;
+        break;
+      }
+    }
+  }
 
   return (
     <div className="flex h-full flex-col rounded-3xl border border-black/5 bg-white">
@@ -346,6 +408,12 @@ export default function ConversationThread({
                   </div>
                 </div>
               )}
+
+              {idx === seenIdx && (
+                <p className="pr-1 text-right text-[11px] font-medium text-violet">
+                  Vu
+                </p>
+              )}
             </Fragment>
           );
         })}
@@ -357,6 +425,39 @@ export default function ConversationThread({
           {sendError}
         </p>
       )}
+
+      {/* Aperçu de la pièce jointe en attente (envoyée au clic sur Envoyer). */}
+      {pending && (
+        <div className="flex items-center gap-3 border-t border-black/5 px-3 pt-3">
+          {pending.file.type.startsWith("image/") && !pending.asDoc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={pending.url}
+              alt=""
+              className="h-14 w-14 shrink-0 rounded-xl object-cover"
+            />
+          ) : (
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cream text-violet">
+              <FileText size={22} />
+            </span>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-plum">
+              {pending.file.name}
+            </p>
+            <p className="text-xs text-slate">Prêt à envoyer</p>
+          </div>
+          <button
+            type="button"
+            onClick={clearPending}
+            aria-label="Retirer la pièce jointe"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-cream hover:text-festif"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <form
         onSubmit={send}
         className="flex items-end gap-2 border-t border-black/5 p-3"
@@ -366,15 +467,11 @@ export default function ConversationThread({
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
-              disabled={uploading}
+              disabled={sending}
               aria-label="Joindre un fichier"
               className="flex h-11 w-11 items-center justify-center rounded-2xl border border-black/10 text-slate hover:bg-cream disabled:opacity-50"
             >
-              {uploading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Plus size={20} />
-              )}
+              <Plus size={20} />
             </button>
 
             {menuOpen && (
@@ -396,7 +493,7 @@ export default function ConversationThread({
                   )}
                   <button
                     type="button"
-                    onClick={() => openPicker("image/*,video/*")}
+                    onClick={() => openPicker(galleryRef)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-plum hover:bg-cream"
                   >
                     <Images size={18} className="text-violet" />
@@ -404,7 +501,7 @@ export default function ConversationThread({
                   </button>
                   <button
                     type="button"
-                    onClick={() => openPicker("image/*", "environment")}
+                    onClick={() => openPicker(cameraRef)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-plum hover:bg-cream"
                   >
                     <Camera size={18} className="text-festif" />
@@ -412,7 +509,7 @@ export default function ConversationThread({
                   </button>
                   <button
                     type="button"
-                    onClick={() => openPicker("application/pdf,image/*")}
+                    onClick={() => openPicker(docRef)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-plum hover:bg-cream"
                   >
                     <FileText size={18} className="text-emerald" />
@@ -422,10 +519,26 @@ export default function ConversationThread({
               </>
             )}
 
+            {/* Inputs dédiés (attributs fixes). */}
             <input
-              ref={fileRef}
+              ref={galleryRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={onAttach}
+              className="hidden"
+            />
+            <input
+              ref={cameraRef}
               type="file"
               accept="image/*"
+              capture="environment"
+              onChange={onAttach}
+              className="hidden"
+            />
+            <input
+              ref={docRef}
+              type="file"
+              accept="application/pdf,image/*"
               onChange={onAttach}
               className="hidden"
             />
@@ -446,11 +559,11 @@ export default function ConversationThread({
         />
         <button
           type="submit"
-          disabled={sending || !body.trim()}
+          disabled={sending || (!body.trim() && !pending)}
           aria-label="Envoyer"
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet text-white hover:bg-violet-dark disabled:opacity-50"
         >
-          <Send size={18} />
+          {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
         </button>
       </form>
     </div>

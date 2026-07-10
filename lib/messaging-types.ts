@@ -36,6 +36,8 @@ export type ConversationListItem = Conversation & {
   otherName: string;
   // Photo de l'autre partie (famille dénormalisée ou image du prestataire).
   otherAvatar: string | null;
+  // Messages non lus dans cette conversation (pour l'utilisateur courant).
+  unread: number;
 };
 
 export type Message = {

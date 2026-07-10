@@ -29,6 +29,7 @@ export default async function MessageThreadPage({
       }
       initial={messages}
       basePath="/dashboard/messages"
+      otherLastReadAt={res.otherLastReadAt}
     />
   );
 }

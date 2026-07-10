@@ -55,6 +55,7 @@ export default function VendorProfile({
   photos = [],
   prefill = null,
   autoDevis = false,
+  currentEventId = null,
 }: {
   vendor: Vendor;
   packages: Pkg[];
@@ -63,6 +64,7 @@ export default function VendorProfile({
   photos?: string[];
   prefill?: QuotePrefill | null;
   autoDevis?: boolean;
+  currentEventId?: string | null;
 }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const { has: favHas, toggle: favToggle } = useFavorites();
@@ -524,6 +526,7 @@ export default function VendorProfile({
           <QuoteForm
             vendor={vendor}
             prefill={prefill}
+            currentEventId={currentEventId}
             onDone={() => setQuoteOpen(false)}
           />
         </Modal>
@@ -717,10 +720,12 @@ function QuoteForm({
   vendor,
   onDone,
   prefill = null,
+  currentEventId = null,
 }: {
   vendor: Vendor;
   onDone: () => void;
   prefill?: QuotePrefill | null;
+  currentEventId?: string | null;
 }) {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -919,6 +924,34 @@ function QuoteForm({
       setSending(false);
       setError(mErr.message);
       return;
+    }
+
+    // Rattache le prestataire à l'événement courant avec le statut « en attente »
+    // (le statut passera à « confirmé » / « refusé » selon le devis). On ne
+    // rétrograde jamais un prestataire déjà « confirmé ».
+    if (currentEventId && vendor.userId) {
+      const { data: ev } = await supabase
+        .from("event_vendors")
+        .select("id, status")
+        .eq("event_id", currentEventId)
+        .eq("vendor_id", vendor.id)
+        .maybeSingle();
+      const exv = ev as { id: string; status: string } | null;
+      if (!exv) {
+        await supabase.from("event_vendors").insert({
+          event_id: currentEventId,
+          vendor_id: vendor.id,
+          name: vendor.name,
+          category: vendor.category,
+          status: "en attente",
+          price: null,
+        });
+      } else if (exv.status === "refusé") {
+        await supabase
+          .from("event_vendors")
+          .update({ status: "en attente" })
+          .eq("id", exv.id);
+      }
     }
 
     onDone();
