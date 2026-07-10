@@ -10,14 +10,18 @@ import { euro, quoteTotals } from "@/lib/quote-doc";
 import { categoryUsesGuests } from "@/lib/quote-fields";
 
 type Props = {
-  conversationId: string;
+  // null → mode BROUILLON : le prestataire rédige sans demande et choisit le
+  // client destinataire à l'envoi (via `conversations`).
+  conversationId: string | null;
   prestataireId: string;
-  clientName: string;
+  clientName?: string;
   eventLabel: string | null;
   prestaName: string;
   prestaCategory: string | null;
   prestaEmail: string;
   demande: DemandeDetails | null;
+  // Conversations du prestataire (pour choisir le destinataire en brouillon).
+  conversations?: { id: string; clientName: string }[];
 };
 
 const emptyItem = (): QuoteItem => ({
@@ -33,14 +37,18 @@ const DEFAULT_INTRO =
 export default function DevisForm({
   conversationId,
   prestataireId,
-  clientName,
+  clientName = "",
   eventLabel,
   prestaName,
   prestaCategory,
   prestaEmail,
   demande,
+  conversations = [],
 }: Props) {
   const router = useRouter();
+  const draft = !conversationId;
+  // Destinataire choisi en mode brouillon.
+  const [pickedConv, setPickedConv] = useState("");
 
   const [eventNeed, setEventNeed] = useState(
     demande?.event_need || eventLabel || ""
@@ -97,46 +105,68 @@ export default function DevisForm({
       setError("Ajoutez au moins une prestation.");
       return;
     }
+    // Destinataire : conversation reçue en prop, ou choisie en brouillon.
+    const targetConvId = conversationId || pickedConv;
+    if (!targetConvId) {
+      setError("Choisissez le client destinataire du devis.");
+      return;
+    }
+    const targetClientName =
+      clientName ||
+      conversations.find((c) => c.id === targetConvId)?.clientName ||
+      "Client";
     setSaving(true);
     setError("");
     const supabase = createClient();
 
-    // Numéro de devis unique via séquence Postgres (pas un count fragile).
-    const { data: numData } = await supabase.rpc("next_quote_number");
-    const quoteNumber =
-      (numData as string | null) ??
-      `DEV-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+    // Champs communs du devis (le numéro est ajouté à chaque tentative).
+    const basePayload = {
+      prestataire_id: prestataireId,
+      conversation_id: targetConvId,
+      client_name: targetClientName,
+      event_label: eventNeed.trim() || eventLabel,
+      amount: totals.total,
+      status: "envoyé",
+      validity_days: validity,
+      intro_message: intro.trim() || null,
+      event_need: eventNeed.trim() || null,
+      event_date: eventDate.trim() || null,
+      event_location: eventLocation.trim() || null,
+      guests_count: guests.trim() || null,
+      client_email: clientEmail.trim() || null,
+      client_phone: clientPhone.trim() || null,
+      client_address: clientAddress.trim() || null,
+      service_fee: serviceFee,
+      tax_rate: taxRate,
+      items: clean,
+      presta_name: prestaName,
+      presta_category: prestaCategory,
+      presta_email: prestaEmail || null,
+      presta_phone: prestaPhone.trim() || null,
+      presta_address: prestaAddress.trim() || null,
+    };
 
-    const { data, error: insErr } = await supabase
-      .from("quotes")
-      .insert({
-        prestataire_id: prestataireId,
-        conversation_id: conversationId,
-        client_name: clientName,
-        event_label: eventNeed.trim() || eventLabel,
-        amount: totals.total,
-        status: "envoyé",
-        quote_number: quoteNumber,
-        validity_days: validity,
-        intro_message: intro.trim() || null,
-        event_need: eventNeed.trim() || null,
-        event_date: eventDate.trim() || null,
-        event_location: eventLocation.trim() || null,
-        guests_count: guests.trim() || null,
-        client_email: clientEmail.trim() || null,
-        client_phone: clientPhone.trim() || null,
-        client_address: clientAddress.trim() || null,
-        service_fee: serviceFee,
-        tax_rate: taxRate,
-        items: clean,
-        presta_name: prestaName,
-        presta_category: prestaCategory,
-        presta_email: prestaEmail || null,
-        presta_phone: prestaPhone.trim() || null,
-        presta_address: prestaAddress.trim() || null,
-      })
-      .select("id")
-      .single();
+    // Numéro de devis unique via séquence Postgres. En cas de collision
+    // (23505 sur quotes_quote_number_key), on régénère et on réessaie.
+    let data: { id: string } | null = null;
+    let insErr: { code?: string; message?: string } | null = null;
+    let quoteNumber = "";
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const { data: numData } = await supabase.rpc("next_quote_number");
+      quoteNumber =
+        (numData as string | null) ??
+        `DEV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+      const res = await supabase
+        .from("quotes")
+        .insert({ ...basePayload, quote_number: quoteNumber })
+        .select("id")
+        .single();
+      data = res.data as { id: string } | null;
+      insErr = res.error;
+      if (!insErr) break;
+      // On ne réessaie que sur un doublon de numéro ; sinon on abandonne.
+      if (insErr.code !== "23505") break;
+    }
 
     if (insErr || !data) {
       setSaving(false);
@@ -146,7 +176,7 @@ export default function DevisForm({
 
     // Message dans la conversation → la famille voit le devis (carte cliquable).
     await supabase.from("messages").insert({
-      conversation_id: conversationId,
+      conversation_id: targetConvId,
       sender_id: prestataireId,
       body: `[[devis:${data.id}]] Devis ${quoteNumber} — ${euro(totals.total)}`,
     });
@@ -168,8 +198,14 @@ export default function DevisForm({
         Nouveau devis
       </h1>
       <p className="mt-1 text-sm text-slate">
-        Pour <span className="font-semibold text-plum">{clientName}</span> — cette
-        fiche sera envoyée au client, qui pourra la télécharger.
+        {draft ? (
+          <>Rédigez votre devis, puis choisissez le client destinataire à l&apos;envoi.</>
+        ) : (
+          <>
+            Pour <span className="font-semibold text-plum">{clientName}</span> —
+            cette fiche sera envoyée au client, qui pourra la télécharger.
+          </>
+        )}
       </p>
 
       {/* Besoin / Événement */}
@@ -358,12 +394,42 @@ export default function DevisForm({
         </dl>
       </Section>
 
+      {/* Brouillon : choisir le client destinataire à l'envoi. */}
+      {draft && (
+        <Section title="Envoyer à">
+          {conversations.length === 0 ? (
+            <p className="text-sm text-slate">
+              Aucune conversation pour l&apos;instant. Un client doit d&apos;abord
+              vous écrire (message ou demande de devis) pour pouvoir lui envoyer
+              un devis.
+            </p>
+          ) : (
+            <label className="text-sm text-slate">
+              Client destinataire
+              <select
+                value={pickedConv}
+                onChange={(e) => setPickedConv(e.target.value)}
+                className="mt-1 w-full rounded-xl border border-black/10 bg-cream px-3.5 py-2 text-sm text-plum outline-none focus:border-violet"
+              >
+                <option value="">Choisir un client…</option>
+                {conversations.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.clientName}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </Section>
+      )}
+
       {error && <p className="mt-4 text-sm text-festif">{error}</p>}
 
       <div className="mt-6 flex justify-end">
         <button
+          type="button"
           onClick={submit}
-          disabled={saving}
+          disabled={saving || (draft && !pickedConv)}
           className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
         >
           <Send size={16} />

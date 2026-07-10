@@ -60,6 +60,34 @@ export function categoryUsesGuests(category: string | null): boolean {
   return hasKw(lc(category), ...GUESTS_KW);
 }
 
+/** Exemple de « prestations souhaitées » adapté au métier (placeholder). */
+export function wantedPlaceholder(category: string | null): string {
+  const c = lc(category);
+  const has = (...kw: string[]) => hasKw(c, ...kw);
+  const head = "Une prestation par ligne, ex. :\n";
+  if (has("maquill"))
+    return head + "Maquillage mariée\nMaquillage 2 demoiselles d'honneur\nEssai maquillage";
+  if (has("coiff"))
+    return head + "Coiffure mariée\nChignon 2 demoiselles d'honneur\nEssai coiffure";
+  if (has("pâtiss", "patiss", "glace", "bonbon", "confiseur", "gâteau", "gateau"))
+    return head + "Pièce montée 80 parts\nAssortiment de macarons\nGâteau personnalisé";
+  if (has("traiteur", "food truck", "bar "))
+    return head + "Menu complet 80 personnes\nCocktail dînatoire\nBar à boissons";
+  if (has("photograph", "vidéast", "video", "vidéo", "photobooth"))
+    return head + "Couverture de la cérémonie\nSéance photo de couple\nAlbum photo";
+  if (has("dj", "sono", "music", "chanteur", "sonoris", "éclairage"))
+    return head + "Animation soirée 5h\nSonorisation cérémonie\nÉclairage d'ambiance";
+  if (has("lieu", "salle", "domaine", "château", "chateau", "tente", "chapiteau"))
+    return head + "Location de la salle (journée)\nMise à disposition du mobilier\nOption traiteur";
+  if (has("fleur", "décor", "decor"))
+    return head + "Bouquet de la mariée\nCentres de table\nArche fleurie";
+  if (has("animation", "magicien", "spectacle", "gonflable", "jeux", "casino", "enfant"))
+    return head + "Spectacle (1h)\nAtelier enfants\nStand photo";
+  if (has("transport", "navette", "voiture", "voiturier"))
+    return head + "Navette pour les invités\nVoiture des mariés\nVoiturier";
+  return head + "Prestation 1\nPrestation 2\nPrestation 3";
+}
+
 const qty = (v?: string) => {
   const n = parseInt((v ?? "").replace(/[^\d]/g, ""), 10);
   return Number.isFinite(n) && n > 0 ? n : 1;

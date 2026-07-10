@@ -11,7 +11,17 @@ export default async function ProDemandesPage({
     getMyConversations(),
     getMyQuotes(),
   ]);
-  const convs = convsAll.filter((c) => c.role === "prestataire");
+
+  // « Demandes & devis » ne montre que les conversations qui sont VRAIMENT une
+  // demande de devis (elles portent une `demande`) ou qui ont déjà un devis.
+  // Les simples messages (sans demande) restent uniquement dans la Messagerie.
+  const withQuote = new Set(
+    quotes.map((q) => q.conversation_id).filter(Boolean)
+  );
+  const convs = convsAll.filter(
+    (c) =>
+      c.role === "prestataire" && (c.demande != null || withQuote.has(c.id))
+  );
 
   return (
     <ProDevisTabs

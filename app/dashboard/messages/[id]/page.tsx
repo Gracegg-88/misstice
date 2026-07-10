@@ -19,6 +19,14 @@ export default async function MessageThreadPage({
       otherName={res.conv.otherName}
       otherAvatar={res.conv.otherAvatar}
       otherHref={res.conv.vendor_id ? `/prestataires/${res.conv.vendor_id}` : null}
+      quoteAction={
+        res.conv.vendor_id
+          ? {
+              label: "Demander un devis",
+              href: `/prestataires/${res.conv.vendor_id}?devis=1`,
+            }
+          : null
+      }
       initial={messages}
       basePath="/dashboard/messages"
     />

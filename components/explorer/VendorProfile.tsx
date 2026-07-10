@@ -19,7 +19,7 @@ import {
 import type { Vendor } from "./vendors";
 import type { Pkg, Review } from "./profileData";
 import { GALLERY_GRADS } from "./profileData";
-import { quoteFields, demandeItems } from "@/lib/quote-fields";
+import { quoteFields, demandeItems, wantedPlaceholder } from "@/lib/quote-fields";
 import { useFavorites } from "@/lib/useFavorites";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
@@ -67,7 +67,11 @@ export default function VendorProfile({
   const [loggedIn, setLoggedIn] = useState(false);
   const { has: favHas, toggle: favToggle } = useFavorites();
   const saved = favHas(vendor.id);
+  // Fiche VITRINE (sans compte) → contenu d'exemple autorisé. Vrai compte non
+  // rempli → on n'invente rien, on affiche des états vides.
+  const isDemo = !vendor.userId;
   const [quoteOpen, setQuoteOpen] = useState(autoDevis);
+  const [msgOpen, setMsgOpen] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   // Vraie session (pour conditionner l'accès à la demande de devis).
@@ -173,6 +177,14 @@ export default function VendorProfile({
                   <MessageSquare size={18} />
                   Demander un devis
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setMsgOpen(true)}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-plum/15 bg-white px-6 py-3.5 text-base font-semibold text-plum transition-colors hover:border-plum/30"
+                >
+                  <Send size={18} />
+                  Envoyer un message
+                </button>
               </div>
             </div>
 
@@ -227,23 +239,30 @@ export default function VendorProfile({
                 <p className="mt-3 whitespace-pre-wrap leading-relaxed text-slate">
                   {vendor.about}
                 </p>
-              ) : (
+              ) : isDemo ? (
                 <p className="mt-3 leading-relaxed text-slate">
                   {vendor.tagline} Basé à {vendor.city}, {vendor.name} accompagne
                   familles et particuliers pour des événements à la hauteur de
                   vos attentes.
                 </p>
+              ) : (
+                <p className="mt-3 leading-relaxed text-slate/70 italic">
+                  Ce prestataire n&apos;a pas encore rédigé sa présentation.
+                </p>
               )}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {["Mariage", "Anniversaire", "Baptême", "Gala"].map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-lg bg-violet-soft px-2.5 py-1 text-xs font-medium text-violet"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
+              {/* Tags d'exemple : uniquement sur les fiches vitrines. */}
+              {isDemo && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["Mariage", "Anniversaire", "Baptême", "Gala"].map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-lg bg-violet-soft px-2.5 py-1 text-xs font-medium text-violet"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* Forfaits */}
@@ -251,6 +270,11 @@ export default function VendorProfile({
               <h2 className="font-display text-2xl font-semibold text-plum">
                 Services &amp; tarifs
               </h2>
+              {packages.length === 0 ? (
+                <p className="mt-3 rounded-2xl border border-dashed border-black/10 bg-white/60 p-5 text-sm italic text-slate/70">
+                  Aucun forfait renseigné pour le moment.
+                </p>
+              ) : (
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 {packages.map((p) => (
                   <div
@@ -287,6 +311,7 @@ export default function VendorProfile({
                   </div>
                 ))}
               </div>
+              )}
             </section>
 
             {/* Le Book — réservé aux membres connectés */}
@@ -295,39 +320,47 @@ export default function VendorProfile({
                 <h2 className="font-display text-2xl font-semibold text-plum">
                   Le book de {vendor.name}
                 </h2>
-                <span className="text-sm text-slate">
-                  {(photos.length || GALLERY_GRADS.length)} réalisations
-                </span>
+                {(photos.length > 0 || isDemo) && (
+                  <span className="text-sm text-slate">
+                    {photos.length || GALLERY_GRADS.length} réalisations
+                  </span>
+                )}
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {photos.length > 0
-                  ? photos.map((url, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setLightbox(i)}
-                        className="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02]"
-                        aria-label={`Agrandir la réalisation ${i + 1}`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={url}
-                          alt={`Réalisation ${i + 1}`}
-                          className="aspect-[4/3] w-full object-cover"
+              {photos.length === 0 && !isDemo ? (
+                <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-white/60 p-5 text-sm italic text-slate/70">
+                  Aucune réalisation ajoutée pour le moment.
+                </p>
+              ) : (
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {photos.length > 0
+                    ? photos.map((url, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setLightbox(i)}
+                          className="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02]"
+                          aria-label={`Agrandir la réalisation ${i + 1}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={url}
+                            alt={`Réalisation ${i + 1}`}
+                            className="aspect-[4/3] w-full object-cover"
+                          />
+                        </button>
+                      ))
+                    : GALLERY_GRADS.map((g, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setLightbox(i)}
+                          className={`aspect-[4/3] rounded-2xl bg-gradient-to-br ${g} transition-transform hover:scale-[1.02]`}
+                          aria-label={`Agrandir la réalisation ${i + 1}`}
                         />
-                      </button>
-                    ))
-                  : GALLERY_GRADS.map((g, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setLightbox(i)}
-                        className={`aspect-[4/3] rounded-2xl bg-gradient-to-br ${g} transition-transform hover:scale-[1.02]`}
-                        aria-label={`Agrandir la réalisation ${i + 1}`}
-                      />
-                    ))}
-              </div>
+                      ))}
+                </div>
+              )}
             </section>
 
             {/* Avis */}
@@ -437,6 +470,14 @@ export default function VendorProfile({
                 >
                   Demander un devis
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setMsgOpen(true)}
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-plum/15 px-6 py-3 text-sm font-semibold text-plum hover:border-plum/30"
+                >
+                  <Send size={16} />
+                  Envoyer un message
+                </button>
                 <p className="mt-4 text-center text-xs text-slate">
                   Devis gratuit et sans engagement.
                 </p>
@@ -485,6 +526,13 @@ export default function VendorProfile({
             prefill={prefill}
             onDone={() => setQuoteOpen(false)}
           />
+        </Modal>
+      )}
+
+      {/* ── Modale message simple (sans demande de devis) ── */}
+      {msgOpen && (
+        <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message — ${vendor.name}`}>
+          <MessageForm vendor={vendor} onDone={() => setMsgOpen(false)} />
         </Modal>
       )}
 
@@ -949,7 +997,7 @@ function QuoteForm({
           value={wanted}
           onChange={(e) => setWanted(e.target.value)}
           className={`mt-1.5 ${inputCls}`}
-          placeholder={"Une prestation par ligne, ex. :\nMaquillage mariée\nMaquillage 2 demoiselles d'honneur\nEssai maquillage"}
+          placeholder={wantedPlaceholder(vendor.category)}
         />
         <p className="mt-1 text-xs text-slate">
           Listez précisément ce que vous voulez. Le prestataire fixera le prix
@@ -1002,6 +1050,163 @@ function QuoteForm({
       >
         <Send size={17} />
         {sending ? "Envoi…" : "Envoyer la demande"}
+      </button>
+    </form>
+  );
+}
+
+// Message simple (question avant devis) : même conversation, SANS demande.
+function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void }) {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id ?? null);
+      setChecking(false);
+    });
+  }, []);
+
+  if (!vendor.userId) {
+    return (
+      <div className="py-4 text-center">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+          <Lock size={22} />
+        </span>
+        <p className="mt-3 font-semibold text-plum">Prestataire non inscrit</p>
+        <p className="mt-1 text-sm text-slate">
+          Cette fiche est une vitrine. Le contact direct sera disponible dès que
+          ce prestataire aura rejoint Misstice.
+        </p>
+        <button
+          type="button"
+          onClick={onDone}
+          className="mt-5 w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
+        >
+          Fermer
+        </button>
+      </div>
+    );
+  }
+
+  if (checking) {
+    return <p className="py-6 text-center text-sm text-slate">Chargement…</p>;
+  }
+
+  if (!userId) {
+    return (
+      <div className="py-4 text-center">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet text-white">
+          <Lock size={22} />
+        </span>
+        <p className="mt-3 font-semibold text-plum">
+          Connectez-vous pour envoyer un message
+        </p>
+        <a
+          href={`/auth?next=/prestataires/${vendor.id}`}
+          className="mt-4 inline-block w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
+        >
+          Se connecter
+        </a>
+      </div>
+    );
+  }
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || sending) return;
+    setSending(true);
+    setError("");
+    const supabase = createClient();
+
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("full_name, avatar_url")
+      .eq("id", userId)
+      .maybeSingle();
+    const meRow = me as { full_name: string | null; avatar_url: string | null } | null;
+    const clientName = meRow?.full_name?.trim() || null;
+    const clientAvatar = meRow?.avatar_url || null;
+
+    // Même conversation x↔y (on ne touche PAS à la demande : simple message).
+    const { data: existingRows } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("particulier_id", userId)
+      .eq("prestataire_id", vendor.userId!)
+      .order("created_at", { ascending: true })
+      .limit(1);
+    const existing = (existingRows as { id: string }[] | null)?.[0];
+
+    let convId: string;
+    if (existing) {
+      convId = existing.id;
+      await supabase
+        .from("conversations")
+        .update({ particulier_name: clientName, particulier_avatar: clientAvatar })
+        .eq("id", convId);
+    } else {
+      const { data: conv, error: cErr } = await supabase
+        .from("conversations")
+        .insert({
+          particulier_id: userId,
+          prestataire_id: vendor.userId,
+          vendor_id: vendor.id,
+          vendor_name: vendor.name,
+          particulier_name: clientName,
+          particulier_avatar: clientAvatar,
+          subject: `Message — ${vendor.name}`,
+        })
+        .select("id")
+        .single();
+      if (cErr || !conv) {
+        setSending(false);
+        setError(cErr?.message ?? "Impossible de démarrer la conversation.");
+        return;
+      }
+      convId = conv.id;
+    }
+
+    const { error: mErr } = await supabase
+      .from("messages")
+      .insert({ conversation_id: convId, sender_id: userId, body: message.trim() });
+    if (mErr) {
+      setSending(false);
+      setError(mErr.message);
+      return;
+    }
+
+    onDone();
+    router.push(`/dashboard/messages/${convId}`);
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <p className="text-sm text-slate">
+        Une question avant de demander un devis ? Écrivez à {vendor.name} —
+        l&apos;échange se poursuivra dans votre messagerie.
+      </p>
+      <textarea
+        required
+        rows={5}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Bonjour, j'aimerais quelques informations sur…"
+        className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none focus:border-violet"
+      />
+      {error && <p className="text-sm text-festif">{error}</p>}
+      <button
+        type="submit"
+        disabled={sending}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+      >
+        <Send size={17} />
+        {sending ? "Envoi…" : "Envoyer le message"}
       </button>
     </form>
   );

@@ -124,15 +124,102 @@ export default async function ProOverviewPage() {
     { icon: CalendarDays, label: "Mon calendrier", href: "/pro/calendrier" },
   ];
 
+  // ── Complétion du profil (le bandeau persiste jusqu'à 100 %) ──────────────
+  const name = (vendor?.company ?? "").trim() || "vous";
+  const checklist = [
+    { label: "votre métier", ok: !!vendor?.category },
+    { label: "votre ville", ok: !!vendor?.city },
+    { label: "une accroche", ok: !!vendor?.tagline },
+    { label: "votre présentation", ok: !!vendor?.about },
+    { label: "un tarif de départ", ok: !!vendor?.priceFrom },
+    { label: "une photo de profil", ok: !!vendor?.image },
+  ];
+  const doneCount = checklist.filter((f) => f.ok).length;
+  const completion = Math.round((doneCount / checklist.length) * 100);
+  const missing = checklist.filter((f) => !f.ok).map((f) => f.label);
+
+  // Signaux contextuels (vraies données) pour un nudge actionnable.
+  const quoteConvIds = new Set(
+    quotes.map((q) => q.conversation_id).filter(Boolean)
+  );
+  const proConvs = conversations.filter((c) => c.role === "prestataire");
+  // Demandes (avec `demande`) qui n'ont pas encore reçu de devis.
+  const pendingDemandes = proConvs.filter(
+    (c) => c.demande != null && !quoteConvIds.has(c.id)
+  ).length;
+  // Devis envoyés en attente de réponse du client.
+  const pendingQuotes = quotes.filter((q) => q.status === "envoyé").length;
+
+  // Messages génériques (repli) qui varient chaque jour.
+  const tips = [
+    `${name}, une fiche complète reçoit bien plus de demandes — pensez à la peaufiner.`,
+    `Un book à jour, ${name}, c'est le meilleur moyen de montrer votre talent.`,
+    `${name}, répondez vite aux demandes : les familles adorent la réactivité.`,
+    `Ajoutez quelques réalisations récentes, ${name} — on veut voir votre style.`,
+    `${name}, une belle accroche donne envie de vous contacter. La vôtre est-elle à jour ?`,
+    `Un tarif clair rassure, ${name}. Vérifiez votre « à partir de ».`,
+  ];
+  const dayOfYear = Math.floor(
+    (todayMid.getTime() - new Date(todayMid.getFullYear(), 0, 0).getTime()) /
+      86_400_000
+  );
+
+  // Priorité : action urgente > profil incomplet > relance > astuce du jour.
+  const tip =
+    pendingDemandes > 0
+      ? `${name}, vous avez ${pendingDemandes} demande${pendingDemandes > 1 ? "s" : ""} sans devis — répondez vite pour ne pas ${pendingDemandes > 1 ? "les" : "la"} perdre.`
+      : completion < 100
+        ? `${name}, complétez votre profil (${completion}%) : une fiche complète reçoit bien plus de demandes.`
+        : pendingQuotes > 0
+          ? `${name}, ${pendingQuotes} devis en attente de réponse. Une relance amicale peut faire la différence.`
+          : tips[dayOfYear % tips.length];
+
   return (
     <div className="mx-auto max-w-6xl">
       {/* En-tête */}
       <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
         Bonjour {vendor?.company ?? "et bienvenue"}
       </h1>
-      <p className="mt-1 text-sm text-slate">
-        Voici l&apos;activité de votre espace prestataire.
+      {/* Nudge personnalisé du jour (voix de la plateforme). */}
+      <p className="mt-1 flex items-center gap-2 text-sm text-slate">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/icon.svg" alt="" aria-hidden="true" className="h-4 w-4 shrink-0" />
+        {tip}
       </p>
+
+      {/* Bandeau de complétion — persiste tant que le profil n'est pas complet. */}
+      {completion < 100 && (
+        <div className="mt-5 rounded-3xl border border-violet/20 bg-violet-soft/50 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Store size={18} className="text-violet" />
+              <p className="font-display text-lg font-semibold text-plum">
+                Complétez votre profil
+              </p>
+            </div>
+            <span className="font-display text-2xl font-semibold text-violet">
+              {completion}%
+            </span>
+          </div>
+          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-violet to-festif transition-all"
+              style={{ width: `${completion}%` }}
+            />
+          </div>
+          <p className="mt-3 text-sm text-slate">
+            Il vous reste à ajouter&nbsp;: {missing.join(", ")}. Une fiche complète
+            inspire confiance et reçoit plus de demandes.
+          </p>
+          <Link
+            href="/pro/profil"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            <Store size={16} />
+            Compléter mon profil
+          </Link>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

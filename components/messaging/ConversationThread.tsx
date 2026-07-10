@@ -42,6 +42,7 @@ export default function ConversationThread({
   otherName,
   otherAvatar = null,
   otherHref = null,
+  quoteAction = null,
   initial,
   basePath,
 }: {
@@ -51,6 +52,9 @@ export default function ConversationThread({
   otherAvatar?: string | null;
   // Lien vers la fiche publique du prestataire (côté particulier uniquement).
   otherHref?: string | null;
+  // Action devis dans le menu « + » : « Rédiger un devis » (pro) ou
+  // « Demander un devis » (client).
+  quoteAction?: { label: string; href: string } | null;
   initial: Message[];
   basePath?: string;
 }) {
@@ -380,6 +384,16 @@ export default function ConversationThread({
                   onClick={() => setMenuOpen(false)}
                 />
                 <div className="absolute bottom-full left-0 z-50 mb-2 w-52 overflow-hidden rounded-2xl border border-black/5 bg-white p-1.5 shadow-lg">
+                  {quoteAction && (
+                    <Link
+                      href={quoteAction.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-violet hover:bg-violet-soft"
+                    >
+                      <FileText size={18} />
+                      {quoteAction.label}
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={() => openPicker("image/*,video/*")}

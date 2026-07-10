@@ -1,7 +1,15 @@
 import Link from "next/link";
-import { Wallet, Users, Store, BadgeCheck, PartyPopper } from "lucide-react";
+import {
+  Wallet,
+  Users,
+  Store,
+  BadgeCheck,
+  PartyPopper,
+  AlertTriangle,
+  ArrowRight,
+} from "lucide-react";
 import ChecklistCard from "@/components/dashboard/ChecklistCard";
-import { getCurrentEvent, getBudgetCategories } from "@/lib/queries";
+import { getCurrentEvent, getBudgetCategories, getProfile } from "@/lib/queries";
 import { getChecklist, getEventVendors, getGuests } from "@/lib/dashboard";
 
 const eur = (n: number) => n.toLocaleString("fr-FR") + "€";
@@ -35,10 +43,11 @@ export default async function DashboardOverview() {
   }
 
   const cats = await getBudgetCategories(event.id);
-  const [tasks, bookedVendors, guests] = await Promise.all([
+  const [tasks, bookedVendors, guests, profile] = await Promise.all([
     getChecklist(event.id),
     getEventVendors(event.id),
     getGuests(event.id),
+    getProfile(),
   ]);
   const guestsConfirmed = guests.filter((g) => g.status === "confirmé").length;
   const guestsPending = guests.filter(
@@ -68,6 +77,87 @@ export default async function DashboardOverview() {
       })
     : "Date à définir";
 
+  // ── Alertes contextuelles (in-app, basées sur l'événement) ────────────────
+  const firstName = (profile?.full_name ?? "").trim().split(" ")[0] || "";
+  const hey = firstName ? ` ${firstName}` : "";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const evDate = event.event_date
+    ? new Date(event.event_date + "T00:00:00")
+    : null;
+  const daysToEvent = evDate
+    ? Math.ceil((evDate.getTime() - today.getTime()) / 86_400_000)
+    : null;
+  const overdue = tasks.filter(
+    (t) => !t.done && t.due_date && new Date(t.due_date + "T00:00:00") < today
+  ).length;
+
+  type Alert = { level: "critical" | "warning" | "info"; text: string; href: string };
+  const alerts: Alert[] = [];
+
+  if (total > 0 && pct >= 100) {
+    alerts.push({
+      level: "critical",
+      text: `Attention${hey}, votre budget est dépassé (${eur(spent)} / ${eur(total)}). Ajustez vos dépenses ou revoyez le budget prévu.`,
+      href: "/dashboard/budget",
+    });
+  } else if (total > 0 && pct >= 85) {
+    alerts.push({
+      level: "warning",
+      text: `Attention${hey}, votre budget est presque épuisé (${pct}% utilisés).`,
+      href: "/dashboard/budget",
+    });
+  }
+
+  if (daysToEvent != null && daysToEvent >= 0 && daysToEvent <= 7) {
+    alerts.push({
+      level: daysToEvent <= 2 ? "warning" : "info",
+      text:
+        `Plus que ${daysToEvent} jour${daysToEvent > 1 ? "s" : ""} avant « ${event.name} »` +
+        (progress < 100 ? ` — il reste ${tasks.length - doneTasks} tâche${tasks.length - doneTasks > 1 ? "s" : ""}.` : " 🎉"),
+      href: "/dashboard/checklist",
+    });
+  } else if (
+    daysToEvent != null &&
+    daysToEvent > 7 &&
+    daysToEvent <= 45 &&
+    bookedVendors.length === 0
+  ) {
+    alerts.push({
+      level: "info",
+      text: `« ${event.name} » approche (${daysToEvent} j) et aucun prestataire n'est réservé.`,
+      href: "/dashboard/prestataires",
+    });
+  }
+
+  if (
+    daysToEvent != null &&
+    daysToEvent >= 0 &&
+    daysToEvent <= 14 &&
+    guestsPending > 0
+  ) {
+    alerts.push({
+      level: "info",
+      text: `${guestsPending} invité${guestsPending > 1 ? "s" : ""} n'${guestsPending > 1 ? "ont" : "a"} pas encore répondu, à ${daysToEvent} j de l'événement.`,
+      href: "/dashboard/invites",
+    });
+  }
+
+  if (overdue > 0) {
+    alerts.push({
+      level: "warning",
+      text: `Vous avez ${overdue} tâche${overdue > 1 ? "s" : ""} en retard dans votre checklist.`,
+      href: "/dashboard/checklist",
+    });
+  }
+
+  const alertStyle: Record<Alert["level"], string> = {
+    critical: "border-festif/30 bg-festif-soft text-festif",
+    warning: "border-festif/20 bg-festif-soft/60 text-festif",
+    info: "border-violet/20 bg-violet-soft/60 text-plum",
+  };
+  const shown = alerts.slice(0, 3);
+
   return (
     <div className="mx-auto max-w-6xl">
       <div className="flex items-center justify-between gap-4">
@@ -82,6 +172,23 @@ export default async function DashboardOverview() {
           Nouvel événement
         </Link>
       </div>
+
+      {/* Alertes contextuelles */}
+      {shown.length > 0 && (
+        <div className="mt-4 space-y-2">
+          {shown.map((a, i) => (
+            <Link
+              key={i}
+              href={a.href}
+              className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-opacity hover:opacity-90 ${alertStyle[a.level]}`}
+            >
+              <AlertTriangle size={18} className="shrink-0" />
+              <span className="flex-1">{a.text}</span>
+              <ArrowRight size={16} className="shrink-0 opacity-70" />
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Progression globale (checklist) */}
       <div className="mt-4 rounded-3xl border border-black/5 bg-white p-5">

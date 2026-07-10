@@ -18,6 +18,10 @@ export default async function ProMessageThreadPage({
       userId={res.userId}
       otherName={res.conv.otherName}
       otherAvatar={res.conv.otherAvatar}
+      quoteAction={{
+        label: "Rédiger un devis",
+        href: `/pro/devis/nouveau?conv=${res.conv.id}`,
+      }}
       initial={messages}
       basePath="/pro/messagerie"
     />

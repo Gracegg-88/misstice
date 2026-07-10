@@ -78,6 +78,20 @@ create trigger on_quote_booking
 -- ── Numéros de devis uniques (séquence dédiée, pas un count fragile) ────────
 create sequence if not exists public.quote_number_seq;
 
+-- Recale la séquence au-dessus du plus grand SUFFIXE déjà existant (devis créés
+-- avant la séquence, ou repli côté app) → évite « duplicate key … quote_number ».
+-- On ne garde que le nombre après le dernier tiret (ex. DEV-2026-0007 → 7).
+select setval(
+  'public.quote_number_seq',
+  greatest(
+    (select coalesce(max((regexp_replace(quote_number, '^.*-', ''))::bigint), 0)
+       from public.quotes
+      where quote_number ~ '-[0-9]+$'),
+    (select last_value from public.quote_number_seq)
+  ),
+  true
+);
+
 create or replace function public.next_quote_number()
 returns text
 language sql security definer set search_path = public

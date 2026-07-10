@@ -44,7 +44,13 @@ export default async function VendorPage({
     getReviewStats(vendor.id),
     getCurrentEvent(),
   ]);
-  const packages = realPackages.length ? realPackages : getPackages(vendor);
+  // Contenu démo (forfaits d'exemple) UNIQUEMENT pour les fiches vitrines
+  // (sans compte). Un vrai compte non rempli affiche un état vide, pas du faux.
+  const packages = realPackages.length
+    ? realPackages
+    : vendor.userId
+      ? []
+      : getPackages(vendor);
 
   // Pré-remplissage de la demande de devis avec l'événement en cours (le cas
   // échéant) — utile depuis le dashboard particulier.
