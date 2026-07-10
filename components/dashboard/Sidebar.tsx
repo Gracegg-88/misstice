@@ -9,9 +9,9 @@ export default function Sidebar({ unread = 0 }: { unread?: number }) {
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col overflow-hidden border-r border-black/5 bg-white lg:flex">
-      <div className="flex flex-1 flex-col p-3">
+      <div className="flex flex-1 flex-col p-2">
         {/* Navigation — items compacts (comme l'admin), groupés en haut */}
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-0.5">
           {NAV.map((item) => {
             const active =
               item.href === "/dashboard"
@@ -23,7 +23,7 @@ export default function Sidebar({ unread = 0 }: { unread?: number }) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-colors ${
                   active
                     ? "bg-violet text-white"
                     : "text-slate hover:bg-violet-soft hover:text-violet"
@@ -46,7 +46,7 @@ export default function Sidebar({ unread = 0 }: { unread?: number }) {
         </nav>
 
         {/* Card retour à l'accueil — poussée en bas */}
-        <div className="relative mt-auto flex h-20 shrink-0 items-end overflow-hidden rounded-2xl ring-1 ring-black/5">
+        <div className="relative mt-3 flex h-16 shrink-0 items-end overflow-hidden rounded-2xl ring-1 ring-black/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/sidebar_particulier.png"
