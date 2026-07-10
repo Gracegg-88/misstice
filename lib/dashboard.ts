@@ -8,6 +8,9 @@ import type {
   InspirationIdea,
   TeamMember,
   ReceivedQuote,
+  GiftItem,
+  SeatingTable,
+  SeatingSeat,
 } from "@/lib/dashboard-types";
 
 // Ré-export pour compatibilité (les composants client importent plutôt depuis
@@ -101,6 +104,42 @@ export async function getVendorCalls(eventId: string): Promise<VendorCall[]> {
     .eq("event_id", eventId)
     .order("scheduled_at", { ascending: true });
   return (data as VendorCall[]) ?? [];
+}
+
+export async function getGiftItems(eventId: string): Promise<GiftItem[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("gift_items")
+    .select("id, event_id, title, url, price, note, reserved, position")
+    .eq("event_id", eventId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  return (data as GiftItem[]) ?? [];
+}
+
+export async function getSeatingTables(
+  eventId: string
+): Promise<SeatingTable[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("seating_tables")
+    .select("id, event_id, name, capacity, position")
+    .eq("event_id", eventId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+  return (data as SeatingTable[]) ?? [];
+}
+
+export async function getSeatingSeats(
+  eventId: string
+): Promise<SeatingSeat[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("seating_seats")
+    .select("id, event_id, table_id, name, position")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: true });
+  return (data as SeatingSeat[]) ?? [];
 }
 
 export async function getInspiration(eventId: string): Promise<InspirationIdea[]> {

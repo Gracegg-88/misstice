@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, X, Mail, Phone, Check, Trash2, Copy, Image as ImageIcon } from "lucide-react";
+import { Search, Plus, X, Mail, Phone, Check, Trash2, Copy, Image as ImageIcon, Share2, MessageCircle } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
@@ -30,12 +30,14 @@ export default function InvitesClient({
   eventName,
   initial,
   cardUrl = null,
+  shareToken = null,
   canEdit = true,
 }: {
   eventId: string;
   eventName: string;
   initial: Guest[];
   cardUrl?: string | null;
+  shareToken?: string | null;
   canEdit?: boolean;
 }) {
   const router = useRouter();
@@ -50,6 +52,21 @@ export default function InvitesClient({
   const [card, setCard] = useState<string | null>(cardUrl);
   const [cardBusy, setCardBusy] = useState(false);
   const cardRef = useRef<HTMLInputElement>(null);
+
+  // Lien public d'invitation (sondage RSVP partageable).
+  const [origin, setOrigin] = useState("");
+  const [linkCopied, setLinkCopied] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+  const shareUrl = shareToken ? `${origin}/e/${shareToken}` : "";
+  const shareText = `Vous êtes invité(e) à ${eventName} ! Merci de confirmer votre présence : ${shareUrl}`;
+  const copyShare = () => {
+    if (!shareUrl) return;
+    navigator.clipboard?.writeText(shareUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   const onCardUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -346,6 +363,66 @@ export default function InvitesClient({
             onChange={onCardUpload}
             className="hidden"
           />
+        </div>
+      )}
+
+      {/* Lien d'invitation public (sondage RSVP partageable) */}
+      {shareToken && (
+        <div className="mt-6 rounded-3xl border border-black/5 bg-white p-5">
+          <div className="flex items-center gap-2">
+            <Share2 size={18} className="text-violet" />
+            <h2 className="font-display text-base font-semibold text-plum">
+              Partager l&apos;invitation
+            </h2>
+          </div>
+          <p className="mt-1 text-sm text-slate">
+            Un lien unique où vos invités confirment eux-mêmes leur présence
+            (oui / non). Chaque réponse ajoute la personne à votre liste.
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <input
+              readOnly
+              value={shareUrl}
+              onFocus={(e) => e.currentTarget.select()}
+              aria-label="Lien d'invitation"
+              className="min-w-0 flex-1 truncate rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none"
+            />
+            <button
+              type="button"
+              onClick={copyShare}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+            >
+              {linkCopied ? <Check size={16} /> : <Copy size={16} />}
+              {linkCopied ? "Copié" : "Copier"}
+            </button>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum hover:border-violet/40"
+            >
+              <MessageCircle size={15} className="text-emerald" />
+              WhatsApp
+            </a>
+            <a
+              href={`sms:?&body=${encodeURIComponent(shareText)}`}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum hover:border-violet/40"
+            >
+              <Phone size={15} className="text-violet" />
+              SMS
+            </a>
+            <a
+              href={`mailto:?subject=${encodeURIComponent(
+                `Invitation — ${eventName}`
+              )}&body=${encodeURIComponent(shareText)}`}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum hover:border-violet/40"
+            >
+              <Mail size={15} className="text-festif" />
+              E-mail
+            </a>
+          </div>
         </div>
       )}
 

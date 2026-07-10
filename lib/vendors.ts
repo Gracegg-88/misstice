@@ -22,6 +22,12 @@ type Row = {
   grad: string;
   image: string | null;
   user_id: string | null;
+  moods: string[] | null;
+  energies: string[] | null;
+  lights: string[] | null;
+  palettes: string[] | null;
+  atmospheres: string[] | null;
+  music_styles: string[] | null;
 };
 
 function map(r: Row): Vendor {
@@ -45,6 +51,12 @@ function map(r: Row): Vendor {
     grad: r.grad,
     img: r.image ?? "",
     userId: r.user_id ?? null,
+    moods: r.moods ?? [],
+    energies: r.energies ?? [],
+    lights: r.lights ?? [],
+    palettes: r.palettes ?? [],
+    atmospheres: r.atmospheres ?? [],
+    music: r.music_styles ?? [],
   };
 }
 
@@ -163,6 +175,27 @@ export async function getReviewStats(vendorId: string): Promise<{
       : 0,
   }));
   return { avg, count, breakdown };
+}
+
+/**
+ * Prochaine date explicitement marquée « disponible » par le prestataire
+ * (>= aujourd'hui). null si aucune. Réservé aux comptes réels (prestataire_id).
+ */
+export async function getNextAvailability(
+  userId: string
+): Promise<string | null> {
+  const supabase = createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("vendor_availability")
+    .select("date")
+    .eq("prestataire_id", userId)
+    .eq("status", "available")
+    .gte("date", today)
+    .order("date", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  return (data as { date: string } | null)?.date ?? null;
 }
 
 /** Un prestataire par son id. */

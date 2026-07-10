@@ -39,7 +39,9 @@ export async function getMyVendor(): Promise<ProVendor | null> {
 
   const { data: v } = await supabase
     .from("vendors")
-    .select("id, tagline, price_from, image, verified, rating, reviews")
+    .select(
+      "id, tagline, price_from, image, verified, rating, reviews, moods, energies, lights, palettes, atmospheres, music_styles"
+    )
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -52,6 +54,12 @@ export async function getMyVendor(): Promise<ProVendor | null> {
         verified: boolean;
         rating: number;
         reviews: number;
+        moods: string[] | null;
+        energies: string[] | null;
+        lights: string[] | null;
+        palettes: string[] | null;
+        atmospheres: string[] | null;
+        music_styles: string[] | null;
       }
     | null;
 
@@ -76,6 +84,12 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     verified: vv?.verified ?? false,
     rating: Number(vv?.rating ?? 0),
     reviews: vv?.reviews ?? 0,
+    moods: vv?.moods ?? [],
+    energies: vv?.energies ?? [],
+    lights: vv?.lights ?? [],
+    palettes: vv?.palettes ?? [],
+    atmospheres: vv?.atmospheres ?? [],
+    music: vv?.music_styles ?? [],
   };
 }
 

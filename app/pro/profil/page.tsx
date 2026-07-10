@@ -32,6 +32,12 @@ export default async function ProProfilPage() {
       verified: false,
       rating: 0,
       reviews: 0,
+      moods: [],
+      energies: [],
+      lights: [],
+      palettes: [],
+      atmospheres: [],
+      music: [],
     };
 
     return (

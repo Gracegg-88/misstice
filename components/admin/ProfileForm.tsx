@@ -10,15 +10,27 @@ export default function ProfileForm({
   name: initialName,
   avatarUrl,
   email: initialEmail,
+  birthdate: initialBirthdate = null,
+  phone: initialPhone = null,
+  newsletter: initialNewsletter = true,
+  extras = false,
 }: {
   id: string;
   name: string;
   avatarUrl: string | null;
   email: string;
+  // Champs personnels (affichés côté particulier pour newsletter / relances).
+  birthdate?: string | null;
+  phone?: string | null;
+  newsletter?: boolean;
+  extras?: boolean;
 }) {
   const router = useRouter();
   const [name, setName] = useState(initialName === "Admin" ? "" : initialName);
   const [email, setEmail] = useState(initialEmail);
+  const [birthdate, setBirthdate] = useState(initialBirthdate ?? "");
+  const [phone, setPhone] = useState(initialPhone ?? "");
+  const [newsletter, setNewsletter] = useState(initialNewsletter);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -72,10 +84,19 @@ export default function ProfileForm({
         avatar = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
       }
 
-      // 2. Nom + avatar dans profiles
+      // 2. Nom + avatar (+ champs personnels côté particulier) dans profiles
+      const updatePayload: Record<string, unknown> = {
+        full_name: name.trim() || null,
+        avatar_url: avatar,
+      };
+      if (extras) {
+        updatePayload.birthdate = birthdate || null;
+        updatePayload.phone = phone.trim() || null;
+        updatePayload.newsletter_opt_in = newsletter;
+      }
       const { error: updErr } = await supabase
         .from("profiles")
-        .update({ full_name: name.trim() || null, avatar_url: avatar })
+        .update(updatePayload)
         .eq("id", id);
       if (updErr) throw updErr;
 
@@ -180,6 +201,64 @@ export default function ProfileForm({
           />
         </div>
       </div>
+
+      {/* Informations personnelles (particulier) — pour rappels & newsletter */}
+      {extras && (
+        <div className="mt-8 border-t border-black/5 pt-6">
+          <h2 className="font-display text-lg font-semibold text-plum">
+            Informations personnelles
+          </h2>
+          <p className="mt-1 text-xs text-slate">
+            Facultatif — nous aident à personnaliser vos rappels et attentions
+            (ex. votre anniversaire).
+          </p>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-plum">
+                Date de naissance
+              </label>
+              <input
+                type="date"
+                aria-label="Date de naissance"
+                value={birthdate}
+                onChange={(e) => {
+                  setBirthdate(e.target.value);
+                  clearFlags();
+                }}
+                className="mt-1.5 w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none focus:border-violet"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-plum">Téléphone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  clearFlags();
+                }}
+                placeholder="06 12 34 56 78"
+                className="mt-1.5 w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none focus:border-violet"
+              />
+            </div>
+          </div>
+          <label className="mt-4 flex cursor-pointer items-start gap-2.5">
+            <input
+              type="checkbox"
+              checked={newsletter}
+              onChange={(e) => {
+                setNewsletter(e.target.checked);
+                clearFlags();
+              }}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-violet"
+            />
+            <span className="text-sm text-slate">
+              Je souhaite recevoir les conseils, offres et rappels de Misstice par
+              e-mail.
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* Mot de passe */}
       <div className="mt-8 border-t border-black/5 pt-6">

@@ -70,6 +70,33 @@ export type VendorCall = {
   mode: "appel" | "visio";
 };
 
+export type GiftItem = {
+  id: string;
+  event_id: string;
+  title: string;
+  url: string | null;
+  price: string | null;
+  note: string | null;
+  reserved: boolean;
+  position: number;
+};
+
+export type SeatingTable = {
+  id: string;
+  event_id: string;
+  name: string;
+  capacity: number;
+  position: number;
+};
+
+export type SeatingSeat = {
+  id: string;
+  event_id: string;
+  table_id: string;
+  name: string;
+  position: number;
+};
+
 export type InspirationIdea = {
   id: string;
   event_id: string;

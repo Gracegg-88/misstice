@@ -1,14 +1,66 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { RotateCcw, ChevronDown, Search, Check, X } from "lucide-react";
+import { RotateCcw, ChevronDown, Search, Check, X, Sparkles } from "lucide-react";
+import {
+  MOODS,
+  ENERGIES,
+  LIGHTS,
+  PALETTES,
+  ATMOSPHERES,
+  MUSIC_STYLES,
+  countVibes,
+  type VibeSelection,
+} from "@/lib/vibes";
 
 export type Filters = {
   categories: string[];
   city: string;
   priceLevels: number[];
   minRating: number;
+  vibes: VibeSelection;
 };
+
+// Groupe de puces sélectionnables (un axe de vibe).
+function ChipGroup({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  options: readonly string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
+  return (
+    <div className="mt-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate">
+        {label}
+      </p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {options.map((o) => {
+          const on = selected.includes(o);
+          return (
+            <button
+              key={o}
+              type="button"
+              onClick={() => onToggle(o)}
+              aria-pressed={on}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                on
+                  ? "bg-violet text-white"
+                  : "bg-cream text-slate hover:text-plum"
+              }`}
+            >
+              {o}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /** Combobox multi-sélection avec recherche (même style que le sélecteur pro). */
 function CategoryMultiSelect({
@@ -129,6 +181,7 @@ export default function FilterPanel({
   cities: string[];
   onReset: () => void;
 }) {
+  const [vibesOpen, setVibesOpen] = useState(false);
   const toggleIn = (arr: number[], v: number) =>
     arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
   const toggleCat = (c: string) =>
@@ -138,6 +191,19 @@ export default function FilterPanel({
         ? filters.categories.filter((x) => x !== c)
         : [...filters.categories, c],
     });
+
+  // Ajoute / retire un tag « vibe » sur un axe donné.
+  const toggleVibe = (axis: keyof VibeSelection, value: string) =>
+    setFilters({
+      ...filters,
+      vibes: {
+        ...filters.vibes,
+        [axis]: filters.vibes[axis].includes(value)
+          ? filters.vibes[axis].filter((x) => x !== value)
+          : [...filters.vibes[axis], value],
+      },
+    });
+  const vibeCount = countVibes(filters.vibes);
 
   const labelCls = "text-sm font-semibold text-plum";
   const sectionCls = "border-t border-black/5 pt-5 mt-5 first:mt-0 first:border-0 first:pt-0";
@@ -229,7 +295,72 @@ export default function FilterPanel({
         </div>
       </div>
 
+      {/* Ambiance & Vibe */}
+      <div className={sectionCls}>
+        <button
+          type="button"
+          onClick={() => setVibesOpen((v) => !v)}
+          className="flex w-full items-center justify-between"
+        >
+          <span className="flex items-center gap-2">
+            <Sparkles size={15} className="text-violet" />
+            <span className={labelCls}>Ambiance &amp; Vibe</span>
+            {vibeCount > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet px-1.5 text-[11px] font-semibold text-white">
+                {vibeCount}
+              </span>
+            )}
+          </span>
+          <ChevronDown
+            size={16}
+            className={`shrink-0 text-slate transition-transform ${vibesOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {vibesOpen && (
+          <div className="mt-1">
+            <ChipGroup
+              label="Mood / Ambiance"
+              options={MOODS}
+              selected={filters.vibes.moods}
+              onToggle={(v) => toggleVibe("moods", v)}
+            />
+            <ChipGroup
+              label="Énergie du prestataire"
+              options={ENERGIES}
+              selected={filters.vibes.energies}
+              onToggle={(v) => toggleVibe("energies", v)}
+            />
+            <ChipGroup
+              label="Lumière"
+              options={LIGHTS}
+              selected={filters.vibes.lights}
+              onToggle={(v) => toggleVibe("lights", v)}
+            />
+            <ChipGroup
+              label="Palette"
+              options={PALETTES}
+              selected={filters.vibes.palettes}
+              onToggle={(v) => toggleVibe("palettes", v)}
+            />
+            <ChipGroup
+              label="Atmosphère"
+              options={ATMOSPHERES}
+              selected={filters.vibes.atmospheres}
+              onToggle={(v) => toggleVibe("atmospheres", v)}
+            />
+            <ChipGroup
+              label="Style musical (DJ / animateur)"
+              options={MUSIC_STYLES}
+              selected={filters.vibes.music}
+              onToggle={(v) => toggleVibe("music", v)}
+            />
+          </div>
+        )}
+      </div>
+
       <button
+        type="button"
         onClick={onReset}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-black/10 py-2.5 text-sm font-semibold text-slate transition-colors hover:border-plum/30 hover:text-plum"
       >

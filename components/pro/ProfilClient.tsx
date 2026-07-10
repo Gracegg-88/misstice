@@ -14,6 +14,15 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import CategorySelect from "@/components/pro/CategorySelect";
 import type { ProVendor, VendorPackage, VendorPhoto } from "@/lib/pro-types";
+import {
+  MOODS,
+  ENERGIES,
+  LIGHTS,
+  PALETTES,
+  ATMOSPHERES,
+  MUSIC_STYLES,
+  type VendorVibes,
+} from "@/lib/vibes";
 
 export default function ProfilClient({
   vendor,
@@ -40,6 +49,23 @@ export default function ProfilClient({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  // Ambiance & Vibe (tags auto-attribués, stockés sur vendors)
+  const [vibes, setVibes] = useState<VendorVibes>({
+    moods: vendor.moods ?? [],
+    energies: vendor.energies ?? [],
+    lights: vendor.lights ?? [],
+    palettes: vendor.palettes ?? [],
+    atmospheres: vendor.atmospheres ?? [],
+    music: vendor.music ?? [],
+  });
+  const toggleVibe = (axis: keyof VendorVibes, value: string) =>
+    setVibes((v) => ({
+      ...v,
+      [axis]: v[axis].includes(value)
+        ? v[axis].filter((x) => x !== value)
+        : [...v[axis], value],
+    }));
 
   // Formules / tarifs (état optimiste local)
   const [pkgs, setPkgs] = useState<VendorPackage[]>(packages);
@@ -203,6 +229,12 @@ export default function ProfilClient({
               tagline: info.tagline || null,
               price_from: info.priceFrom || null,
               image: mainImage || null,
+              moods: vibes.moods,
+              energies: vibes.energies,
+              lights: vibes.lights,
+              palettes: vibes.palettes,
+              atmospheres: vibes.atmospheres,
+              music_styles: vibes.music,
             })
             .eq("id", (existing as { id: string }).id)
         ).error
@@ -216,6 +248,12 @@ export default function ProfilClient({
             price_from: info.priceFrom || null,
             image: mainImage || null,
             verified: false,
+            moods: vibes.moods,
+            energies: vibes.energies,
+            lights: vibes.lights,
+            palettes: vibes.palettes,
+            atmospheres: vibes.atmospheres,
+            music_styles: vibes.music,
           })
         ).error;
 
@@ -484,6 +522,64 @@ export default function ProfilClient({
             className={`mt-1.5 ${inputCls}`}
           />
         </div>
+      </section>
+
+      {/* Ambiance & Vibe */}
+      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+        <h2 className="font-display text-lg font-semibold text-plum">
+          Ambiance &amp; Vibe
+        </h2>
+        <p className="mt-1 text-sm text-slate">
+          Choisissez les tags qui décrivent votre univers. Ils servent aux
+          filtres de l&apos;annuaire et s&apos;affichent en badges sur votre
+          fiche. En cas d&apos;avis clients trop négatifs, ces badges peuvent être
+          retirés automatiquement.
+        </p>
+        <div className="mt-4 space-y-4">
+          {(
+            [
+              { label: "Mood / Ambiance", axis: "moods", options: MOODS },
+              { label: "Énergie", axis: "energies", options: ENERGIES },
+              { label: "Lumière", axis: "lights", options: LIGHTS },
+              { label: "Palette", axis: "palettes", options: PALETTES },
+              { label: "Atmosphère", axis: "atmospheres", options: ATMOSPHERES },
+              {
+                label: "Style musical (DJ / animateur)",
+                axis: "music",
+                options: MUSIC_STYLES,
+              },
+            ] as const
+          ).map((g) => (
+            <div key={g.axis}>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate">
+                {g.label}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {g.options.map((o) => {
+                  const on = vibes[g.axis].includes(o);
+                  return (
+                    <button
+                      key={o}
+                      type="button"
+                      onClick={() => toggleVibe(g.axis, o)}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                        on
+                          ? "bg-violet text-white"
+                          : "bg-cream text-slate hover:text-plum"
+                      }`}
+                    >
+                      {o}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-xs text-slate">
+          Pensez à cliquer sur «&nbsp;Enregistrer les modifications&nbsp;» en bas
+          de page.
+        </p>
       </section>
 
       {/* Services & tarifs */}

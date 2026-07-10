@@ -13,6 +13,13 @@ export type ProVendor = {
   verified: boolean;
   rating: number;
   reviews: number;
+  // Ambiance & Vibe
+  moods: string[];
+  energies: string[];
+  lights: string[];
+  palettes: string[];
+  atmospheres: string[];
+  music: string[];
 };
 
 export type QuoteItem = {

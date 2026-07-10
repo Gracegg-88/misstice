@@ -10,7 +10,6 @@ import {
   Map as MapIcon,
   ChevronLeft,
   ChevronRight,
-  Scale,
   Eye,
   ShieldCheck,
   MailX,
@@ -19,6 +18,7 @@ import type { Vendor } from "./vendors";
 import VendorCard from "./VendorCard";
 import FilterPanel, { type Filters } from "./FilterPanel";
 import { useFavorites } from "@/lib/useFavorites";
+import { EMPTY_VIBES, countVibes, vendorMatchesVibes } from "@/lib/vibes";
 
 // La carte ne se charge que côté client (Leaflet a besoin du navigateur).
 const VendorsMap = dynamic(() => import("./VendorsMap"), {
@@ -35,6 +35,7 @@ const DEFAULT_FILTERS: Filters = {
   city: "all",
   priceLevels: [],
   minRating: 0,
+  vibes: { ...EMPTY_VIBES },
 };
 
 const SORTS = [
@@ -46,9 +47,8 @@ const SORTS = [
 
 // Cartes de confiance (réponses aux reproches du secteur).
 const PROMISES = [
-  { icon: Scale, title: "Classement au mérite", text: "Jamais d'achat de position. L'ordre dépend des notes et des avis, pas du portefeuille." },
   { icon: Eye, title: "Tous les avis publiés", text: "Positifs comme négatifs, jamais supprimés contre paiement — vous lisez de vrais retours." },
-  { icon: ShieldCheck, title: "Prestataires contrôlés", text: "Le badge « Vérifié » signifie pièces et références réellement contrôlées." },
+  { icon: ShieldCheck, title: "Prestataires vérifiés", text: "Le badge « Vérifié » atteste d'une identité contrôlée, de coordonnées professionnelles valides et de réalisations authentifiées par notre équipe." },
   { icon: MailX, title: "Zéro spam, zéro faux lead", text: "Vous contactez qui vous voulez. Les pros reçoivent de vraies demandes, pas du bruit." },
 ];
 
@@ -106,6 +106,7 @@ export default function ExplorerClient({
       if (filters.priceLevels.length && !filters.priceLevels.includes(v.priceLevel))
         return false;
       if (v.rating < filters.minRating) return false;
+      if (!vendorMatchesVibes(v, filters.vibes)) return false;
       if (
         q &&
         ![v.name, v.category, v.city, v.tagline].join(" ").toLowerCase().includes(q)
@@ -139,7 +140,8 @@ export default function ExplorerClient({
     filters.categories.length +
     filters.priceLevels.length +
     (filters.city !== "all" ? 1 : 0) +
-    (filters.minRating > 0 ? 1 : 0);
+    (filters.minRating > 0 ? 1 : 0) +
+    countVibes(filters.vibes);
 
   return (
     <div>
@@ -158,13 +160,18 @@ export default function ExplorerClient({
               Photographes, traiteurs, DJ, salles… Comparez en toute
               transparence et gardez vos favoris.
             </p>
+            <p className="mt-2 max-w-lg text-base leading-relaxed text-plum/70">
+              Laissez Misstice identifier ce qui vous inspire : filtrez par
+              <span className="font-semibold text-violet"> ambiance, énergie et style</span>,
+              et trouvez le prestataire qui vous ressemble vraiment.
+            </p>
           </div>
         </div>
       </section>
 
       {/* ── CARTES DE CONFIANCE ── */}
       <div className="mx-auto max-w-content px-5 sm:px-8">
-        <div className="relative z-10 -mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative z-10 -mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PROMISES.map((p) => (
             <div
               key={p.title}

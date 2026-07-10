@@ -16,11 +16,17 @@ export default async function InvitesPage() {
   const [guests, access, cardRes] = await Promise.all([
     getGuests(event.id),
     getEventAccess(event.id),
-    supabase.from("events").select("invitation_card_url").eq("id", event.id).maybeSingle(),
+    supabase
+      .from("events")
+      .select("invitation_card_url, share_token")
+      .eq("id", event.id)
+      .maybeSingle(),
   ]);
-  const cardUrl =
-    (cardRes.data as { invitation_card_url: string | null } | null)
-      ?.invitation_card_url ?? null;
+  const meta =
+    (cardRes.data as {
+      invitation_card_url: string | null;
+      share_token: string | null;
+    } | null) ?? null;
 
   return (
     <InvitesClient
@@ -28,7 +34,8 @@ export default async function InvitesPage() {
       eventId={event.id}
       eventName={event.name}
       initial={guests}
-      cardUrl={cardUrl}
+      cardUrl={meta?.invitation_card_url ?? null}
+      shareToken={meta?.share_token ?? null}
       canEdit={canEditSection(access, "invites")}
     />
   );

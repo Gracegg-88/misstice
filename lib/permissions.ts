@@ -10,6 +10,8 @@ export const EVENT_SECTIONS = [
   { key: "invites", label: "Invités" },
   { key: "prestataires", label: "Prestataires" },
   { key: "planning", label: "Planning Jour J" },
+  { key: "cadeaux", label: "Liste cadeau" },
+  { key: "plan_table", label: "Plan de table" },
   { key: "inspiration", label: "Inspiration" },
 ] as const;
 

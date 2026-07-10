@@ -2,6 +2,7 @@
 
 import { Star, BadgeCheck, MapPin, Heart } from "lucide-react";
 import type { Vendor } from "./vendors";
+import { vibesVisible } from "@/lib/vibes";
 
 export default function VendorCard({
   vendor,
@@ -15,6 +16,11 @@ export default function VendorCard({
   const price = vendor.priceFrom.replace("dès", "À partir de");
   const note = vendor.rating > 0 ? vendor.rating.toFixed(1).replace(".", ",") : "—";
   const img = vendor.img;
+
+  // Badges vibe (mood + énergie), masqués si la réputation est trop basse.
+  const vibeBadges = vibesVisible(vendor.rating, vendor.reviews)
+    ? [...vendor.moods, ...vendor.energies].slice(0, 3)
+    : [];
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-violet/5">
@@ -63,6 +69,20 @@ export default function VendorCard({
         <p className="mt-1.5 text-sm leading-relaxed text-slate">
           {vendor.tagline}
         </p>
+
+        {/* Badges Ambiance & Vibe */}
+        {vibeBadges.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {vibeBadges.map((b) => (
+              <span
+                key={b}
+                className="rounded-full bg-violet-soft px-2 py-0.5 text-[11px] font-medium text-violet"
+              >
+                {b}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Note */}
         <div className="mt-3 flex items-center gap-1 text-sm">

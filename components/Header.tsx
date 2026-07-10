@@ -57,6 +57,14 @@ export default function Header() {
 
         {/* Actions desktop */}
         <div className="hidden items-center gap-3 md:flex">
+          {!account && (
+            <a
+              href="/creer?type=pro"
+              className="text-sm font-semibold text-plum/80 transition-colors hover:text-violet"
+            >
+              Je suis prestataire
+            </a>
+          )}
           <a
             href={account ? account.href : "/auth"}
             className="rounded-xl border border-plum/15 bg-white/70 px-5 py-2.5 text-sm font-semibold text-plum transition-colors hover:border-plum/30"
@@ -115,6 +123,15 @@ export default function Header() {
               ))}
             </nav>
             <div className="mt-3 flex flex-col gap-2 border-t border-black/5 pt-3">
+              {!account && (
+                <a
+                  href="/creer?type=pro"
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl border border-violet/30 bg-violet-soft px-4 py-2.5 text-center text-sm font-semibold text-violet"
+                >
+                  Je suis prestataire
+                </a>
+              )}
               <a
                 href={account ? account.href : "/auth"}
                 onClick={() => setOpen(false)}

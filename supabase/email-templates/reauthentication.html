@@ -1,0 +1,42 @@
+<!--
+  Misstice — Template e-mail « Reauthentication » (code de vérification / OTP).
+  À coller dans : Supabase → Authentication → Emails → Reauthentication → Message body.
+  Sujet suggéré : Votre code de vérification Misstice
+  Variable Supabase utilisée : {{ .Token }}  (code à 6 chiffres, PAS de lien)
+-->
+<div style="margin:0;padding:32px 16px;background:#FAFAF9;font-family:'Segoe UI',Arial,sans-serif;color:#1E1B2E">
+  <div style="max-width:440px;margin:0 auto;background:#ffffff;border-radius:20px;border:1px solid #eeeeee;padding:40px 32px;text-align:center">
+
+    <div style="font-size:18px;font-weight:700;color:#6C3CE1;letter-spacing:-0.02em">Misstice</div>
+
+    <div style="width:92px;height:92px;margin:28px auto 0;background:#F1EEFC;border-radius:50%;line-height:92px;font-size:46px;color:#FF8C42">✦</div>
+
+    <h1 style="margin:24px 0 0;font-size:24px;font-weight:700;color:#1E1B2E">
+      Votre code de vérification
+    </h1>
+
+    <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#4B4763">
+      Saisissez ce code pour confirmer votre identité et poursuivre en toute sécurité.
+    </p>
+
+    <!-- Code OTP -->
+    <div style="margin:24px auto 0;display:inline-block;background:#F1EEFC;border-radius:14px;padding:16px 28px;font-size:32px;font-weight:700;letter-spacing:8px;color:#6C3CE1">
+      {{ .Token }}
+    </div>
+
+    <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#8A8699">
+      Ce code est valable quelques minutes. Ne le partagez avec personne.
+    </p>
+
+    <div style="height:1px;background:#eeeeee;margin:28px 0"></div>
+
+    <p style="margin:0;font-size:14px;line-height:1.7;color:#8A8699">
+      À très vite,<br />
+      <strong style="color:#4B4763">L'équipe Misstice</strong>
+    </p>
+  </div>
+
+  <p style="max-width:440px;margin:16px auto 0;text-align:center;font-size:11px;color:#B3B0BF">
+    Vous n'êtes pas à l'origine de cette demande&nbsp;? Ignorez cet e-mail.
+  </p>
+</div>

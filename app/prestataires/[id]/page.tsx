@@ -9,6 +9,7 @@ import {
   getPublicPhotos,
   getVendorReviews,
   getReviewStats,
+  getNextAvailability,
 } from "@/lib/vendors";
 import { getPackages } from "@/components/explorer/profileData";
 import { getCurrentEvent } from "@/lib/queries";
@@ -37,13 +38,17 @@ export default async function VendorPage({
   if (!vendor) notFound();
 
   // Formules & book réels si le prestataire est inscrit, sinon démo.
-  const [realPackages, photos, reviews, stats, currentEvent] = await Promise.all([
-    vendor.userId ? getPublicPackages(vendor.userId) : Promise.resolve([]),
-    vendor.userId ? getPublicPhotos(vendor.userId) : Promise.resolve([]),
-    getVendorReviews(vendor.id),
-    getReviewStats(vendor.id),
-    getCurrentEvent(),
-  ]);
+  const [realPackages, photos, reviews, stats, currentEvent, nextAvailability] =
+    await Promise.all([
+      vendor.userId ? getPublicPackages(vendor.userId) : Promise.resolve([]),
+      vendor.userId ? getPublicPhotos(vendor.userId) : Promise.resolve([]),
+      getVendorReviews(vendor.id),
+      getReviewStats(vendor.id),
+      getCurrentEvent(),
+      vendor.userId
+        ? getNextAvailability(vendor.userId)
+        : Promise.resolve(null),
+    ]);
   // Contenu démo (forfaits d'exemple) UNIQUEMENT pour les fiches vitrines
   // (sans compte). Un vrai compte non rempli affiche un état vide, pas du faux.
   const packages = realPackages.length
@@ -82,6 +87,7 @@ export default async function VendorPage({
           prefill={prefill}
           autoDevis={searchParams?.devis === "1"}
           currentEventId={currentEvent?.id ?? null}
+          nextAvailability={nextAvailability}
         />
       </main>
       <Footer />

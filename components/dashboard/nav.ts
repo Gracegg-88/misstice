@@ -9,6 +9,8 @@ import {
   Sparkles,
   MessagesSquare,
   CalendarDays,
+  Gift,
+  Armchair,
 } from "lucide-react";
 
 // Navigation de l'espace particulier — source unique (sidebar + menu mobile).
@@ -19,6 +21,8 @@ export const DASHBOARD_NAV = [
   { label: "Checklist", href: "/dashboard/checklist", icon: ListChecks },
   { label: "Invités", href: "/dashboard/invites", icon: Users },
   { label: "Prestataires", href: "/dashboard/prestataires", icon: Store },
+  { label: "Liste cadeau", href: "/dashboard/cadeaux", icon: Gift },
+  { label: "Plan de table", href: "/dashboard/plan-de-table", icon: Armchair },
   { label: "Messages", href: "/dashboard/messages", icon: MessagesSquare },
   { label: "Équipe", href: "/dashboard/equipe", icon: UsersRound },
   { label: "Planning Jour J", href: "/dashboard/planning", icon: CalendarHeart },

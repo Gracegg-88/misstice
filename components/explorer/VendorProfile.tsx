@@ -15,12 +15,14 @@ import {
   Check,
   Send,
   Euro,
+  CalendarCheck,
 } from "lucide-react";
 import type { Vendor } from "./vendors";
 import type { Pkg, Review } from "./profileData";
 import { GALLERY_GRADS } from "./profileData";
 import { quoteFields, demandeItems, wantedPlaceholder } from "@/lib/quote-fields";
 import { useFavorites } from "@/lib/useFavorites";
+import { vibesVisible } from "@/lib/vibes";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -56,6 +58,7 @@ export default function VendorProfile({
   prefill = null,
   autoDevis = false,
   currentEventId = null,
+  nextAvailability = null,
 }: {
   vendor: Vendor;
   packages: Pkg[];
@@ -65,6 +68,7 @@ export default function VendorProfile({
   prefill?: QuotePrefill | null;
   autoDevis?: boolean;
   currentEventId?: string | null;
+  nextAvailability?: string | null;
 }) {
   const [loggedIn, setLoggedIn] = useState(false);
   const { has: favHas, toggle: favToggle } = useFavorites();
@@ -207,10 +211,29 @@ export default function VendorProfile({
 
       <div className="mx-auto max-w-content px-4 pt-8 sm:px-8">
         {/* Stat cards */}
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div
+          className={`mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 ${
+            nextAvailability ? "lg:grid-cols-3" : ""
+          }`}
+        >
           {[
             { icon: Euro, label: "À partir de", value: vendor.priceFrom.replace("dès ", ""), tint: "bg-festif-soft text-festif" },
             { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-festif-soft text-festif" },
+            ...(nextAvailability
+              ? [
+                  {
+                    icon: CalendarCheck,
+                    label: "Prochaine disponibilité",
+                    value: new Date(
+                      nextAvailability + "T00:00:00"
+                    ).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "long",
+                    }),
+                    tint: "bg-emerald-soft text-emerald",
+                  },
+                ]
+              : []),
           ].map((s) => (
             <div
               key={s.label}
@@ -266,6 +289,46 @@ export default function VendorProfile({
                 </div>
               )}
             </section>
+
+            {/* Ambiance & Vibe */}
+            {(() => {
+              if (!vibesVisible(vendor.rating, vendor.reviews)) return null;
+              const groups: { label: string; tags: string[] }[] = [
+                { label: "Mood", tags: vendor.moods },
+                { label: "Énergie", tags: vendor.energies },
+                { label: "Lumière", tags: vendor.lights },
+                { label: "Palette", tags: vendor.palettes },
+                { label: "Atmosphère", tags: vendor.atmospheres },
+                { label: "Style musical", tags: vendor.music },
+              ].filter((g) => g.tags.length > 0);
+              if (groups.length === 0) return null;
+              return (
+                <section>
+                  <h2 className="font-display text-2xl font-semibold text-plum">
+                    Ambiance &amp; Vibe
+                  </h2>
+                  <div className="mt-4 space-y-4">
+                    {groups.map((g) => (
+                      <div key={g.label}>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate">
+                          {g.label}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {g.tags.map((t) => (
+                            <span
+                              key={t}
+                              className="rounded-full bg-violet-soft px-3 py-1 text-sm font-medium text-violet"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* Forfaits */}
             <section>

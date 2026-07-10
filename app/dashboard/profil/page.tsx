@@ -12,6 +12,18 @@ export default async function DashboardProfilePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Champs personnels (peuvent être absents si la migration n'a pas tourné).
+  const { data: extra } = await supabase
+    .from("profiles")
+    .select("birthdate, phone, newsletter_opt_in")
+    .eq("id", profile.id)
+    .maybeSingle();
+  const e = (extra as {
+    birthdate: string | null;
+    phone: string | null;
+    newsletter_opt_in: boolean | null;
+  } | null) ?? null;
+
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6">
@@ -28,6 +40,10 @@ export default async function DashboardProfilePage() {
         name={profile.full_name?.trim() || ""}
         avatarUrl={profile.avatar_url}
         email={user?.email ?? ""}
+        birthdate={e?.birthdate ?? null}
+        phone={e?.phone ?? null}
+        newsletter={e?.newsletter_opt_in ?? true}
+        extras
       />
     </div>
   );

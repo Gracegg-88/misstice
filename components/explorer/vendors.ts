@@ -19,6 +19,13 @@ export type Vendor = {
   img: string; // photo
   userId?: string | null; // compte prestataire lié (null = fiche démo, non contactable)
   about?: string | null; // description réelle (vendor_profiles.about)
+  // Ambiance & Vibe (tags renseignés par le prestataire).
+  moods: string[];
+  energies: string[];
+  lights: string[];
+  palettes: string[];
+  atmospheres: string[];
+  music: string[];
 };
 
 export const LANGUAGES = [
