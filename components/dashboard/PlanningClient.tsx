@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarHeart, MapPin, User, Clock, Plus, X, Trash2 } from "lucide-react";
+import { CalendarHeart, MapPin, User, Clock, Plus, X, Trash2, Search } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/client";
@@ -122,6 +122,15 @@ export default function PlanningClient({
   };
 
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  const shownMoments = moments.filter((m) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return [m.title, m.description, m.place, m.vendor, m.who]
+      .filter(Boolean)
+      .some((v) => (v as string).toLowerCase().includes(q));
+  });
 
   const deleteMoment = async (id: string) => {
     if (!canEdit) return;
@@ -174,6 +183,19 @@ export default function PlanningClient({
       </div>
       {!canEdit && <div className="mt-6"><ReadOnlyBanner section="le planning" /></div>}
 
+      {/* Recherche dans le déroulé */}
+      {moments.length > 0 && (
+        <div className="relative mt-6">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un moment…"
+            className="w-full rounded-2xl border border-black/10 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-violet"
+          />
+        </div>
+      )}
+
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Timeline */}
         <div className="space-y-3 lg:col-span-2">
@@ -183,7 +205,12 @@ export default function PlanningClient({
               journée.
             </div>
           )}
-          {moments.map((m, i) => (
+          {moments.length > 0 && shownMoments.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-black/10 bg-white p-8 text-center text-sm text-slate">
+              Aucun moment ne correspond à votre recherche.
+            </div>
+          )}
+          {shownMoments.map((m, i) => (
             <Reveal key={m.id} delay={i * 60}>
               <div
                 className="group flex gap-4 rounded-2xl border border-black/5 bg-white p-4"

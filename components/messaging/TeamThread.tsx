@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Send, ArrowLeft, Users, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { TeamMessage } from "@/lib/team-chat";
@@ -37,6 +38,7 @@ export default function TeamThread({
   initial: TeamMessage[];
   basePath: string;
 }) {
+  const router = useRouter();
   const [messages, setMessages] = useState<TeamMessage[]>(initial);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
@@ -72,7 +74,19 @@ export default function TeamThread({
     };
   }, [eventId]);
 
-  // Marque l'équipe comme lue à l'ouverture (et à chaque nouveau message).
+  // À l'ouverture : marque lu PUIS rafraîchit les compteurs serveur.
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+    void supabase.rpc("mark_team_read", { p_event: eventId }).then(() => {
+      if (active) router.refresh();
+    });
+    return () => {
+      active = false;
+    };
+  }, [eventId, router]);
+
+  // Nouveau message reçu pendant qu'on lit → on garde le fil marqué comme lu.
   useEffect(() => {
     const supabase = createClient();
     void supabase.rpc("mark_team_read", { p_event: eventId });

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Check, Plus, Trash2, Users, X } from "lucide-react";
+import { CalendarDays, Check, Plus, Trash2, Users, X, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { ManagedEvent } from "@/app/dashboard/evenements/page";
 
@@ -28,6 +28,11 @@ export default function EventsManagerClient({
   const [current, setCurrent] = useState(currentId);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const shown = events.filter((e) =>
+    e.name.toLowerCase().includes(query.trim().toLowerCase())
+  );
 
   const select = (id: string) => {
     document.cookie = `current_event_id=${id}; path=/; max-age=31536000; samesite=lax`;
@@ -82,8 +87,21 @@ export default function EventsManagerClient({
         </a>
       </div>
 
+      {/* Recherche — utile dès qu'on a plusieurs événements */}
+      {events.length > 3 && (
+        <div className="relative mt-6">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un événement…"
+            className="w-full rounded-2xl border border-black/10 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-violet"
+          />
+        </div>
+      )}
+
       <div className="mt-6 space-y-3">
-        {events.map((e) => {
+        {shown.map((e) => {
           const active = e.id === current;
           return (
             <div
@@ -142,6 +160,11 @@ export default function EventsManagerClient({
             </div>
           );
         })}
+        {shown.length === 0 && (
+          <p className="rounded-3xl border border-dashed border-black/10 bg-white py-10 text-center text-sm text-slate">
+            Aucun événement ne correspond à votre recherche.
+          </p>
+        )}
       </div>
 
       {/* Confirmation de suppression */}

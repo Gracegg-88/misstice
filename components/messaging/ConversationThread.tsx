@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Send,
   FileText,
@@ -62,6 +63,7 @@ export default function ConversationThread({
   // Dernière lecture de l'autre partie → accusé « Vu » sur mes messages.
   otherLastReadAt?: string | null;
 }) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initial);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
@@ -108,7 +110,22 @@ export default function ConversationThread({
     };
   }, [conversationId]);
 
-  // Marque la conversation comme lue à l'ouverture (et à chaque nouveau message).
+  // À l'ouverture : marque lu PUIS rafraîchit les compteurs serveur
+  // (badge sidebar + liste) pour qu'ils disparaissent immédiatement.
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+    void supabase
+      .rpc("mark_conversation_read", { p_conv: conversationId })
+      .then(() => {
+        if (active) router.refresh();
+      });
+    return () => {
+      active = false;
+    };
+  }, [conversationId, router]);
+
+  // Nouveau message reçu pendant qu'on lit → on garde le fil marqué comme lu.
   useEffect(() => {
     const supabase = createClient();
     void supabase.rpc("mark_conversation_read", { p_conv: conversationId });

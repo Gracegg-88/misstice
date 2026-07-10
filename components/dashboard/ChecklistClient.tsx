@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { ChecklistTask } from "@/lib/dashboard-types";
 import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
@@ -37,6 +37,7 @@ export default function ChecklistClient({
   const router = useRouter();
   const [tasks, setTasks] = useState<ChecklistTask[]>(initial);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Toutes");
+  const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const [label, setLabel] = useState("");
   const [who, setWho] = useState("");
@@ -52,9 +53,17 @@ export default function ChecklistClient({
     const a = assignees.find((x) => x.email === value);
     return a ? a.label.split(" · ")[0] : value;
   };
-  const shown = tasks.filter((t) =>
-    filter === "Toutes" ? true : filter === "À faire" ? !t.done : t.done
-  );
+  const shown = tasks.filter((t) => {
+    const okFilter =
+      filter === "Toutes" ? true : filter === "À faire" ? !t.done : t.done;
+    if (!okFilter) return false;
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const who = displayAssignee(t.assignee) ?? "";
+    return (
+      t.label.toLowerCase().includes(q) || who.toLowerCase().includes(q)
+    );
+  });
 
   const toggle = async (id: string, current: boolean) => {
     if (!canEdit) return;
@@ -212,8 +221,19 @@ export default function ChecklistClient({
         </form>
       )}
 
+      {/* Search */}
+      <div className="relative mt-6">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Rechercher une tâche…"
+          className="w-full rounded-2xl border border-black/10 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-violet"
+        />
+      </div>
+
       {/* Filters */}
-      <div className="mt-6 flex gap-2">
+      <div className="mt-4 flex gap-2">
         {FILTERS.map((f) => (
           <button
             key={f}

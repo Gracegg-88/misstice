@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/Header";
+import CategorySelect from "@/components/pro/CategorySelect";
 import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 
 function GoogleIcon() {
@@ -42,8 +43,31 @@ export default function CreerPage() {
   // données
   const [account, setAccount] = useState({ name: "", email: "", password: "" });
   const [pro, setPro] = useState({ company: "", category: "", city: "" });
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Liste des catégories existantes (lecture publique) pour le menu déroulant.
+  useEffect(() => {
+    const supabase = createClient();
+    const load = async () => {
+      // On n'affiche que les catégories actives. Repli si la colonne `active`
+      // n'a pas encore été migrée (ancienne base) → on prend toutes les lignes.
+      let { data, error: err } = await supabase
+        .from("vendor_categories")
+        .select("name")
+        .eq("active", true)
+        .order("name", { ascending: true });
+      if (err) {
+        ({ data } = await supabase
+          .from("vendor_categories")
+          .select("name")
+          .order("name", { ascending: true }));
+      }
+      if (data) setCategories((data as { name: string }[]).map((c) => c.name));
+    };
+    void load();
+  }, []);
 
   // Le particulier ne crée qu'un compte ; ses événements se créent ensuite
   // depuis le dashboard. Le prestataire renseigne en plus sa fiche.
@@ -284,11 +308,10 @@ export default function CreerPage() {
                     onChange={(e) => setPro({ ...pro, company: e.target.value })}
                     className={inputCls}
                   />
-                  <input
-                    placeholder="Catégorie (ex. Photographe, Traiteur…)"
+                  <CategorySelect
                     value={pro.category}
-                    onChange={(e) => setPro({ ...pro, category: e.target.value })}
-                    className={inputCls}
+                    onChange={(v) => setPro({ ...pro, category: v })}
+                    options={categories}
                   />
                   <input
                     placeholder="Ville / zone desservie"

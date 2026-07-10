@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Wallet, TrendingUp, Plus, X, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Wallet, TrendingUp, Plus, X, SlidersHorizontal, Trash2, Search } from "lucide-react";
 import CountUp from "@/components/animations/CountUp";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +37,9 @@ export default function BudgetClient({
 }) {
   const router = useRouter();
   const cats = categories;
+
+  // Recherche dans la répartition par catégorie
+  const [query, setQuery] = useState("");
 
   // Modale « ajouter une dépense »
   const [open, setOpen] = useState(false);
@@ -290,14 +293,29 @@ export default function BudgetClient({
 
       {/* Répartition par catégorie */}
       <div className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
-        <div className="flex items-center gap-2">
-          <Wallet size={20} className="text-violet" />
-          <h2 className="font-display text-lg font-semibold text-plum">
-            Répartition par catégorie
-          </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Wallet size={20} className="text-violet" />
+            <h2 className="font-display text-lg font-semibold text-plum">
+              Répartition par catégorie
+            </h2>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Rechercher une catégorie…"
+              className="w-full rounded-xl border border-black/10 bg-cream py-2.5 pl-10 pr-3 text-sm outline-none focus:border-violet"
+            />
+          </div>
         </div>
         <div className="mt-5 space-y-5">
-          {cats.map((c) => {
+          {cats
+            .filter((c) =>
+              c.name.toLowerCase().includes(query.trim().toLowerCase())
+            )
+            .map((c) => {
             const p = c.budget ? Math.round((c.spent / c.budget) * 100) : 0;
             return (
               <div key={c.id}>
@@ -324,6 +342,15 @@ export default function BudgetClient({
               </div>
             );
           })}
+          {cats.filter((c) =>
+            c.name.toLowerCase().includes(query.trim().toLowerCase())
+          ).length === 0 && (
+            <p className="py-6 text-center text-sm text-slate">
+              {query.trim()
+                ? "Aucune catégorie ne correspond à votre recherche."
+                : "Aucune catégorie pour l'instant."}
+            </p>
+          )}
         </div>
       </div>
 
