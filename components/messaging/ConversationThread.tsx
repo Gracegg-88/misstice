@@ -41,6 +41,7 @@ export default function ConversationThread({
   userId,
   otherName,
   otherAvatar = null,
+  otherHref = null,
   initial,
   basePath,
 }: {
@@ -48,6 +49,8 @@ export default function ConversationThread({
   userId: string;
   otherName: string;
   otherAvatar?: string | null;
+  // Lien vers la fiche publique du prestataire (côté particulier uniquement).
+  otherHref?: string | null;
   initial: Message[];
   basePath?: string;
 }) {
@@ -176,19 +179,45 @@ export default function ConversationThread({
             <ArrowLeft size={18} />
           </Link>
         )}
-        {otherAvatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={otherAvatar}
-            alt=""
-            className="h-9 w-9 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet text-sm font-semibold text-white">
-            {(otherName.trim()[0] || "?").toUpperCase()}
-          </span>
-        )}
-        <p className="font-display text-lg font-semibold text-plum">{otherName}</p>
+        {(() => {
+          const avatar = otherAvatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={otherAvatar}
+              alt=""
+              className="h-9 w-9 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet text-sm font-semibold text-white">
+              {(otherName.trim()[0] || "?").toUpperCase()}
+            </span>
+          );
+          // Côté particulier : cliquer sur l'avatar/nom ouvre la fiche publique.
+          return otherHref ? (
+            <Link
+              href={otherHref}
+              title="Voir la fiche publique"
+              className="group flex min-w-0 items-center gap-3"
+            >
+              {avatar}
+              <div className="min-w-0">
+                <p className="truncate font-display text-lg font-semibold text-plum group-hover:text-violet group-hover:underline">
+                  {otherName}
+                </p>
+                <p className="truncate text-xs text-slate group-hover:text-violet">
+                  Cliquez pour accéder au profil public de {otherName}
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <>
+              {avatar}
+              <p className="truncate font-display text-lg font-semibold text-plum">
+                {otherName}
+              </p>
+            </>
+          );
+        })()}
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">

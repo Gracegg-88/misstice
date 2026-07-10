@@ -18,6 +18,7 @@ export default async function MessageThreadPage({
       userId={res.userId}
       otherName={res.conv.otherName}
       otherAvatar={res.conv.otherAvatar}
+      otherHref={res.conv.vendor_id ? `/prestataires/${res.conv.vendor_id}` : null}
       initial={messages}
       basePath="/dashboard/messages"
     />
