@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendEmail, emailShell, escapeHtml, escapeAttr } from "@/lib/email";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,9 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
+  if (!rateLimit(`notify:${user.id}`, 30, 60_000)) {
+    return NextResponse.json({ error: "Trop de requêtes." }, { status: 429 });
+  }
 
   let payload: Record<string, unknown>;
   try {
@@ -24,15 +28,15 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
-  const { email, name, taskLabel, eventName, assignerName, url } = payload as {
+  const { eventId, email, name, taskLabel, assignerName, url } = payload as {
+    eventId?: string;
     email?: string;
     name?: string;
     taskLabel?: string;
-    eventName?: string;
     assignerName?: string;
     url?: string;
   };
-  if (!email || !taskLabel) {
+  if (!eventId || !email || !taskLabel) {
     return NextResponse.json({ error: "Données manquantes." }, { status: 400 });
   }
 
@@ -42,7 +46,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Lien non autorisé." }, { status: 400 });
   }
 
-  const evt = eventName ? String(eventName) : "un événement";
+  // SÉCURITÉ (HIGH-1) : on ne fait PAS confiance au body pour le destinataire.
+  // 1) l'événement doit être accessible à l'appelant (RLS) → nom fiable ;
+  // 2) l'adresse doit être celle d'un COLLABORATEUR de cet événement.
+  // → impossible d'envoyer un email Misstice à une adresse arbitraire.
+  const { data: ev } = await supabase
+    .from("events")
+    .select("name")
+    .eq("id", eventId)
+    .maybeSingle();
+  if (!ev) {
+    return NextResponse.json({ error: "Accès refusé." }, { status: 403 });
+  }
+  const { data: member } = await supabase
+    .from("event_members")
+    .select("email")
+    .eq("event_id", eventId)
+    .eq("email", String(email))
+    .maybeSingle();
+  if (!member) {
+    return NextResponse.json(
+      { error: "Destinataire non autorisé." },
+      { status: 403 }
+    );
+  }
+  const to = (member as { email: string }).email;
+
+  const evt = (ev as { name: string }).name || "un événement";
   const by = assignerName ? String(assignerName) : "L'organisateur";
   const subject = `${evt} — Une tâche vous a été assignée`;
   const link = url || "";
@@ -76,7 +106,7 @@ export async function POST(request: Request) {
     `— Misstice`;
 
   try {
-    await sendEmail({ to: email, toName: name, subject, html, text });
+    await sendEmail({ to, toName: name, subject, html, text });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("notify-assignment:", e);

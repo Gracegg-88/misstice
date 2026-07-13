@@ -3,56 +3,58 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-// Favoris prestataires. Réservés aux utilisateurs connectés : un clic sur le
-// cœur sans session renvoie vers le formulaire de connexion.
-const KEY = "misstice_favorites";
-
-function read(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function write(ids: string[]) {
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(ids));
-  } catch {
-    /* quota / mode privé : on ignore */
-  }
-}
-
+// Favoris prestataires — persistés en base (table vendor_favorites), donc
+// communs à tous les événements du compte. Réservés aux utilisateurs connectés :
+// un clic sur le cœur sans session renvoie vers le formulaire de connexion.
 export function useFavorites() {
   const [ids, setIds] = useState<string[]>([]);
   // null = statut d'authentification encore inconnu.
-  const authed = useRef<boolean | null>(null);
+  const userId = useRef<string | null>(null);
+  const authKnown = useRef(false);
 
-  // Hydrate depuis localStorage + détecte la session après le montage.
+  // Détecte la session et charge les favoris depuis la base après le montage.
   useEffect(() => {
-    setIds(read());
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      authed.current = !!user;
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      authKnown.current = true;
+      userId.current = user?.id ?? null;
+      if (!user) return;
+      const { data } = await supabase
+        .from("vendor_favorites")
+        .select("vendor_id")
+        .eq("user_id", user.id);
+      if (data) setIds((data as { vendor_id: string }[]).map((r) => r.vendor_id));
     });
   }, []);
 
   const toggle = useCallback((id: string) => {
     // Pas connecté → on redirige vers la connexion (retour sur la page courante).
-    if (authed.current === false) {
+    if (authKnown.current && !userId.current) {
       const next = encodeURIComponent(
         window.location.pathname + window.location.search
       );
       window.location.href = `/auth?next=${next}`;
       return;
     }
+    const uid = userId.current;
+    if (!uid) return; // session pas encore résolue → on ignore le clic
+
     setIds((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-      write(next);
+      const isFav = prev.includes(id);
+      const next = isFav ? prev.filter((x) => x !== id) : [...prev, id];
+      // Persistance en base (optimiste ; on ne bloque pas l'UI).
+      const supabase = createClient();
+      if (isFav) {
+        void supabase
+          .from("vendor_favorites")
+          .delete()
+          .eq("user_id", uid)
+          .eq("vendor_id", id);
+      } else {
+        void supabase
+          .from("vendor_favorites")
+          .insert({ user_id: uid, vendor_id: id });
+      }
       return next;
     });
   }, []);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendEmail, emailShell, escapeHtml, escapeAttr } from "@/lib/email";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,9 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+  if (!rateLimit(`rsvp:${user.id}`, 60, 60_000)) {
+    return NextResponse.json({ error: "Trop de requêtes." }, { status: 429 });
   }
 
   let body: Record<string, unknown>;

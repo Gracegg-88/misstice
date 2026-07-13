@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Mail,
@@ -39,6 +39,11 @@ export default function AdminsClient({
 }) {
   const router = useRouter();
   const [admins, setAdmins] = useState<AdminRow[]>(initial);
+  // Resynchronise avec les données serveur après router.refresh()
+  // (sinon un admin fraîchement invité n'apparaît pas sans rechargement).
+  useEffect(() => {
+    setAdmins(initial);
+  }, [initial]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

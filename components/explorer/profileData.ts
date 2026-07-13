@@ -52,6 +52,8 @@ export function getPackages(v: Vendor): Pkg[] {
   return PKG_BY_CATEGORY[v.category] ?? GENERIC_PKGS;
 }
 
+// Type d'un avis réel (les avis proviennent de la table `reviews` via
+// lib/vendors → getVendorReviews). Les anciens avis d'exemple ont été retirés.
 export type Review = {
   author: string;
   initial: string;
@@ -60,45 +62,3 @@ export type Review = {
   text: string;
   event: string;
 };
-
-// Avis d'exemple — volontairement avec des avis mitigés et négatifs :
-// chez Misstice, TOUS les avis vérifiés sont publiés.
-export function getReviews(v: Vendor): Review[] {
-  const base: Review[] = [];
-  if (v.reviewSnippet) {
-    base.push({
-      author: v.reviewAuthor ?? "Client vérifié",
-      initial: (v.reviewAuthor ?? "C")[0],
-      date: "mars 2026",
-      rating: 5,
-      text: v.reviewSnippet,
-      event: "Prestation vérifiée",
-    });
-  }
-  return [
-    ...base,
-    { author: "Sophie M.", initial: "S", date: "février 2026", rating: 5, text: "Professionnalisme au top, à l'écoute du début à la fin. Je recommande les yeux fermés.", event: "Mariage" },
-    { author: "Thomas & Inès", initial: "T", date: "janvier 2026", rating: 5, text: "Exactement ce qu'on espérait. Le rapport qualité-prix est excellent.", event: "Anniversaire" },
-    { author: "Nadia B.", initial: "N", date: "décembre 2025", rating: 4, text: "Très bon travail dans l'ensemble. Petit bémol sur le délai de réponse avant l'événement, mais le jour J était parfait.", event: "Baptême" },
-    { author: "Julien R.", initial: "J", date: "novembre 2025", rating: 3, text: "Prestation correcte mais en deçà de mes attentes vu le prix. La communication aurait pu être plus fluide.", event: "Gala" },
-    { author: "Carine D.", initial: "C", date: "octobre 2025", rating: 2, text: "Déçue : retard à l'installation et quelques détails oubliés. Le résultat final restait acceptable, mais je m'attendais à mieux.", event: "Mariage" },
-  ];
-}
-
-// Répartition plausible des notes (croît avec la note moyenne).
-export function ratingBreakdown(v: Vendor) {
-  const r = v.rating;
-  const p5 = Math.min(95, Math.max(40, Math.round(((r - 3.5) / 1.5) * 100)));
-  const rest = 100 - p5;
-  const p4 = Math.round(rest * 0.6);
-  const p3 = Math.round(rest * 0.25);
-  const p2 = Math.round(rest * 0.1);
-  const p1 = Math.max(0, 100 - p5 - p4 - p3 - p2);
-  return [
-    { stars: 5, pct: p5 },
-    { stars: 4, pct: p4 },
-    { stars: 3, pct: p3 },
-    { stars: 2, pct: p2 },
-    { stars: 1, pct: p1 },
-  ];
-}

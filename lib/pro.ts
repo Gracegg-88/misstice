@@ -196,7 +196,10 @@ export async function getProStats(): Promise<ProStats> {
     supabase
       .from("conversations")
       .select("id", { count: "exact", head: true })
-      .eq("prestataire_id", user.id),
+      .eq("prestataire_id", user.id)
+      // Une « demande » = une conversation avec un devis demandé (demande != null),
+      // cohérent avec la page Demandes (sinon le compteur est gonflé).
+      .not("demande", "is", null),
     supabase.from("quotes").select("amount, status").eq("prestataire_id", user.id),
     supabase
       .from("vendors")

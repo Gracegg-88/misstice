@@ -132,10 +132,10 @@ export default function ChecklistClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          eventId,
           email: target.email,
           name: target.label.split(" · ")[0],
           taskLabel: label.trim(),
-          eventName,
           assignerName,
           url: `${window.location.origin}/dashboard/checklist`,
         }),

@@ -163,7 +163,7 @@ export default function VendorProfile({
                       <MapPin size={14} />
                       {vendor.city}
                     </span>
-                    {vendor.verified && (
+                    {vendor.verified && vendor.userId && (
                       <span className="inline-flex items-center gap-1 font-medium text-violet">
                         <BadgeCheck size={15} />
                         Vérifié par Misstice

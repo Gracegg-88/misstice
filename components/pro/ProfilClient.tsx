@@ -335,6 +335,15 @@ export default function ProfilClient({
     if (files.length === 0) return;
     setUploading(true);
     setError("");
+    // Garantit que la fiche vendor_profiles existe (FK de vendor_photos) : sinon
+    // un nouveau prestataire aurait un objet uploadé + un INSERT en échec (23503).
+    const profErr = await ensureProfile();
+    if (profErr) {
+      setUploading(false);
+      setError(profErr);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     const supabase = createClient();
 
     for (const file of files) {
@@ -374,9 +383,17 @@ export default function ProfilClient({
     router.refresh();
   };
 
+  // Extrait le chemin storage à partir d'une URL publique du bucket vendor-photos.
+  const storagePath = (url: string): string | null => {
+    const marker = "/vendor-photos/";
+    const i = url.indexOf(marker);
+    return i === -1 ? null : decodeURIComponent(url.slice(i + marker.length));
+  };
+
   const deletePhoto = async (id: string) => {
     setError("");
     const prev = pics;
+    const target = pics.find((x) => x.id === id);
     setPics((p) => p.filter((x) => x.id !== id));
     const supabase = createClient();
     const { error: delErr } = await supabase
@@ -387,6 +404,11 @@ export default function ProfilClient({
       setPics(prev);
       setError(delErr.message);
       return;
+    }
+    // RGPD : on retire aussi l'objet du bucket (sinon l'URL publique reste servie).
+    const path = target ? storagePath(target.url) : null;
+    if (path) {
+      await supabase.storage.from("vendor-photos").remove([path]);
     }
     router.refresh();
   };

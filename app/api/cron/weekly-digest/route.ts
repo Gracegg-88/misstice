@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, emailShell, escapeHtml } from "@/lib/email";
+import { siteUrl } from "@/lib/site-url";
 
 export const runtime = "nodejs";
 // Toujours dynamique (jamais mis en cache) : c'est un job.
@@ -8,11 +10,19 @@ export const dynamic = "force-dynamic";
 
 const eur = (n: number) => `${Math.round(n).toLocaleString("fr-FR")} €`;
 
+// Comparaison à temps constant (évite les attaques par timing sur le secret).
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
+
 export async function GET(request: Request) {
   // Sécurité : seul Vercel Cron (ou un appel avec le secret) est autorisé.
   const secret = process.env.CRON_SECRET;
   const auth = request.headers.get("authorization");
-  if (!secret || auth !== `Bearer ${secret}`) {
+  if (!secret || !auth || !safeEqual(auth, `Bearer ${secret}`)) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
@@ -29,48 +39,71 @@ export async function GET(request: Request) {
   const now = Date.now();
   const weekAgoISO = new Date(now - 7 * 86_400_000).toISOString();
 
-  // URL publique (pour les liens de l'email).
-  const reqUrl = new URL(request.url);
-  const host =
-    request.headers.get("x-forwarded-host") ??
-    request.headers.get("host") ??
-    reqUrl.host;
-  const proto =
-    request.headers.get("x-forwarded-proto") ?? reqUrl.protocol.replace(":", "");
-  const base = `${proto}://${host}`;
+  // URL publique de confiance (pour les liens de l'email).
+  const base = siteUrl(request);
 
-  // 1. Prestataires + emails.
-  const [{ data: pros }, usersRes, { data: vendors }] = await Promise.all([
-    admin.from("profiles").select("id, full_name").eq("role", "prestataire"),
-    admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from("vendors").select("id, user_id").not("user_id", "is", null),
-  ]);
-  const emailById = new Map(
-    (usersRes.data?.users ?? []).map((u) => [u.id, u.email ?? ""])
-  );
-  // vendor_id → prestataire (pour rattacher les vues de fiche).
-  const proByVendor = new Map(
-    ((vendors as { id: string; user_id: string }[]) ?? []).map((v) => [
-      v.id,
-      v.user_id,
-    ])
-  );
+  // Tout le bloc de lecture est protégé : en cas de panne DB, on échoue
+  // proprement (500) au lieu de continuer avec des données partielles.
+  let pros: { id: string; full_name: string | null }[];
+  let emailById: Map<string, string>;
+  let proByVendor: Map<string, string>;
+  let convs: { data: unknown };
+  let quotes: { data: unknown };
+  let views: { data: unknown };
+  try {
+    // 1. Prestataires + emails (listUsers PAGINÉ : plus de troncature à 1000).
+    const listAllUsers = async (): Promise<Map<string, string>> => {
+      const m = new Map<string, string>();
+      for (let page = 1; ; page++) {
+        const { data, error } = await admin.auth.admin.listUsers({
+          page,
+          perPage: 1000,
+        });
+        if (error) throw error;
+        for (const u of data.users) m.set(u.id, u.email ?? "");
+        if (data.users.length < 1000) break;
+      }
+      return m;
+    };
 
-  // 2. Activité de la semaine (une requête par table, agrégée en mémoire).
-  const [convs, quotes, views] = await Promise.all([
-    admin
-      .from("conversations")
-      .select("prestataire_id, demande, created_at")
-      .gte("created_at", weekAgoISO),
-    admin
-      .from("quotes")
-      .select("prestataire_id, status, amount, created_at")
-      .gte("created_at", weekAgoISO),
-    admin
-      .from("profile_views")
-      .select("vendor_id, viewed_at")
-      .gte("viewed_at", weekAgoISO),
-  ]);
+    const [prosRes, usersMap, vendorsRes] = await Promise.all([
+      admin.from("profiles").select("id, full_name").eq("role", "prestataire"),
+      listAllUsers(),
+      admin.from("vendors").select("id, user_id").not("user_id", "is", null),
+    ]);
+    if (prosRes.error) throw prosRes.error;
+    if (vendorsRes.error) throw vendorsRes.error;
+    pros = (prosRes.data as { id: string; full_name: string | null }[]) ?? [];
+    emailById = usersMap;
+    proByVendor = new Map(
+      ((vendorsRes.data as { id: string; user_id: string }[]) ?? []).map((v) => [
+        v.id,
+        v.user_id,
+      ])
+    );
+
+    // 2. Activité de la semaine (une requête par table, agrégée en mémoire).
+    [convs, quotes, views] = await Promise.all([
+      admin
+        .from("conversations")
+        .select("prestataire_id, demande, created_at")
+        .gte("created_at", weekAgoISO),
+      admin
+        .from("quotes")
+        .select("prestataire_id, status, amount, created_at")
+        .gte("created_at", weekAgoISO),
+      admin
+        .from("profile_views")
+        .select("vendor_id, viewed_at")
+        .gte("viewed_at", weekAgoISO),
+    ]);
+  } catch (e) {
+    console.error("weekly-digest fetch:", e);
+    return NextResponse.json(
+      { error: "Lecture des données échouée." },
+      { status: 500 }
+    );
+  }
 
   type Stat = {
     demandes: number;

@@ -51,7 +51,7 @@ export default function VendorCard({
           <Heart size={18} className={saved ? "fill-white" : ""} />
         </button>
 
-        {vendor.verified && (
+        {vendor.verified && vendor.userId && (
           <span className="absolute bottom-4 left-4 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-violet shadow-sm">
             <BadgeCheck size={14} />
             Vérifié par Misstice

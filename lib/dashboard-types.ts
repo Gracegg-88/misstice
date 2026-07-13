@@ -21,6 +21,8 @@ export type Guest = {
   group_label: string | null;
   status: "invité" | "en attente" | "confirmé" | "décliné";
   plus_one: boolean;
+  // Jeton porté par le lien RSVP (anti-IDOR sur la réponse). Voir rsvp-token.sql.
+  rsvp_token: string;
 };
 
 export type EventVendor = {
@@ -60,14 +62,6 @@ export type PlanningMoment = {
   vendor: string | null;
   color: string;
   position: number;
-};
-
-export type VendorCall = {
-  id: string;
-  event_id: string;
-  vendor: string;
-  scheduled_at: string;
-  mode: "appel" | "visio";
 };
 
 export type GiftItem = {

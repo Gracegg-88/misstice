@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { createClient as createStandaloneClient } from "@supabase/supabase-js";
+import { siteUrl } from "@/lib/site-url";
 import { sendEmail, emailShell, escapeHtml, escapeAttr } from "@/lib/email";
 import { createClient } from "@/lib/supabase/server";
 
@@ -89,15 +90,9 @@ export async function POST(request: Request) {
     );
   }
 
-  // Email d'invitation avec les identifiants générés.
-  const reqUrl = new URL(request.url);
-  const host =
-    request.headers.get("x-forwarded-host") ??
-    request.headers.get("host") ??
-    reqUrl.host;
-  const proto =
-    request.headers.get("x-forwarded-proto") ?? reqUrl.protocol.replace(":", "");
-  const loginUrl = `${proto}://${host}/auth`;
+  // Email d'invitation. URL de confiance (NEXT_PUBLIC_SITE_URL) car le lien
+  // accompagne des identifiants → pas d'injection via l'en-tête Host.
+  const loginUrl = `${siteUrl(request)}/auth`;
 
   const html = emailShell(`
     <h1 style="margin:0 0 8px;font-size:22px;color:#1A1A2E">Bienvenue dans l'administration Misstice</h1>

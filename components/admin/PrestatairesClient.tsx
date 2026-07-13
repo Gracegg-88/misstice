@@ -153,6 +153,7 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
 
       <ConfirmDialog
         open={confirmVendor !== null}
+        loading={busy === confirmVendor?.id}
         title="Supprimer la fiche"
         message={
           confirmVendor

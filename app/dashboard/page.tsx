@@ -309,7 +309,7 @@ export default async function DashboardOverview() {
               {guestsConfirmed} confirmé{guestsConfirmed > 1 ? "s" : ""}
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2.5 py-1 text-xs font-semibold text-festif">
-              {guestsPending} en attente
+              {guestsPending} sans réponse
             </span>
           </div>
           <Link

@@ -97,14 +97,16 @@ export default function InvitesClient({
     setCardBusy(false);
   };
 
-  const copyRsvp = (id: string) => {
+  const copyRsvp = (g: Guest) => {
+    // Le jeton dans l'URL protège la réponse RSVP (anti-IDOR).
+    const path = `/rsvp/${g.id}?t=${g.rsvp_token}`;
     const link =
       typeof window !== "undefined"
-        ? `${window.location.origin}/rsvp/${id}`
-        : `/rsvp/${id}`;
+        ? `${window.location.origin}${path}`
+        : path;
     navigator.clipboard?.writeText(link);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId((c) => (c === id ? null : c)), 2000);
+    setCopiedId(g.id);
+    setTimeout(() => setCopiedId((c) => (c === g.id ? null : c)), 2000);
   };
 
   // Envoie le lien RSVP par email à l'invité.
@@ -119,7 +121,7 @@ export default function InvitesClient({
     inFlight.current.add(g.id);
     setMailStatus((m) => ({ ...m, [g.id]: "sending" }));
     try {
-      const rsvpUrl = `${window.location.origin}/rsvp/${g.id}`;
+      const rsvpUrl = `${window.location.origin}/rsvp/${g.id}?t=${g.rsvp_token}`;
       const res = await fetch("/api/send-rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -218,7 +220,9 @@ export default function InvitesClient({
         status: form.status,
         plus_one: form.plus_one,
       })
-      .select("id, event_id, name, email, phone, diet, group_label, status, plus_one")
+      .select(
+        "id, event_id, name, email, phone, diet, group_label, status, plus_one, rsvp_token"
+      )
       .single();
     setSaving(false);
     if (insErr) {
@@ -577,7 +581,7 @@ export default function InvitesClient({
                     )}
                     <button
                       type="button"
-                      onClick={() => copyRsvp(g.id)}
+                      onClick={() => copyRsvp(g)}
                       title="Copier le lien RSVP"
                       className="inline-flex h-8 items-center justify-center gap-1 rounded-lg px-2 text-xs font-semibold text-slate transition-colors hover:bg-black/5 hover:text-violet"
                     >

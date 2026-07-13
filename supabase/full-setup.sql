@@ -1,16 +1,9 @@
 -- ============================================================================
---  Misstice — INSTALLATION COMPLETE (tous les scripts en un seul fichier).
---  A executer dans Supabase -> SQL Editor -> Run sur un projet NEUF.
---  Concatenation dans l'ordre de dependances. Idempotent.
---  Inclut super-admin.sql (infra admin). Exclut demo-cleanup.sql (destructif).
---  ENSUITE : creer les buckets storage 'avatars', 'vendor-photos', 'inspiration',
---  puis lancer make-admin.sql APRES la creation du compte admin.
+--  Misstice — INSTALLATION COMPLETE (un seul fichier). Idempotent.
+--  Correctifs securite audit inclus. ENSUITE : buckets + make-admin.sql.
 -- ============================================================================
 
-
--- ####################################################################
--- ###  SOURCE : schema.sql
--- ####################################################################
+-- ### SOURCE : schema.sql
 
 -- ============================================================================
 --  Misstice — Schéma de base de données (Supabase / PostgreSQL)
@@ -272,9 +265,7 @@ create or replace view public.budget_categories_with_spent
 -- Fin du schéma.
 
 
--- ####################################################################
--- ###  SOURCE : profile.sql
--- ####################################################################
+-- ### SOURCE : profile.sql
 
 -- ============================================================================
 --  Misstice — Profil : photo d'avatar (colonne + Storage)
@@ -314,9 +305,7 @@ create policy "avatars_delete" on storage.objects
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : admin.sql
--- ####################################################################
+-- ### SOURCE : admin.sql
 
 -- ============================================================================
 --  Misstice — Extension ADMIN (rôle admin + lecture globale sécurisée)
@@ -515,9 +504,7 @@ grant execute on function public.admin_delete_user(uuid) to authenticated;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : super-admin.sql
--- ####################################################################
+-- ### SOURCE : super-admin.sql
 
 -- ============================================================================
 --  Misstice — Super-admin & gestion des administrateurs.
@@ -655,9 +642,7 @@ grant execute on function public.sadmin_set_banned(uuid, boolean) to authenticat
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : vendors.sql
--- ####################################################################
+-- ### SOURCE : vendors.sql
 
 -- ============================================================================
 --  Misstice — Table VENDORS (annuaire public des prestataires)
@@ -728,9 +713,7 @@ where not exists (select 1 from public.vendors);
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : vendor-categories.sql
--- ####################################################################
+-- ### SOURCE : vendor-categories.sql
 
 -- ============================================================================
 --  Misstice — Catégories de prestataires (annuaire).
@@ -797,9 +780,7 @@ on conflict (name) do nothing;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : dashboard.sql
--- ####################################################################
+-- ### SOURCE : dashboard.sql
 
 -- ============================================================================
 --  Misstice — Tables du dashboard particulier (Checklist, Invités,
@@ -965,9 +946,7 @@ create policy "inspiration_delete" on storage.objects
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : messaging.sql
--- ####################################################################
+-- ### SOURCE : messaging.sql
 
 -- ============================================================================
 --  Misstice — Messagerie in-app famille ↔ prestataire (devis + discussion).
@@ -982,9 +961,19 @@ alter table public.vendors
   add column if not exists user_id uuid references public.profiles (id) on delete set null;
 
 -- Un prestataire peut créer / gérer SA propre fiche (en plus des admins).
+-- SÉCURITÉ : on exige le rôle 'prestataire' (ou admin) → un compte particulier
+-- ne peut pas polluer l'annuaire public avec des fiches.
 drop policy if exists "vendors_owner_write" on public.vendors;
 create policy "vendors_owner_write" on public.vendors
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all
+  using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.role in ('prestataire', 'admin')
+    )
+  );
 
 -- 2. CONVERSATIONS ─────────────────────────────────────────────────────────
 create table if not exists public.conversations (
@@ -1046,9 +1035,14 @@ drop policy if exists "conv_insert" on public.conversations;
 create policy "conv_insert" on public.conversations
   for insert with check (auth.uid() = particulier_id);
 
+-- WITH CHECK co-localisé : l'utilisateur doit rester participant après la mise
+-- à jour (la protection fine des colonnes id est aussi assurée par un trigger
+-- dans security.sql). Évite qu'un non-participant devienne participant.
 drop policy if exists "conv_update" on public.conversations;
 create policy "conv_update" on public.conversations
-  for update using (auth.uid() in (particulier_id, prestataire_id));
+  for update
+  using (auth.uid() in (particulier_id, prestataire_id))
+  with check (auth.uid() in (particulier_id, prestataire_id));
 
 -- 3. MESSAGES ──────────────────────────────────────────────────────────────
 create table if not exists public.messages (
@@ -1125,9 +1119,7 @@ end $$;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : pro.sql
--- ####################################################################
+-- ### SOURCE : pro.sql
 
 -- ============================================================================
 --  Misstice — Espace prestataire : devis, formules, book, disponibilités, vues.
@@ -1165,13 +1157,37 @@ drop policy if exists "quotes_insert" on public.quotes;
 create policy "quotes_insert" on public.quotes
   for insert with check (prestataire_id = auth.uid());
 
--- Le prestataire OU la famille (via la conversation) peut mettre à jour le statut.
+-- SÉCURITÉ (CRIT-1) : SEUL le prestataire propriétaire peut UPDATE directement
+-- sa fiche devis (avec WITH CHECK pour empêcher de réassigner prestataire_id).
+-- La famille NE modifie PAS la table en direct — elle change UNIQUEMENT le
+-- statut via la RPC set_quote_status ci-dessous (accepté/refusé), ce qui
+-- interdit toute falsification de montant / lignes / TVA côté client.
 drop policy if exists "quotes_update" on public.quotes;
 create policy "quotes_update" on public.quotes
-  for update using (
-    prestataire_id = auth.uid()
-    or (conversation_id is not null and public.is_conversation_participant(conversation_id))
-  );
+  for update using (prestataire_id = auth.uid())
+  with check (prestataire_id = auth.uid());
+
+-- RPC : la famille (participante à la conversation du devis) accepte ou refuse.
+-- N'écrit QUE la colonne status ; aucune autre colonne n'est touchée.
+create or replace function public.set_quote_status(p_quote uuid, p_status text)
+returns boolean
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_conv uuid;
+begin
+  if p_status not in ('accepté', 'refusé') then
+    return false;
+  end if;
+  select conversation_id into v_conv from public.quotes where id = p_quote;
+  if v_conv is null or not public.is_conversation_participant(v_conv) then
+    return false;
+  end if;
+  update public.quotes set status = p_status where id = p_quote;
+  return found;
+end;
+$$;
+grant execute on function public.set_quote_status(uuid, text) to authenticated;
 
 drop policy if exists "quotes_delete" on public.quotes;
 create policy "quotes_delete" on public.quotes
@@ -1323,9 +1339,7 @@ $$;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : reviews.sql
--- ####################################################################
+-- ### SOURCE : reviews.sql
 
 -- ============================================================================
 --  Misstice — Avis clients (laissés par les particuliers uniquement).
@@ -1417,9 +1431,7 @@ update public.vendors v
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : notifications.sql
--- ####################################################################
+-- ### SOURCE : notifications.sql
 
 -- ============================================================================
 --  Misstice — Notifications in-app (cloche + temps réel).
@@ -1597,9 +1609,7 @@ end $$;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : security.sql
--- ####################################################################
+-- ### SOURCE : security.sql
 
 -- ============================================================================
 --  Misstice — DURCISSEMENT SÉCURITÉ (RLS / triggers / privilèges colonnes)
@@ -2023,9 +2033,7 @@ create trigger budget_expenses_check_cat
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : permissions.sql
--- ####################################################################
+-- ### SOURCE : permissions.sql
 
 -- ============================================================================
 --  Misstice — Permissions de collaboration par section.
@@ -2173,9 +2181,7 @@ create policy "inspiration_delete" on storage.objects
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : collaboration.sql
--- ####################################################################
+-- ### SOURCE : collaboration.sql
 
 -- ============================================================================
 --  Misstice — Collaboration : acceptation d'invitation (équipe) & RSVP invités.
@@ -2253,9 +2259,7 @@ grant execute on function public.rsvp_guest(uuid, text) to anon, authenticated;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : collaboration-extra.sql
--- ####################################################################
+-- ### SOURCE : collaboration-extra.sql
 
 -- ============================================================================
 --  Misstice — Compléments collaboration.
@@ -2281,9 +2285,7 @@ grant execute on function public.event_organizer(uuid) to authenticated;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : quote-details.sql
--- ####################################################################
+-- ### SOURCE : quote-details.sql
 
 -- ============================================================================
 --  Misstice — Devis « document » : lignes de prestation, coordonnées, totaux.
@@ -2400,9 +2402,7 @@ end $$;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : event-details.sql
--- ####################################################################
+-- ### SOURCE : event-details.sql
 
 -- ============================================================================
 --  Misstice — Détails d'événement (heure, lieu, tenue) + RSVP enrichi.
@@ -2448,9 +2448,7 @@ grant execute on function public.guest_rsvp_info(uuid) to anon, authenticated;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : event-vendors-status.sql
--- ####################################################################
+-- ### SOURCE : event-vendors-status.sql
 
 -- ============================================================================
 --  Misstice — Statuts des prestataires d'un événement.
@@ -2477,9 +2475,7 @@ alter table public.event_vendors
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : invitation-card.sql
--- ####################################################################
+-- ### SOURCE : invitation-card.sql
 
 -- ============================================================================
 --  Misstice — Carte d'invitation personnalisée (une par événement).
@@ -2521,9 +2517,7 @@ grant execute on function public.guest_rsvp_info(uuid) to anon, authenticated;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : inspiration-media.sql
--- ####################################################################
+-- ### SOURCE : inspiration-media.sql
 
 -- ============================================================================
 --  Misstice — Inspiration : distinguer image / vidéo.
@@ -2543,9 +2537,7 @@ alter table public.inspiration_ideas
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : message-reads.sql
--- ####################################################################
+-- ### SOURCE : message-reads.sql
 
 -- ============================================================================
 --  Misstice — Accusés de lecture & compteurs de messages non lus.
@@ -2613,9 +2605,7 @@ grant execute on function public.my_unread_counts() to authenticated;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : messaging-dedupe.sql
--- ####################################################################
+-- ### SOURCE : messaging-dedupe.sql
 
 -- ============================================================================
 --  Misstice — Fusion des conversations en double + garde-fou anti-duplication.
@@ -2692,9 +2682,7 @@ create unique index if not exists conversations_pair_uniq
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : team-chat.sql
--- ####################################################################
+-- ### SOURCE : team-chat.sql
 
 -- ============================================================================
 --  Misstice — Chat de groupe « Équipe » (par événement).
@@ -2840,9 +2828,7 @@ end $$;
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : category-fields.sql
--- ####################################################################
+-- ### SOURCE : category-fields.sql
 
 -- ============================================================================
 --  Misstice — Enrichissement des catégories de prestataire (admin).
@@ -2860,9 +2846,7 @@ alter table public.vendor_categories
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : profile-extras.sql
--- ####################################################################
+-- ### SOURCE : profile-extras.sql
 
 -- ============================================================================
 --  Misstice — Champs profil supplémentaires (données newsletter / relances).
@@ -2882,9 +2866,7 @@ alter table public.profiles
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : vibes.sql
--- ####################################################################
+-- ### SOURCE : vibes.sql
 
 -- ============================================================================
 --  Misstice — « Ambiance & Vibe » sur les prestataires (filtres + badges).
@@ -2903,9 +2885,7 @@ alter table public.vendors add column if not exists music_styles text[] not null
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : gift-list.sql
--- ####################################################################
+-- ### SOURCE : gift-list.sql
 
 -- ============================================================================
 --  Misstice — Liste de cadeaux d'un événement (liens externes Fnac/Amazon…).
@@ -2945,9 +2925,7 @@ create policy "gift_items_write" on public.gift_items
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : seating.sql
--- ####################################################################
+-- ### SOURCE : seating.sql
 
 -- ============================================================================
 --  Misstice — Plan de table d'un événement (tables + placements).
@@ -3002,9 +2980,7 @@ create policy "seating_seats_write" on public.seating_seats
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : event-invitation.sql
--- ####################################################################
+-- ### SOURCE : event-invitation.sql
 
 -- ============================================================================
 --  Misstice — Site d'invitation public + RSVP partageable (par événement).
@@ -3084,20 +3060,113 @@ grant execute on function public.rsvp_public(uuid, text, text, text, boolean) to
 -- Fin.
 
 
--- ####################################################################
--- ###  SOURCE : availability-public.sql
--- ####################################################################
+-- ### SOURCE : rsvp-token.sql
 
 -- ============================================================================
---  Misstice — Lecture publique des disponibilités prestataire.
+--  Misstice — Jeton RSVP par invité (correctif HIGH-8 : IDOR sur rsvp_guest).
 --  À exécuter dans Supabase → SQL Editor → Run. Idempotent.
---  Nécessaire pour afficher « Prochaine disponibilité » sur la fiche publique.
---  (À lancer APRÈS pro.sql / security.sql pour fixer la policy de lecture.)
+--  À lancer APRÈS collaboration.sql (qui définit rsvp_guest 2 args).
+--
+--  Avant : rsvp_guest(guest_id, status) accordée à anon → n'importe qui
+--  connaissant un guest_id pouvait modifier la réponse d'un invité.
+--  Après : un jeton (porté par le lien RSVP) est exigé pour répondre.
 -- ============================================================================
 
+set check_function_bodies = off;
+
+-- Jeton capability, transmis uniquement dans le lien RSVP.
+alter table public.guests
+  add column if not exists rsvp_token uuid not null default gen_random_uuid();
+update public.guests set rsvp_token = gen_random_uuid() where rsvp_token is null;
+
+-- On retire l'ancienne fonction non protégée…
+drop function if exists public.rsvp_guest(uuid, text);
+
+-- …et on la remplace par une version exigeant le jeton.
+create or replace function public.rsvp_guest(
+  p_guest_id uuid,
+  p_status   text,
+  p_token    uuid
+)
+returns boolean
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if p_status not in ('confirmé', 'décliné') then
+    return false;
+  end if;
+  update public.guests
+    set status = p_status
+    where id = p_guest_id
+      and rsvp_token = p_token;   -- ← contrôle anti-IDOR
+  return found;
+end;
+$$;
+grant execute on function public.rsvp_guest(uuid, text, uuid) to anon, authenticated;
+
+-- Fin.
+
+
+-- ### SOURCE : favorites.sql
+
+-- ============================================================================
+--  Misstice — Favoris prestataires persistés (par compte).
+--  À exécuter dans Supabase → SQL Editor → Run. Idempotent.
+--  Remplace le stockage localStorage : les favoris sont désormais liés au
+--  compte (donc communs à tous les événements de l'utilisateur).
+-- ============================================================================
+
+create table if not exists public.vendor_favorites (
+  user_id    uuid not null references public.profiles (id) on delete cascade,
+  vendor_id  uuid not null references public.vendors (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, vendor_id)
+);
+
+alter table public.vendor_favorites enable row level security;
+
+drop policy if exists "favorites_own" on public.vendor_favorites;
+create policy "favorites_own" on public.vendor_favorites
+  for all
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- Fin.
+
+
+-- ### SOURCE : availability-public.sql
+
+-- ============================================================================
+--  Misstice — Disponibilité prestataire : exposition publique MINIMALE.
+--  À exécuter dans Supabase → SQL Editor → Run. Idempotent.
+--  (À lancer APRÈS pro.sql / security.sql.)
+--
+--  SÉCURITÉ (correctif HIGH-6) : la table vendor_availability contient le
+--  planning (booked/pending/blocked) ET une colonne `note` PRIVÉE. On NE
+--  l'expose PAS en lecture publique. La fiche publique n'a besoin que de la
+--  PROCHAINE date disponible → fournie par une fonction SECURITY DEFINER qui
+--  ne renvoie ni la note, ni le détail du calendrier.
+-- ============================================================================
+
+set check_function_bodies = off;
+
+-- Lecture de la table réservée au prestataire propriétaire (pas d'accès anon).
 drop policy if exists "availability_read" on public.vendor_availability;
 create policy "availability_read" on public.vendor_availability
-  for select using (true);
+  for select using (prestataire_id = auth.uid());
+
+-- Seule donnée publique : la prochaine date explicitement « disponible ».
+create or replace function public.public_next_availability(p_user uuid)
+returns date
+language sql security definer set search_path = public stable
+as $$
+  select min(date)
+  from public.vendor_availability
+  where prestataire_id = p_user
+    and status = 'available'
+    and date >= current_date;
+$$;
+grant execute on function public.public_next_availability(uuid) to anon, authenticated;
 
 -- Fin.
 

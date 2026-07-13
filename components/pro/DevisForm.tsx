@@ -132,7 +132,7 @@ export default function DevisForm({
       event_need: eventNeed.trim() || null,
       event_date: eventDate.trim() || null,
       event_location: eventLocation.trim() || null,
-      guests_count: guests.trim() || null,
+      guests_count: showGuests ? guests.trim() || null : null,
       client_email: clientEmail.trim() || null,
       client_phone: clientPhone.trim() || null,
       client_address: clientAddress.trim() || null,
@@ -175,11 +175,15 @@ export default function DevisForm({
     }
 
     // Message dans la conversation → la famille voit le devis (carte cliquable).
-    await supabase.from("messages").insert({
+    // On vérifie l'insert : sans ce message, le devis serait « fantôme » côté client.
+    const { error: msgErr } = await supabase.from("messages").insert({
       conversation_id: targetConvId,
       sender_id: prestataireId,
       body: `[[devis:${data.id}]] Devis ${quoteNumber} — ${euro(totals.total)}`,
     });
+    if (msgErr) {
+      console.error("devis message insert:", msgErr);
+    }
 
     router.push(`/devis/${data.id}`);
   };

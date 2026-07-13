@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Download,
@@ -36,6 +37,7 @@ export default function DevisActions({
   status: QuoteStatus;
   autoAdd?: AutoAdd;
 }) {
+  const router = useRouter();
   const [current, setCurrent] = useState<QuoteStatus>(status);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -45,13 +47,15 @@ export default function DevisActions({
     setSaving(true);
     setError("");
     const supabase = createClient();
-    const { error: upErr } = await supabase
-      .from("quotes")
-      .update({ status: next })
-      .eq("id", quoteId);
-    if (upErr) {
+    // La famille ne modifie pas la table quotes en direct (RLS) : elle passe par
+    // une RPC qui n'écrit QUE le statut (anti-falsification du montant — CRIT-1).
+    const { data: ok, error: upErr } = await supabase.rpc("set_quote_status", {
+      p_quote: quoteId,
+      p_status: next,
+    });
+    if (upErr || ok === false) {
       setSaving(false);
-      setError(upErr.message);
+      setError(upErr?.message ?? "Action impossible sur ce devis.");
       return;
     }
     // Synchronise le statut de la demande (vue « Demandes » côté prestataire).
@@ -115,6 +119,9 @@ export default function DevisActions({
 
     setSaving(false);
     setCurrent(next);
+    // Rafraîchit les composants serveur (badge du devis, listes) qui sinon
+    // resteraient figés sur l'ancien statut.
+    router.refresh();
   };
 
   // Le client ne peut répondre qu'à un devis encore en attente.

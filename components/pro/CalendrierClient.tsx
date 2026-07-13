@@ -106,12 +106,14 @@ export default function CalendrierClient({
   const [editingNote, setEditingNote] = useState(false);
   const [noteDraft, setNoteDraft] = useState("");
 
-  // Statut effectif d'une date : disponibilité enregistrée, sinon déduit du devis.
+  // Statut effectif d'une date. Un devis ACCEPTÉ prime sur toute disponibilité
+  // manuelle (sinon un jour marqué « Disponible » masquerait une réservation
+  // confirmée → risque de double réservation).
   const effStatus = (key: string): Status | null => {
-    const a = map[key];
-    if (a) return a.status;
     const e = eventByDate[key];
     if (e?.status === "accepté") return "booked";
+    const a = map[key];
+    if (a) return a.status;
     if (e?.status === "envoyé") return "pending";
     return null;
   };

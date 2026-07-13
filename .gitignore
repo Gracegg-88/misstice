@@ -30,3 +30,7 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Audits internes (ne pas committer)
+AUDIT.md
+AUDIT_RESOLU.md

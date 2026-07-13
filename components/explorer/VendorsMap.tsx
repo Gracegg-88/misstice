@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { Map as LeafletMap, LayerGroup } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { getCoords, type Vendor } from "./vendors";
 
@@ -13,8 +14,8 @@ import { getCoords, type Vendor } from "./vendors";
 export default function VendorsMap({ vendors }: { vendors: Vendor[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // on garde l'instance pour la nettoyer / mettre à jour
-  const mapRef = useRef<any>(null);
-  const layerRef = useRef<any>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const layerRef = useRef<LayerGroup | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +42,8 @@ export default function VendorsMap({ vendors }: { vendors: Vendor[] }) {
         mapRef.current.removeLayer(layerRef.current);
       }
       layerRef.current = L.layerGroup().addTo(mapRef.current);
+      const map = mapRef.current;
+      const layer = layerRef.current;
 
       const icon = L.divIcon({
         className: "",
@@ -73,13 +76,11 @@ export default function VendorsMap({ vendors }: { vendors: Vendor[] }) {
           "display:inline-block;background:#6C3CE1;color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:8px 14px;border-radius:10px";
         wrap.append(title, cat, link);
 
-        L.marker(coords, { icon })
-          .addTo(layerRef.current)
-          .bindPopup(wrap);
+        L.marker(coords, { icon }).addTo(layer).bindPopup(wrap);
       });
 
       if (points.length) {
-        mapRef.current.fitBounds(points, { padding: [40, 40], maxZoom: 6 });
+        map.fitBounds(points, { padding: [40, 40], maxZoom: 6 });
       }
     })();
 

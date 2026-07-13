@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
+import { safeMediaUrl } from "@/lib/safe-url";
 import type { Message } from "@/lib/messaging-types";
 
 // Marqueurs techniques dans le corps d'un message.
@@ -321,6 +322,11 @@ export default function ConversationThread({
           const img = m.body.match(IMG_RE);
           const vid = m.body.match(VID_RE);
           const doc = m.body.match(DOC_RE);
+          // Anti-XSS : on ne rend le média que si l'URL est http(s).
+          // Sinon on retombe sur le rendu texte (échappé par React).
+          const imgUrl = img ? safeMediaUrl(img[1]) : null;
+          const vidUrl = vid ? safeMediaUrl(vid[1]) : null;
+          const docUrl = doc ? safeMediaUrl(doc[1]) : null;
 
           return (
             <Fragment key={m.id}>
@@ -354,17 +360,17 @@ export default function ConversationThread({
                     <p className="mt-2 text-[11px] text-slate">{fmt(m.created_at)}</p>
                   </Link>
                 </div>
-              ) : img ? (
+              ) : imgUrl ? (
                 <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                   <a
-                    href={img[1]}
+                    href={imgUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="max-w-[70%] overflow-hidden rounded-2xl border border-black/5"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={img[1]}
+                      src={imgUrl}
                       alt="Image partagée"
                       referrerPolicy="no-referrer"
                       className="max-h-72 w-full object-cover"
@@ -374,11 +380,11 @@ export default function ConversationThread({
                     </p>
                   </a>
                 </div>
-              ) : vid ? (
+              ) : vidUrl ? (
                 <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                   <div className="max-w-[70%] overflow-hidden rounded-2xl border border-black/5 bg-black">
                     <video
-                      src={vid[1]}
+                      src={vidUrl}
                       controls
                       playsInline
                       className="max-h-72 w-full object-contain"
@@ -388,10 +394,10 @@ export default function ConversationThread({
                     </p>
                   </div>
                 </div>
-              ) : doc ? (
+              ) : docUrl ? (
                 <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                   <a
-                    href={doc[1]}
+                    href={docUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex max-w-[75%] items-center gap-3 rounded-2xl border border-black/5 bg-white p-3 transition-colors hover:border-violet"
@@ -401,7 +407,7 @@ export default function ConversationThread({
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-plum">
-                        {doc[2].trim() || "Document"}
+                        {doc?.[2]?.trim() || "Document"}
                       </p>
                       <p className="text-[11px] text-slate">{fmt(m.created_at)}</p>
                     </div>

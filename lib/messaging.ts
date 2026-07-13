@@ -131,13 +131,16 @@ export async function getConversation(
   };
 }
 
-/** Messages d'une conversation (ordre chronologique). */
+/** Messages d'une conversation (les 100 plus récents, ordre chronologique). */
 export async function getMessages(conversationId: string): Promise<Message[]> {
   const supabase = createClient();
+  // On borne le chargement (perf/DOM) : les 100 derniers messages suffisent
+  // pour l'affichage ; le temps réel ajoute les nouveaux ensuite.
   const { data } = await supabase
     .from("messages")
     .select("id, conversation_id, sender_id, body, created_at")
     .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true });
-  return (data as Message[]) ?? [];
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return ((data as Message[]) ?? []).reverse();
 }

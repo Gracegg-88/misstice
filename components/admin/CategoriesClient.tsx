@@ -110,12 +110,13 @@ export default function CategoriesClient({
         return;
       }
     } else if (editing) {
+      const oldName = editing.name;
       const { error: upErr } = await supabase()
         .from("vendor_categories")
         .update({ name, description: formDesc.trim() || null })
         .eq("id", editing.id);
-      setSaving(false);
       if (upErr) {
+        setSaving(false);
         setError(
           upErr.message.toLowerCase().includes("duplicate")
             ? "Cette catégorie existe déjà."
@@ -123,6 +124,15 @@ export default function CategoriesClient({
         );
         return;
       }
+      // Propagation : les fiches sont reliées par le NOM (texte) → on répercute
+      // le renommage pour ne pas orpheliner les prestataires (comptage, filtres).
+      if (name !== oldName) {
+        await supabase()
+          .from("vendors")
+          .update({ category: name })
+          .eq("category", oldName);
+      }
+      setSaving(false);
     }
     setEditing(null);
     router.refresh();
@@ -141,13 +151,16 @@ export default function CategoriesClient({
     router.refresh();
   };
 
+  const [deleting, setDeleting] = useState(false);
   const doRemove = async () => {
-    if (!confirmCat) return;
+    if (!confirmCat || deleting) return;
     setError("");
+    setDeleting(true);
     const { error: delErr } = await supabase()
       .from("vendor_categories")
       .delete()
       .eq("id", confirmCat.id);
+    setDeleting(false);
     setConfirmCat(null);
     if (delErr) {
       setError(delErr.message);
@@ -385,6 +398,7 @@ export default function CategoriesClient({
 
       <ConfirmDialog
         open={confirmCat !== null}
+        loading={deleting}
         title="Supprimer la catégorie"
         message={
           confirmCat

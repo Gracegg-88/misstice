@@ -34,13 +34,37 @@ drop policy if exists "quotes_insert" on public.quotes;
 create policy "quotes_insert" on public.quotes
   for insert with check (prestataire_id = auth.uid());
 
--- Le prestataire OU la famille (via la conversation) peut mettre à jour le statut.
+-- SÉCURITÉ (CRIT-1) : SEUL le prestataire propriétaire peut UPDATE directement
+-- sa fiche devis (avec WITH CHECK pour empêcher de réassigner prestataire_id).
+-- La famille NE modifie PAS la table en direct — elle change UNIQUEMENT le
+-- statut via la RPC set_quote_status ci-dessous (accepté/refusé), ce qui
+-- interdit toute falsification de montant / lignes / TVA côté client.
 drop policy if exists "quotes_update" on public.quotes;
 create policy "quotes_update" on public.quotes
-  for update using (
-    prestataire_id = auth.uid()
-    or (conversation_id is not null and public.is_conversation_participant(conversation_id))
-  );
+  for update using (prestataire_id = auth.uid())
+  with check (prestataire_id = auth.uid());
+
+-- RPC : la famille (participante à la conversation du devis) accepte ou refuse.
+-- N'écrit QUE la colonne status ; aucune autre colonne n'est touchée.
+create or replace function public.set_quote_status(p_quote uuid, p_status text)
+returns boolean
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_conv uuid;
+begin
+  if p_status not in ('accepté', 'refusé') then
+    return false;
+  end if;
+  select conversation_id into v_conv from public.quotes where id = p_quote;
+  if v_conv is null or not public.is_conversation_participant(v_conv) then
+    return false;
+  end if;
+  update public.quotes set status = p_status where id = p_quote;
+  return found;
+end;
+$$;
+grant execute on function public.set_quote_status(uuid, text) to authenticated;
 
 drop policy if exists "quotes_delete" on public.quotes;
 create policy "quotes_delete" on public.quotes

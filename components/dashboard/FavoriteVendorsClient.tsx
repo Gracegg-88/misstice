@@ -28,19 +28,29 @@ export default function FavoriteVendorsClient() {
       return;
     }
     let alive = true;
-    const supabase = createClient();
-    supabase
-      .from("vendors")
-      .select("id, name, category, city, image, rating, grad")
-      .in("id", ids)
-      .then(({ data }) => {
+    setLoading(true);
+    (async () => {
+      const supabase = createClient();
+      try {
+        const { data } = await supabase
+          .from("vendors")
+          .select("id, name, category, city, image, rating, grad")
+          .in("id", ids);
         if (!alive) return;
         // On respecte l'ordre des favoris (les plus récents d'abord dans ids).
         const rows = (data as FavVendor[]) ?? [];
         const byId = new Map(rows.map((r) => [r.id, r]));
-        setVendors(ids.map((id) => byId.get(id)).filter(Boolean) as FavVendor[]);
-        setLoading(false);
-      });
+        setVendors(
+          ids.map((id) => byId.get(id)).filter(Boolean) as FavVendor[]
+        );
+      } catch (e) {
+        // On n'immobilise pas l'écran en cas d'erreur réseau.
+        console.error("favorites load:", e);
+      } finally {
+        // finally garantit la sortie de l'état « Chargement… » même sur erreur.
+        if (alive) setLoading(false);
+      }
+    })();
     return () => {
       alive = false;
     };

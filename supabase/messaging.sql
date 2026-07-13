@@ -11,9 +11,19 @@ alter table public.vendors
   add column if not exists user_id uuid references public.profiles (id) on delete set null;
 
 -- Un prestataire peut créer / gérer SA propre fiche (en plus des admins).
+-- SÉCURITÉ : on exige le rôle 'prestataire' (ou admin) → un compte particulier
+-- ne peut pas polluer l'annuaire public avec des fiches.
 drop policy if exists "vendors_owner_write" on public.vendors;
 create policy "vendors_owner_write" on public.vendors
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all
+  using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.role in ('prestataire', 'admin')
+    )
+  );
 
 -- 2. CONVERSATIONS ─────────────────────────────────────────────────────────
 create table if not exists public.conversations (
@@ -75,9 +85,14 @@ drop policy if exists "conv_insert" on public.conversations;
 create policy "conv_insert" on public.conversations
   for insert with check (auth.uid() = particulier_id);
 
+-- WITH CHECK co-localisé : l'utilisateur doit rester participant après la mise
+-- à jour (la protection fine des colonnes id est aussi assurée par un trigger
+-- dans security.sql). Évite qu'un non-participant devienne participant.
 drop policy if exists "conv_update" on public.conversations;
 create policy "conv_update" on public.conversations
-  for update using (auth.uid() in (particulier_id, prestataire_id));
+  for update
+  using (auth.uid() in (particulier_id, prestataire_id))
+  with check (auth.uid() in (particulier_id, prestataire_id));
 
 -- 3. MESSAGES ──────────────────────────────────────────────────────────────
 create table if not exists public.messages (

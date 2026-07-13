@@ -47,10 +47,11 @@ export default async function ProOverviewPage() {
       .from("conversations")
       .select("created_at")
       .eq("prestataire_id", uid)
+      .not("demande", "is", null)
       .gte("created_at", sinceISO),
     supabase
       .from("quotes")
-      .select("created_at, status")
+      .select("created_at, status, amount")
       .eq("prestataire_id", uid)
       .gte("created_at", sinceISO),
     vendor?.vendorId
@@ -85,11 +86,25 @@ export default async function ProOverviewPage() {
   const demandesSpark = bucket(
     ((convRows as { created_at: string }[]) ?? []).map((r) => r.created_at)
   );
-  const qs = (quoteRows as { created_at: string; status: string }[]) ?? [];
+  const qs =
+    (quoteRows as { created_at: string; status: string; amount: number }[]) ?? [];
   const devisSpark = bucket(qs.map((q) => q.created_at));
   const acceptSpark = bucket(
     qs.filter((q) => q.status === "accepté").map((q) => q.created_at)
   );
+  // Revenu par jour = SOMME des montants des devis acceptés (pas un simple compte).
+  const revenueSpark = (() => {
+    const c = Array(7).fill(0) as number[];
+    for (const q of qs) {
+      if (q.status !== "accepté") continue;
+      const day = new Date(q.created_at);
+      day.setHours(0, 0, 0, 0);
+      const idx =
+        6 - Math.floor((todayMid.getTime() - day.getTime()) / 86_400_000);
+      if (idx >= 0 && idx < 7) c[idx] += Number(q.amount) || 0;
+    }
+    return c;
+  })();
   const viewsSpark = bucket(
     ((viewRes.data as { viewed_at: string }[]) ?? []).map((v) => v.viewed_at)
   );
@@ -99,7 +114,7 @@ export default async function ProOverviewPage() {
     { icon: Inbox, label: "Demandes reçues", value: stats.demandes, sub: `+${sum(demandesSpark)} cette semaine`, tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: demandesSpark },
     { icon: FileText, label: "Devis envoyés", value: stats.quotesSent, sub: `+${sum(devisSpark)} cette semaine`, tint: "bg-festif-soft text-festif", color: "#FF8C42", spark: devisSpark },
     { icon: BadgeCheck, label: "Devis acceptés", value: stats.quotesAccepted, sub: `${stats.quotesSent ? Math.round((stats.quotesAccepted / stats.quotesSent) * 100) : 0}% de conversion`, tint: "bg-emerald-soft text-emerald", color: "#10B981", spark: acceptSpark },
-    { icon: TrendingUp, label: "Revenu estimé", value: stats.revenue, sub: "Devis acceptés", tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: acceptSpark, euro: true },
+    { icon: TrendingUp, label: "Revenu estimé", value: stats.revenue, sub: "Devis acceptés", tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: revenueSpark, euro: true },
   ];
 
   // Répartition des devis par statut.

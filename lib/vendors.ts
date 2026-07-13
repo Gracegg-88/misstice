@@ -38,7 +38,7 @@ function map(r: Row): Vendor {
     city: r.city ?? "",
     region: r.region ?? "",
     priceLevel: (r.price_level as 1 | 2 | 3) ?? 2,
-    priceFrom: r.price_from ?? "",
+    priceFrom: r.price_from?.trim() || "Sur devis",
     rating: Number(r.rating),
     reviews: r.reviews,
     verified: r.verified,
@@ -185,17 +185,12 @@ export async function getNextAvailability(
   userId: string
 ): Promise<string | null> {
   const supabase = createClient();
-  const today = new Date().toISOString().slice(0, 10);
-  const { data } = await supabase
-    .from("vendor_availability")
-    .select("date")
-    .eq("prestataire_id", userId)
-    .eq("status", "available")
-    .gte("date", today)
-    .order("date", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  return (data as { date: string } | null)?.date ?? null;
+  // Passe par la fonction SECURITY DEFINER : la table n'est plus lisible en
+  // public (elle contient des notes privées). Voir availability-public.sql.
+  const { data } = await supabase.rpc("public_next_availability", {
+    p_user: userId,
+  });
+  return (data as string | null) ?? null;
 }
 
 /** Un prestataire par son id. */

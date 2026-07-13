@@ -34,6 +34,11 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
   const [justSaved, setJustSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [respondError, setRespondError] = useState("");
+  // Réponse pré-sélectionnée depuis l'email (?r=…), à CONFIRMER par un clic.
+  // On ne soumet JAMAIS automatiquement (les scanners de liens préchargent l'URL).
+  const [preselect, setPreselect] = useState<"confirmé" | "décliné" | null>(null);
+  // Jeton du lien (?t=…) — requis pour répondre (anti-IDOR).
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -50,32 +55,36 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
       }
       setState("ready");
 
-      // Réponse directe depuis l'email (bouton Accepter / Décliner → ?r=…).
-      const r = new URLSearchParams(window.location.search).get("r");
+      const params = new URLSearchParams(window.location.search);
+      setToken(params.get("t"));
+
+      // Choix venu de l'email (bouton Accepter / Décliner → ?r=…) : on PRÉ-SÉLECTIONNE
+      // seulement. Aucune mutation au chargement (anti-préchargement des scanners).
+      const r = params.get("r");
       if (
         (r === "confirmé" || r === "décliné") &&
         row.status !== "confirmé" &&
         row.status !== "décliné"
       ) {
-        const { data: ok } = await supabase.rpc("rsvp_guest", {
-          p_guest_id: id,
-          p_status: r,
-        });
-        if (ok) {
-          setAnswer(r);
-          setJustSaved(true);
-        }
+        setPreselect(r);
       }
     })();
   }, [id]);
 
   const respond = async (status: "confirmé" | "décliné") => {
+    if (!token) {
+      setRespondError(
+        "Lien incomplet. Ouvrez le lien reçu par email pour répondre."
+      );
+      return;
+    }
     setBusy(true);
     setRespondError("");
     const supabase = createClient();
     const { data, error } = await supabase.rpc("rsvp_guest", {
       p_guest_id: id,
       p_status: status,
+      p_token: token,
     });
     setBusy(false);
     if (error || !data) {
@@ -264,26 +273,37 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                   </button>
                 </div>
               ) : (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => respond("confirmé")}
-                    disabled={busy}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet py-2 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
-                  >
-                    <Check size={16} />
-                    Je confirme
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => respond("décliné")}
-                    disabled={busy}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white/70 py-2 text-sm font-semibold text-plum hover:bg-white disabled:opacity-60"
-                  >
-                    <X size={16} />
-                    Je décline
-                  </button>
-                </div>
+                <>
+                  {preselect && (
+                    <p className="mt-3 text-xs font-medium text-violet">
+                      Confirmez votre choix ci-dessous pour valider votre réponse.
+                    </p>
+                  )}
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => respond("confirmé")}
+                      disabled={busy}
+                      className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-violet py-2 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60 ${
+                        preselect === "confirmé" ? "ring-2 ring-violet ring-offset-2" : ""
+                      }`}
+                    >
+                      <Check size={16} />
+                      Je confirme
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => respond("décliné")}
+                      disabled={busy}
+                      className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white/70 py-2 text-sm font-semibold text-plum hover:bg-white disabled:opacity-60 ${
+                        preselect === "décliné" ? "ring-2 ring-festif ring-offset-2" : ""
+                      }`}
+                    >
+                      <X size={16} />
+                      Je décline
+                    </button>
+                  </div>
+                </>
               )}
 
               {respondError && (

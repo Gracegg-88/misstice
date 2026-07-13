@@ -4,7 +4,6 @@ import type {
   Guest,
   EventVendor,
   PlanningMoment,
-  VendorCall,
   InspirationIdea,
   TeamMember,
   ReceivedQuote,
@@ -20,7 +19,6 @@ export type {
   Guest,
   EventVendor,
   PlanningMoment,
-  VendorCall,
   InspirationIdea,
   TeamMember,
 } from "@/lib/dashboard-types";
@@ -43,7 +41,9 @@ export async function getGuests(eventId: string): Promise<Guest[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("guests")
-    .select("id, event_id, name, email, phone, diet, group_label, status, plus_one")
+    .select(
+      "id, event_id, name, email, phone, diet, group_label, status, plus_one, rsvp_token"
+    )
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
   return (data as Guest[]) ?? [];
@@ -94,16 +94,6 @@ export async function getPlanning(eventId: string): Promise<PlanningMoment[]> {
     .order("position", { ascending: true })
     .order("start_time", { ascending: true });
   return (data as PlanningMoment[]) ?? [];
-}
-
-export async function getVendorCalls(eventId: string): Promise<VendorCall[]> {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from("vendor_calls")
-    .select("id, event_id, vendor, scheduled_at, mode")
-    .eq("event_id", eventId)
-    .order("scheduled_at", { ascending: true });
-  return (data as VendorCall[]) ?? [];
 }
 
 export async function getGiftItems(eventId: string): Promise<GiftItem[]> {

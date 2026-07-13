@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { sendEmail, emailShell, escapeHtml, escapeAttr } from "@/lib/email";
 import { createClient } from "@/lib/supabase/server";
+import { siteUrl } from "@/lib/site-url";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -13,6 +15,9 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+  if (!rateLimit(`invite:${user.id}`, 30, 60_000)) {
+    return NextResponse.json({ error: "Trop de requêtes." }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
@@ -49,14 +54,7 @@ export async function POST(request: Request) {
   // Origine PUBLIQUE : derrière un proxy/tunnel (Cloudflare, Vercel…), request.url
   // pointe vers l'hôte interne (localhost). On privilégie les en-têtes transmis,
   // avec repli sur l'URL de la requête (protocole inclus) pour le dev local.
-  const reqUrl = new URL(request.url);
-  const host =
-    request.headers.get("x-forwarded-host") ??
-    request.headers.get("host") ??
-    reqUrl.host;
-  const proto =
-    request.headers.get("x-forwarded-proto") ?? reqUrl.protocol.replace(":", "");
-  const origin = `${proto}://${host}`;
+  const origin = siteUrl(request);
   const inviteUrl = `${origin}/invitation/${memberId}`;
   const eventName = m.events?.name ?? "";
   const evt = eventName || "un événement";
