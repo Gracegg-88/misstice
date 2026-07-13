@@ -302,8 +302,7 @@ export default async function DashboardOverview() {
             {guests.length}
           </p>
           <p className="mt-1 text-sm text-slate">
-            invité{guests.length > 1 ? "s" : ""} enregistré
-            {guests.length > 1 ? "s" : ""}
+            sur {event.guest_count} prévu{event.guest_count > 1 ? "s" : ""}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2.5 py-1 text-xs font-semibold text-emerald">

@@ -915,9 +915,6 @@ export default function ProfilClient({
             </p>
           )}
         </div>
-        <p className="mt-3 text-xs text-slate">
-          Visible uniquement par les membres connectés sur votre profil public.
-        </p>
       </section>
 
       {error && <p className="mt-4 text-right text-sm text-festif">{error}</p>}

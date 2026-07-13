@@ -5,43 +5,126 @@
   Variables Supabase utilisées : {{ .ConfirmationURL }}, {{ .Email }}, {{ .NewEmail }}
   (L'aperçu Supabase affiche le code brut des variables ; le mail réel les remplace.)
 -->
-<div style="margin:0;padding:32px 16px;background:#FAFAF9;font-family:'Segoe UI',Arial,sans-serif;color:#1E1B2E">
-  <div style="max-width:440px;margin:0 auto;background:#ffffff;border-radius:20px;border:1px solid #eeeeee;padding:40px 32px;text-align:center">
+<div
+  style="
+    margin: 0;
+    padding: 32px 16px;
+    background: #fafaf9;
+    font-family: &quot;Segoe UI&quot;, Arial, sans-serif;
+    color: #1e1b2e;
+  "
+>
+  <div
+    style="
+      max-width: 440px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #eeeeee;
+      padding: 40px 32px;
+      text-align: center;
+    "
+  >
+    <div
+      style="
+        font-size: 18px;
+        font-weight: 700;
+        color: #6c3ce1;
+        letter-spacing: -0.02em;
+      "
+    >
+      Misstice
+    </div>
 
-    <div style="font-size:18px;font-weight:700;color:#6C3CE1;letter-spacing:-0.02em">Misstice</div>
+    <div
+      style="
+        width: 92px;
+        height: 92px;
+        margin: 28px auto 0;
+        background: #f1eefc;
+        border-radius: 50%;
+        line-height: 92px;
+        font-size: 46px;
+        color: #ff8c42;
+      "
+    >
+      ✦
+    </div>
 
-    <div style="width:92px;height:92px;margin:28px auto 0;background:#F1EEFC;border-radius:50%;line-height:92px;font-size:46px;color:#FF8C42">✦</div>
-
-    <h1 style="margin:24px 0 0;font-size:24px;font-weight:700;color:#1E1B2E">
+    <h1
+      style="
+        margin: 24px 0 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e1b2e;
+      "
+    >
       Confirmez votre nouvelle adresse
     </h1>
 
-    <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#4B4763">
-      Vous avez demandé à remplacer votre adresse e-mail. Cliquez ci-dessous pour
-      confirmer ce changement et sécuriser votre compte.
+    <p
+      style="
+        margin: 12px 0 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #4b4763;
+      "
+    >
+      Vous avez demandé à remplacer votre adresse e-mail. Cliquez ci-dessous
+      pour confirmer ce changement et sécuriser votre compte.
     </p>
 
-    <div style="margin:28px 0 8px">
-      <a href="{{ .ConfirmationURL }}"
-         style="display:inline-block;background:#6C3CE1;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 34px;border-radius:12px">
+    <div style="margin: 28px 0 8px">
+      <a
+        href="{{ .ConfirmationURL }}"
+        style="
+          display: inline-block;
+          background: #6c3ce1;
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 15px;
+          font-weight: 600;
+          padding: 14px 34px;
+          border-radius: 12px;
+        "
+      >
         Confirmer l'adresse
       </a>
     </div>
 
-    <p style="margin:20px 0 0;font-size:12px;line-height:1.6;color:#8A8699">
+    <p
+      style="
+        margin: 20px 0 0;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #8a8699;
+      "
+    >
       Le bouton ne fonctionne pas&nbsp;? Copiez ce lien&nbsp;:<br />
-      <a href="{{ .ConfirmationURL }}" style="color:#6C3CE1;word-break:break-all">{{ .ConfirmationURL }}</a>
+      <a
+        href="{{ .ConfirmationURL }}"
+        style="color: #6c3ce1; word-break: break-all"
+        >{{ .ConfirmationURL }}</a
+      >
     </p>
 
-    <div style="height:1px;background:#eeeeee;margin:28px 0"></div>
+    <div style="height: 1px; background: #eeeeee; margin: 28px 0"></div>
 
-    <p style="margin:0;font-size:14px;line-height:1.7;color:#8A8699">
+    <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #8a8699">
       À très vite,<br />
-      <strong style="color:#4B4763">L'équipe Misstice</strong>
+      <strong style="color: #4b4763">L'équipe Misstice</strong>
     </p>
   </div>
 
-  <p style="max-width:440px;margin:16px auto 0;text-align:center;font-size:11px;color:#B3B0BF">
+  <p
+    style="
+      max-width: 440px;
+      margin: 16px auto 0;
+      text-align: center;
+      font-size: 11px;
+      color: #b3b0bf;
+    "
+  >
     Vous n'êtes pas à l'origine de cette demande&nbsp;? Ignorez cet e-mail.
   </p>
 </div>
