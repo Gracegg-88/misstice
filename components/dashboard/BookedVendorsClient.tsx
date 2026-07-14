@@ -135,12 +135,13 @@ export default function BookedVendorsClient({
       vs.map((x) => (x.id === v.id ? { ...x, status: next } : x))
     );
     const supabase = createClient();
-    const { error: upErr } = await supabase
+    const { data, error: upErr } = await supabase
       .from("event_vendors")
       .update({ status: next })
-      .eq("id", v.id);
-    if (upErr) {
-      // Retour arrière optimiste en cas d'échec.
+      .eq("id", v.id)
+      .select("id");
+    if (upErr || !data || data.length === 0) {
+      // Retour arrière optimiste (échec ou blocage RLS silencieux).
       setVendors((vs) =>
         vs.map((x) => (x.id === v.id ? { ...x, status: v.status } : x))
       );
@@ -154,11 +155,12 @@ export default function BookedVendorsClient({
     const prev = vendors;
     setVendors((vs) => vs.filter((x) => x.id !== v.id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("event_vendors")
       .delete()
-      .eq("id", v.id);
-    if (delErr) {
+      .eq("id", v.id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setVendors(prev);
       return;
     }

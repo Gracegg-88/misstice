@@ -97,12 +97,13 @@ export default function InspirationClient({
     const next = !idea.liked;
     setIdeas((p) => p.map((i) => (i.id === id ? { ...i, liked: next } : i)));
     const supabase = createClient();
-    const { error: upErr } = await supabase
+    const { data, error: upErr } = await supabase
       .from("inspiration_ideas")
       .update({ liked: next })
-      .eq("id", id);
-    if (upErr) {
-      // Rollback en cas d'échec.
+      .eq("id", id)
+      .select("id");
+    if (upErr || !data || data.length === 0) {
+      // Rollback (échec ou blocage RLS silencieux).
       setIdeas((p) =>
         p.map((i) => (i.id === id ? { ...i, liked: !next } : i))
       );
@@ -116,11 +117,12 @@ export default function InspirationClient({
     const prev = ideas;
     setIdeas((p) => p.filter((i) => i.id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("inspiration_ideas")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setIdeas(prev);
       return;
     }
