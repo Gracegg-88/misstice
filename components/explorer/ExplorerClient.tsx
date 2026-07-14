@@ -92,7 +92,10 @@ export default function ExplorerClient({
   };
 
   const cities = useMemo(
-    () => Array.from(new Set(vendors.map((v) => v.city))).sort(),
+    () =>
+      Array.from(new Set(vendors.map((v) => v.city))).sort((a, b) =>
+        a.localeCompare(b, "fr")
+      ),
     [vendors]
   );
 

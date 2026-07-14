@@ -55,6 +55,7 @@ export function getPackages(v: Vendor): Pkg[] {
 // Type d'un avis réel (les avis proviennent de la table `reviews` via
 // lib/vendors → getVendorReviews). Les anciens avis d'exemple ont été retirés.
 export type Review = {
+  id: string;
   author: string;
   initial: string;
   date: string;

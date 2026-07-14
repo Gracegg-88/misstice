@@ -76,6 +76,13 @@ export default function VendorProfile({
   // Fiche VITRINE (sans compte) → contenu d'exemple autorisé. Vrai compte non
   // rempli → on n'invente rien, on affiche des états vides.
   const isDemo = !vendor.userId;
+  // Disponibilité formatée, en se prémunissant d'une date invalide.
+  const availabilityLabel = (() => {
+    if (!nextAvailability) return null;
+    const d = new Date(nextAvailability + "T00:00:00");
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  })();
   const [quoteOpen, setQuoteOpen] = useState(autoDevis);
   const [msgOpen, setMsgOpen] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -154,11 +161,17 @@ export default function VendorProfile({
                     {vendor.category} événementiel
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate">
-                    <span className="inline-flex items-center gap-1 font-semibold text-plum">
-                      <Star size={15} className="fill-festif text-festif" />
-                      {vendor.rating.toFixed(1)}
-                    </span>
-                    <span>({vendor.reviews} avis)</span>
+                    {vendor.reviews > 0 ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 font-semibold text-plum">
+                          <Star size={15} className="fill-festif text-festif" />
+                          {vendor.rating.toFixed(1).replace(".", ",")}
+                        </span>
+                        <span>({vendor.reviews} avis)</span>
+                      </>
+                    ) : (
+                      <span className="font-medium text-plum">Nouveau prestataire</span>
+                    )}
                     <span className="inline-flex items-center gap-1">
                       <MapPin size={14} />
                       {vendor.city}
@@ -213,23 +226,18 @@ export default function VendorProfile({
         {/* Stat cards */}
         <div
           className={`mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 ${
-            nextAvailability ? "lg:grid-cols-3" : ""
+            availabilityLabel ? "lg:grid-cols-3" : ""
           }`}
         >
           {[
             { icon: Euro, label: "À partir de", value: vendor.priceFrom.replace("dès ", ""), tint: "bg-festif-soft text-festif" },
             { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-festif-soft text-festif" },
-            ...(nextAvailability
+            ...(availabilityLabel
               ? [
                   {
                     icon: CalendarCheck,
                     label: "Prochaine disponibilité",
-                    value: new Date(
-                      nextAvailability + "T00:00:00"
-                    ).toLocaleDateString("fr-FR", {
-                      day: "numeric",
-                      month: "long",
-                    }),
+                    value: availabilityLabel,
                     tint: "bg-emerald-soft text-emerald",
                   },
                 ]
@@ -470,9 +478,9 @@ export default function VendorProfile({
 
                   {/* Liste des avis */}
                   <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                    {reviews.map((r, i) => (
+                    {reviews.map((r) => (
                       <div
-                        key={i}
+                        key={r.id}
                         className="rounded-2xl border border-black/5 bg-white p-4"
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -523,8 +531,14 @@ export default function VendorProfile({
                   <p className="flex items-center justify-between">
                     <span className="text-slate">Note</span>
                     <span className="inline-flex items-center gap-1 font-semibold text-plum">
-                      <Star size={14} className="fill-festif text-festif" />
-                      {vendor.rating.toFixed(1)} ({vendor.reviews})
+                      {vendor.reviews > 0 ? (
+                        <>
+                          <Star size={14} className="fill-festif text-festif" />
+                          {vendor.rating.toFixed(1).replace(".", ",")} ({vendor.reviews})
+                        </>
+                      ) : (
+                        "—"
+                      )}
                     </span>
                   </p>
                 </div>

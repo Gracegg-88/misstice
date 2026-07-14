@@ -43,9 +43,9 @@ export default async function DashboardOverview() {
     );
   }
 
-  const cats = await getBudgetCategories(event.id);
-  const [tasks, bookedVendors, guests, profile, conversations] =
+  const [cats, tasks, bookedVendors, guests, profile, conversations] =
     await Promise.all([
+      getBudgetCategories(event.id),
       getChecklist(event.id),
       getEventVendors(event.id),
       getGuests(event.id),

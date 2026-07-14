@@ -55,9 +55,14 @@ export default function PlanningClient({
     : "Date à définir";
 
   const summary = useMemo(() => {
-    const withTime = moments.filter((m) => m.start_time);
-    const start = withTime[0]?.start_time ?? null;
-    const end = withTime[withTime.length - 1]?.start_time ?? null;
+    // Début/Fin = plus tôt / plus tard chronologiquement (l'ordre d'affichage
+    // suit `position`, qui n'est pas forcément l'ordre horaire).
+    const times = moments
+      .map((m) => m.start_time)
+      .filter((t): t is string => !!t)
+      .sort((a, b) => a.localeCompare(b));
+    const start = times[0] ?? null;
+    const end = times[times.length - 1] ?? null;
     const vendorCount = new Set(
       moments.map((m) => m.vendor).filter((v): v is string => !!v)
     ).size;

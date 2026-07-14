@@ -37,7 +37,7 @@ function map(r: Row): Vendor {
     category: r.category,
     city: r.city ?? "",
     region: r.region ?? "",
-    priceLevel: (r.price_level as 1 | 2 | 3) ?? 2,
+    priceLevel: ((r.price_level as 1 | 2 | 3) || 2),
     priceFrom: r.price_from?.trim() || "Sur devis",
     rating: Number(r.rating),
     reviews: r.reviews,
@@ -121,12 +121,13 @@ export async function getVendorReviews(vendorId: string): Promise<Review[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("reviews")
-    .select("author_name, rating, event_type, body, created_at")
+    .select("id, author_name, rating, event_type, body, created_at")
     .eq("vendor_id", vendorId)
     .order("created_at", { ascending: false });
   return (
     (data as
       | {
+          id: string;
           author_name: string | null;
           rating: number;
           event_type: string | null;
@@ -137,6 +138,7 @@ export async function getVendorReviews(vendorId: string): Promise<Review[]> {
   ).map((r) => {
     const author = r.author_name?.trim() || "Client";
     return {
+      id: r.id,
       author,
       initial: (author[0] || "C").toUpperCase(),
       date: new Date(r.created_at).toLocaleDateString("fr-FR", {

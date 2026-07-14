@@ -36,6 +36,10 @@ export default function ChecklistCard({
       ? new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
       : "";
 
+  // Évite d'exposer l'email complet : on n'affiche que la partie locale.
+  const shortAssignee = (value: string) =>
+    value.includes("@") ? value.split("@")[0] : value;
+
   return (
     <div className="rounded-3xl border border-black/5 bg-white p-6">
       <div className="flex items-center justify-between">
@@ -85,7 +89,7 @@ export default function ChecklistCard({
               </span>
               {t.assignee && (
                 <span className="hidden rounded-md bg-violet-soft px-2 py-0.5 text-xs font-medium text-violet sm:inline">
-                  {t.assignee}
+                  {shortAssignee(t.assignee)}
                 </span>
               )}
               <span className="text-xs text-slate">{fmtDate(t.due_date)}</span>

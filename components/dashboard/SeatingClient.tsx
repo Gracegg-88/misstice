@@ -87,6 +87,17 @@ export default function SeatingClient({
     if (!canEdit) return;
     const name = (seatDraft[tableId] ?? "").trim();
     if (!name) return;
+    // Empêche de dépasser la capacité de la table.
+    const table = tables.find((t) => t.id === tableId);
+    if (table && seatsOf(tableId).length >= table.capacity) {
+      setError(`La table « ${table.name} » est complète (${table.capacity} places).`);
+      return;
+    }
+    // Empêche de placer deux fois la même personne.
+    if (assignedNames.has(name.toLowerCase())) {
+      setError(`« ${name} » est déjà placé(e) à une table.`);
+      return;
+    }
     setError("");
     const supabase = createClient();
     const { data, error: insErr } = await supabase

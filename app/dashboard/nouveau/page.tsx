@@ -39,6 +39,7 @@ export default function NouvelEvenementPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
+      setLoading(false);
       router.push("/auth?next=/dashboard/nouveau");
       return;
     }
