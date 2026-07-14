@@ -119,7 +119,7 @@ export default function DevisClient({
             Mes devis
           </h1>
           <p className="mt-1 text-sm text-slate">
-            {list.length} devis envoyé{list.length > 1 ? "s" : ""}
+            {list.length} devis au total
           </p>
         </>
       )}

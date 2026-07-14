@@ -1,12 +1,11 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { supabaseEnv } from "./env";
 
 /**
  * Client Supabase côté navigateur (composants "use client").
  * Utilise les variables publiques NEXT_PUBLIC_* .
  */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const { url, anon } = supabaseEnv();
+  return createBrowserClient(url, anon);
 }

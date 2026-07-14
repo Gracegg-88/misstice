@@ -1,7 +1,4 @@
--- ============================================================================
---  Misstice — INSTALLATION COMPLETE (un seul fichier). Idempotent.
---  Correctifs securite audit inclus. ENSUITE : buckets + make-admin.sql.
--- ============================================================================
+-- Misstice — INSTALLATION COMPLETE (idempotent). Buckets + make-admin.sql ensuite.
 
 -- ### SOURCE : schema.sql
 
@@ -2219,6 +2216,8 @@ $$;
 grant execute on function public.accept_invitation(uuid) to authenticated;
 
 -- Infos affichées sur la page d'invitation (avant d'accepter).
+-- SÉCURITÉ : ne renvoie les infos (dont l'email invité) qu'à l'invité concerné
+-- (email correspondant) ou à quelqu'un ayant déjà accès à l'événement.
 create or replace function public.invitation_info(p_member_id uuid)
 returns table (event_name text, member_email text, member_role text, claimed boolean)
 language sql
@@ -2228,7 +2227,13 @@ as $$
   select e.name, m.email, m.role, (m.user_id is not null)
   from public.event_members m
   join public.events e on e.id = m.event_id
-  where m.id = p_member_id;
+  where m.id = p_member_id
+    and (
+      lower(m.email) = lower(coalesce(
+        (select email from auth.users where id = auth.uid()), ''
+      ))
+      or public.can_access_event(m.event_id)
+    );
 $$;
 
 grant execute on function public.invitation_info(uuid) to authenticated;
@@ -3053,14 +3058,25 @@ begin
   if v_event is null then
     return false;
   end if;
-  insert into public.guests (event_id, name, email, status, plus_one)
-  values (
-    v_event,
-    btrim(p_name),
-    nullif(btrim(coalesce(p_email, '')), ''),
-    p_status,
-    coalesce(p_plus_one, false)
-  );
+  -- Anti-doublon / anti-spam : si un invité du même nom existe déjà pour cet
+  -- événement, on MET À JOUR sa réponse au lieu d'empiler des lignes.
+  if exists (
+    select 1 from public.guests
+    where event_id = v_event and lower(name) = lower(btrim(p_name))
+  ) then
+    update public.guests
+      set status = p_status, plus_one = coalesce(p_plus_one, false)
+      where event_id = v_event and lower(name) = lower(btrim(p_name));
+  else
+    insert into public.guests (event_id, name, email, status, plus_one)
+    values (
+      v_event,
+      btrim(p_name),
+      nullif(btrim(coalesce(p_email, '')), ''),
+      p_status,
+      coalesce(p_plus_one, false)
+    );
+  end if;
   return true;
 end;
 $$;

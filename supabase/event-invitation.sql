@@ -60,14 +60,25 @@ begin
   if v_event is null then
     return false;
   end if;
-  insert into public.guests (event_id, name, email, status, plus_one)
-  values (
-    v_event,
-    btrim(p_name),
-    nullif(btrim(coalesce(p_email, '')), ''),
-    p_status,
-    coalesce(p_plus_one, false)
-  );
+  -- Anti-doublon / anti-spam : si un invité du même nom existe déjà pour cet
+  -- événement, on MET À JOUR sa réponse au lieu d'empiler des lignes.
+  if exists (
+    select 1 from public.guests
+    where event_id = v_event and lower(name) = lower(btrim(p_name))
+  ) then
+    update public.guests
+      set status = p_status, plus_one = coalesce(p_plus_one, false)
+      where event_id = v_event and lower(name) = lower(btrim(p_name));
+  else
+    insert into public.guests (event_id, name, email, status, plus_one)
+    values (
+      v_event,
+      btrim(p_name),
+      nullif(btrim(coalesce(p_email, '')), ''),
+      p_status,
+      coalesce(p_plus_one, false)
+    );
+  end if;
   return true;
 end;
 $$;

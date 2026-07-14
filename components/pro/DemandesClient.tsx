@@ -5,13 +5,19 @@ import { Calendar, MessageSquare, Send, FileText } from "lucide-react";
 import type { ConversationListItem } from "@/lib/messaging-types";
 import type { Quote } from "@/lib/pro-types";
 
-type DemandeStatus = "Nouvelle" | "Devis envoyé" | "Acceptée" | "Refusée";
+type DemandeStatus =
+  | "Nouvelle"
+  | "Devis envoyé"
+  | "Acceptée"
+  | "Refusée"
+  | "Expiré";
 
 const ALL_STATUSES: DemandeStatus[] = [
   "Nouvelle",
   "Devis envoyé",
   "Acceptée",
   "Refusée",
+  "Expiré",
 ];
 
 const STYLE: Record<DemandeStatus, string> = {
@@ -19,6 +25,7 @@ const STYLE: Record<DemandeStatus, string> = {
   "Devis envoyé": "bg-violet-soft text-violet",
   Acceptée: "bg-emerald-soft text-emerald",
   Refusée: "bg-black/5 text-slate",
+  Expiré: "bg-black/5 text-slate",
 };
 
 // Statut d'un devis existant → statut affiché de la demande.
@@ -28,8 +35,9 @@ function quoteToStatus(status: Quote["status"]): DemandeStatus {
       return "Acceptée";
     case "refusé":
       return "Refusée";
+    case "expiré":
+      return "Expiré";
     default:
-      // envoyé, expiré
       return "Devis envoyé";
   }
 }

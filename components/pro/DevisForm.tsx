@@ -19,6 +19,9 @@ type Props = {
   prestaName: string;
   prestaCategory: string | null;
   prestaEmail: string;
+  // Coordonnées du prestataire (pré-remplies depuis son dernier devis).
+  prestaPhone?: string;
+  prestaAddress?: string;
   demande: DemandeDetails | null;
   // Conversations du prestataire (pour choisir le destinataire en brouillon).
   conversations?: { id: string; clientName: string }[];
@@ -42,6 +45,8 @@ export default function DevisForm({
   prestaName,
   prestaCategory,
   prestaEmail,
+  prestaPhone: prestaPhoneDefault = "",
+  prestaAddress: prestaAddressDefault = "",
   demande,
   conversations = [],
 }: Props) {
@@ -65,8 +70,8 @@ export default function DevisForm({
     demande?.client_address || ""
   );
 
-  const [prestaPhone, setPrestaPhone] = useState("");
-  const [prestaAddress, setPrestaAddress] = useState("");
+  const [prestaPhone, setPrestaPhone] = useState(prestaPhoneDefault);
+  const [prestaAddress, setPrestaAddress] = useState(prestaAddressDefault);
 
   const [intro, setIntro] = useState(DEFAULT_INTRO);
   const [validity, setValidity] = useState(15);

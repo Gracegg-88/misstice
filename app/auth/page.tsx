@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 import Header from "@/components/Header";
+import { safeNext } from "@/lib/safe-next";
 
 function GoogleIcon() {
   return (
@@ -30,8 +31,11 @@ export default function AuthPage() {
   const [signupHref, setSignupHref] = useState("/creer");
 
   useEffect(() => {
-    const raw = new URLSearchParams(window.location.search).get("next");
-    if (raw && raw.startsWith("/") && !raw.startsWith("//")) {
+    const raw = safeNext(
+      new URLSearchParams(window.location.search).get("next"),
+      ""
+    );
+    if (raw) {
       setSignupHref(`/creer?next=${encodeURIComponent(raw)}`);
     }
   }, []);
@@ -77,12 +81,10 @@ export default function AuthPage() {
     }
 
     // Le système détecte le rôle et redirige vers le bon espace.
-    const rawNext = new URLSearchParams(window.location.search).get("next");
-    // Anti open-redirect : uniquement un chemin interne ("/x", pas "//evil").
+    // Anti open-redirect : uniquement un chemin interne (backslash inclus).
     const next =
-      rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//")
-        ? rawNext
-        : null;
+      safeNext(new URLSearchParams(window.location.search).get("next"), "") ||
+      null;
     let dest = next;
     if (!dest) {
       const {

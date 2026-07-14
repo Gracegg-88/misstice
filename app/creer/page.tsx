@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/Header";
 import CategorySelect from "@/components/pro/CategorySelect";
+import { safeNext } from "@/lib/safe-next";
 import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 
 function GoogleIcon() {
@@ -36,8 +37,8 @@ export default function CreerPage() {
     const sp = new URLSearchParams(window.location.search);
     const t = sp.get("type");
     if (t === "pro" || t === "professionnel") setType("professionnel");
-    const n = sp.get("next");
-    if (n && n.startsWith("/") && !n.startsWith("//")) setNextParam(n);
+    const n = safeNext(sp.get("next"), "");
+    if (n) setNextParam(n);
   }, []);
 
   // données
@@ -46,6 +47,7 @@ export default function CreerPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Liste des catégories existantes (lecture publique) pour le menu déroulant.
   useEffect(() => {
@@ -89,6 +91,7 @@ export default function CreerPage() {
 
   const finish = async () => {
     setError("");
+    setSuccess("");
     setLoading(true);
     const supabase = createClient();
     const role = type === "professionnel" ? "prestataire" : "particulier";
@@ -131,7 +134,8 @@ export default function CreerPage() {
     // on ne peut pas encore écrire côté DB (RLS). On informe l'utilisateur.
     if (!signUp.session) {
       setLoading(false);
-      setError(
+      setError("");
+      setSuccess(
         nextParam
           ? "Compte créé ! Vérifiez votre boîte mail : le lien de confirmation vous amènera directement à votre invitation."
           : "Compte créé ! Vérifiez votre boîte mail pour confirmer, puis connectez-vous."
@@ -364,6 +368,11 @@ export default function CreerPage() {
             {error && (
               <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
                 {error}
+              </p>
+            )}
+            {success && (
+              <p className="mt-4 rounded-xl bg-emerald-soft px-4 py-3 text-sm text-emerald">
+                {success}
               </p>
             )}
           </div>

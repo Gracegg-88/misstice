@@ -282,12 +282,7 @@ export default function ProfilClient({
     const supabase = createClient();
     const position = pkgs.length;
     // Ajoute automatiquement « € » si l'utilisateur n'en a pas mis.
-    const priceRaw = newPkg.price.trim();
-    const price = priceRaw
-      ? priceRaw.includes("€")
-        ? priceRaw
-        : `${priceRaw}€`
-      : null;
+    const price = withEuro(newPkg.price);
     const { data, error: insErr } = await supabase
       .from("vendor_packages")
       .insert({

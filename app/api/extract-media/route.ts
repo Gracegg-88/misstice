@@ -26,6 +26,12 @@ function isPrivateIp(ip: string): boolean {
     if (a === 192 && b === 168) return true; // 192.168/16
     if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
     if (a === 198 && (b === 18 || b === 19)) return true; // 198.18/15 (bench)
+    // TEST-NET (RFC 5737) — ne doivent jamais être routés.
+    const [, , c] = p;
+    if (a === 192 && b === 0 && c === 2) return true; // 192.0.2/24
+    if (a === 198 && b === 51 && c === 100) return true; // 198.51.100/24
+    if (a === 203 && b === 0 && c === 113) return true; // 203.0.113/24
+    if (a >= 224) return true; // multicast (224/4) + réservé (240/4)
     return false;
   }
   if (v === 6) {

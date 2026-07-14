@@ -18,11 +18,24 @@ export default async function NouveauDevisPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth?next=/pro/devis/nouveau");
 
+  // Pré-remplissage des coordonnées : on récupère celles du dernier devis émis
+  // (elles ne sont pas stockées ailleurs), pour éviter de les retaper à chaque fois.
+  const { data: lastQuote } = await supabase
+    .from("quotes")
+    .select("presta_phone, presta_address")
+    .eq("prestataire_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const common = {
     prestataireId: user.id,
     prestaName: vendor?.company ?? "Prestataire",
     prestaCategory: vendor?.category ?? null,
     prestaEmail: user.email ?? "",
+    prestaPhone: (lastQuote as { presta_phone: string | null } | null)?.presta_phone ?? "",
+    prestaAddress:
+      (lastQuote as { presta_address: string | null } | null)?.presta_address ?? "",
   };
 
   // Mode ciblé : devis lié à une conversation précise (depuis « Rédiger » d'une

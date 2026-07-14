@@ -23,6 +23,11 @@ export async function sendEmail(opts: {
     auth: { user: login, pass: smtpKey },
   });
 
+  // Validation basique de l'adresse destinataire (anti-injection / erreurs).
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(opts.to)) {
+    throw new Error("Adresse e-mail destinataire invalide.");
+  }
+
   // Anti-injection d'en-tête : pas de CR/LF dans le sujet ni les noms.
   const oneLine = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
 

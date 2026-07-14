@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { supabaseEnv } from "./env";
 
 /**
  * Client Supabase côté serveur (Server Components, Route Handlers, Server Actions).
@@ -7,11 +8,9 @@ import { cookies } from "next/headers";
  */
 export function createClient() {
   const cookieStore = cookies();
+  const { url, anon } = supabaseEnv();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  return createServerClient(url, anon, {
       cookies: {
         getAll() {
           return cookieStore.getAll();
