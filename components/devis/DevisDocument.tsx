@@ -314,7 +314,9 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
         {quote.presta_phone && (
           <ContactLine icon={Phone}>{quote.presta_phone}</ContactLine>
         )}
-        <ContactLine icon={Mail}>contact@misstice.com</ContactLine>
+        <ContactLine icon={Mail}>
+          {quote.presta_email || "contact@misstice.com"}
+        </ContactLine>
         <ContactLine icon={Globe}>www.misstice.com</ContactLine>
       </div>
     </div>

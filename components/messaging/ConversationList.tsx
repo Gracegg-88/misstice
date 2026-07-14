@@ -2,14 +2,14 @@ import Link from "next/link";
 import { MessagesSquare, Users } from "lucide-react";
 import type { ConversationListItem } from "@/lib/messaging-types";
 import type { TeamThread } from "@/lib/team-chat";
+import { hourMinute } from "@/lib/date-format";
 
 // Heure relative courte pour l'aperçu (aujourd'hui → "14:30", sinon date).
 function whenLabel(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
   const sameDay = d.toDateString() === now.toDateString();
-  if (sameDay)
-    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) return hourMinute(iso);
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 

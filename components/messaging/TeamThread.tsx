@@ -5,21 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Send, ArrowLeft, Users, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { dayLabel, hourMinute } from "@/lib/date-format";
 import type { TeamMessage } from "@/lib/team-chat";
-
-function dayLabel(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const y = new Date(now);
-  y.setDate(now.getDate() - 1);
-  if (d.toDateString() === now.toDateString()) return "Aujourd'hui";
-  if (d.toDateString() === y.toDateString()) return "Hier";
-  return d.toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-}
 
 /**
  * Fil de discussion de groupe « Équipe » d'un événement.
@@ -114,11 +101,7 @@ export default function TeamThread({
     setSending(false);
   };
 
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const fmt = hourMinute;
 
   return (
     <div className="flex h-full flex-col rounded-3xl border border-black/5 bg-white">

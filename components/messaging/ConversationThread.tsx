@@ -17,6 +17,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
 import { safeMediaUrl } from "@/lib/safe-url";
+import { dayLabel, hourMinute } from "@/lib/date-format";
 import type { Message } from "@/lib/messaging-types";
 
 // Marqueurs techniques dans le corps d'un message.
@@ -24,20 +25,6 @@ const DEVIS_RE = /^\[\[devis:([0-9a-f-]+)\]\]\s*([\s\S]*)$/i;
 const IMG_RE = /^\[\[img:(.+?)\]\]$/i;
 const VID_RE = /^\[\[vid:(.+?)\]\]$/i;
 const DOC_RE = /^\[\[doc:(.+?)\|([\s\S]*?)\]\]$/i;
-
-function dayLabel(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const y = new Date(now);
-  y.setDate(now.getDate() - 1);
-  if (d.toDateString() === now.toDateString()) return "Aujourd'hui";
-  if (d.toDateString() === y.toDateString()) return "Hier";
-  return d.toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-}
 
 export default function ConversationThread({
   conversationId,
@@ -132,8 +119,9 @@ export default function ConversationThread({
     setOtherRead(otherLastReadAt);
   }, [otherLastReadAt]);
 
-  // À l'ouverture : marque lu PUIS rafraîchit les compteurs serveur
-  // (badge sidebar + liste) pour qu'ils disparaissent immédiatement.
+  // À l'ouverture — et à chaque nouveau message reçu pendant qu'on lit — marque
+  // le fil comme lu PUIS rafraîchit les compteurs serveur (badge sidebar + liste)
+  // pour qu'ils disparaissent immédiatement.
   useEffect(() => {
     const supabase = createClient();
     let active = true;
@@ -145,13 +133,7 @@ export default function ConversationThread({
     return () => {
       active = false;
     };
-  }, [conversationId, router]);
-
-  // Nouveau message reçu pendant qu'on lit → on garde le fil marqué comme lu.
-  useEffect(() => {
-    const supabase = createClient();
-    void supabase.rpc("mark_conversation_read", { p_conv: conversationId });
-  }, [conversationId, messages.length]);
+  }, [conversationId, messages.length, router]);
 
   // Insère un message (texte ou marqueur) et l'ajoute localement.
   const pushMessage = async (text: string): Promise<boolean> => {
@@ -253,11 +235,7 @@ export default function ConversationThread({
     }
   };
 
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const fmt = hourMinute;
 
   // Index du DERNIER de mes messages déjà lu par l'autre → « Vu » dessous.
   const readTs = otherRead ? new Date(otherRead).getTime() : 0;
