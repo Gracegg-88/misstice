@@ -27,36 +27,39 @@ export type {
 
 export async function getChecklist(eventId: string): Promise<ChecklistTask[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("checklist_tasks")
     .select("id, event_id, label, assignee, due_date, done, position")
     .eq("event_id", eventId)
     .order("done", { ascending: true })
     .order("position", { ascending: true })
     .order("created_at", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as ChecklistTask[]) ?? [];
 }
 
 export async function getGuests(eventId: string): Promise<Guest[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("guests")
     .select(
       "id, event_id, name, email, phone, diet, group_label, status, plus_one, rsvp_token"
     )
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as Guest[]) ?? [];
 }
 
 export async function getEventVendors(eventId: string): Promise<EventVendor[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("event_vendors")
     .select("id, event_id, vendor_id, name, category, status, price, vendors(image)")
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
 
+  if (error) console.error("dashboard query:", error.message);
   type Row = Omit<EventVendor, "image"> & {
     vendors?: { image: string | null } | { image: string | null }[] | null;
   };
@@ -75,35 +78,38 @@ export async function getReceivedQuotes(): Promise<ReceivedQuote[]> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return [];
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("quotes")
     .select(
       "id, conversation_id, presta_name, presta_category, amount, status, quote_number, created_at"
     )
     .neq("prestataire_id", user.id)
     .order("created_at", { ascending: false });
+  if (error) console.error("dashboard query:", error.message);
   return (data as ReceivedQuote[]) ?? [];
 }
 
 export async function getPlanning(eventId: string): Promise<PlanningMoment[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("planning_moments")
     .select("id, event_id, start_time, duration, title, description, place, who, vendor, color, position")
     .eq("event_id", eventId)
     .order("position", { ascending: true })
     .order("start_time", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as PlanningMoment[]) ?? [];
 }
 
 export async function getGiftItems(eventId: string): Promise<GiftItem[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("gift_items")
     .select("id, event_id, title, url, price, note, reserved, position")
     .eq("event_id", eventId)
     .order("position", { ascending: true })
     .order("created_at", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as GiftItem[]) ?? [];
 }
 
@@ -111,12 +117,13 @@ export async function getSeatingTables(
   eventId: string
 ): Promise<SeatingTable[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("seating_tables")
     .select("id, event_id, name, capacity, position")
     .eq("event_id", eventId)
     .order("position", { ascending: true })
     .order("created_at", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as SeatingTable[]) ?? [];
 }
 
@@ -124,30 +131,33 @@ export async function getSeatingSeats(
   eventId: string
 ): Promise<SeatingSeat[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("seating_seats")
     .select("id, event_id, table_id, name, position")
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as SeatingSeat[]) ?? [];
 }
 
 export async function getInspiration(eventId: string): Promise<InspirationIdea[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("inspiration_ideas")
     .select("id, event_id, title, category, tags, image_url, source, source_url, liked, media_type")
     .eq("event_id", eventId)
     .order("created_at", { ascending: false });
+  if (error) console.error("dashboard query:", error.message);
   return (data as InspirationIdea[]) ?? [];
 }
 
 export async function getTeam(eventId: string): Promise<TeamMember[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("event_members")
     .select("id, event_id, email, role, permissions, user_id, status")
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
+  if (error) console.error("dashboard query:", error.message);
   return (data as TeamMember[]) ?? [];
 }

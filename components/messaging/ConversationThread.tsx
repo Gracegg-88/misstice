@@ -66,6 +66,8 @@ export default function ConversationThread({
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initial);
+  // Dernière lecture de l'autre partie, mise à jour EN TEMPS RÉEL (accusé « Vu »).
+  const [otherRead, setOtherRead] = useState<string | null>(otherLastReadAt);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -105,11 +107,30 @@ export default function ConversationThread({
           );
         }
       )
+      // Accusé « Vu » live : la lecture de l'AUTRE partie met à jour otherRead.
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "conversation_reads",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const r = payload.new as { user_id: string; last_read_at: string };
+          if (r.user_id !== userId) setOtherRead(r.last_read_at);
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId]);
+  }, [conversationId, userId]);
+
+  // Resynchronise si le serveur fournit une nouvelle valeur (changement de fil).
+  useEffect(() => {
+    setOtherRead(otherLastReadAt);
+  }, [otherLastReadAt]);
 
   // À l'ouverture : marque lu PUIS rafraîchit les compteurs serveur
   // (badge sidebar + liste) pour qu'ils disparaissent immédiatement.
@@ -239,7 +260,7 @@ export default function ConversationThread({
     });
 
   // Index du DERNIER de mes messages déjà lu par l'autre → « Vu » dessous.
-  const readTs = otherLastReadAt ? new Date(otherLastReadAt).getTime() : 0;
+  const readTs = otherRead ? new Date(otherRead).getTime() : 0;
   let seenIdx = -1;
   if (readTs > 0) {
     for (let i = messages.length - 1; i >= 0; i--) {

@@ -61,4 +61,13 @@ as $$
 $$;
 grant execute on function public.my_unread_counts() to authenticated;
 
+-- Temps réel : diffuser les marqueurs de lecture (accusé « Vu » live).
+do $$
+begin
+  begin
+    alter publication supabase_realtime add table public.conversation_reads;
+  exception when others then null;
+  end;
+end $$;
+
 -- Fin.
