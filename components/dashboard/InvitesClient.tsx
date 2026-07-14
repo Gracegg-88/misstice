@@ -254,12 +254,13 @@ export default function InvitesClient({
     const next = order[(order.indexOf(g.status) + 1) % order.length];
     setGuests((p) => p.map((x) => (x.id === g.id ? { ...x, status: next } : x)));
     const supabase = createClient();
-    const { error: upErr } = await supabase
+    const { data, error: upErr } = await supabase
       .from("guests")
       .update({ status: next })
-      .eq("id", g.id);
-    if (upErr) {
-      // Revert en cas d'échec.
+      .eq("id", g.id)
+      .select("id");
+    if (upErr || !data || data.length === 0) {
+      // Revert en cas d'échec (ou de blocage RLS silencieux).
       setGuests((p) =>
         p.map((x) => (x.id === g.id ? { ...x, status: g.status } : x))
       );
@@ -277,11 +278,12 @@ export default function InvitesClient({
     const prev = guests;
     setGuests((p) => p.filter((x) => x.id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("guests")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setGuests(prev);
       return;
     }

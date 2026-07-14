@@ -46,10 +46,14 @@ export default function EventsManagerClient({
     const next = events.filter((e) => e.id !== id);
     setEvents(next);
     const supabase = createClient();
-    const { error } = await supabase.from("events").delete().eq("id", id);
+    const { data, error } = await supabase
+      .from("events")
+      .delete()
+      .eq("id", id)
+      .select("id");
     setBusy(false);
     setConfirmId(null);
-    if (error) {
+    if (error || !data || data.length === 0) {
       setEvents(prev);
       return;
     }

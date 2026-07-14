@@ -74,13 +74,10 @@ export default function AdminsClient({
       if (!res.ok) {
         setError(json.error ?? "Envoi impossible.");
       } else if (json.mailFailed) {
-        setNotice(
-          `Compte créé, mais l'email n'a pas pu être envoyé. Mot de passe temporaire : ${json.password}`
+        // Aucun mot de passe n'est renvoyé : on invite à relancer l'envoi.
+        setError(
+          "Compte créé, mais l'e-mail d'invitation n'a pas pu être envoyé. Réessayez l'invitation."
         );
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setCanManage(false);
         router.refresh();
       } else {
         setNotice(`Invitation envoyée à ${email}.`);

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dns from "node:dns/promises";
 import net from "node:net";
+import https from "node:https";
+import http from "node:http";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -23,6 +25,7 @@ function isPrivateIp(ip: string): boolean {
     if (a === 172 && b >= 16 && b <= 31) return true; // 172.16/12
     if (a === 192 && b === 168) return true; // 192.168/16
     if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+    if (a === 198 && (b === 18 || b === 19)) return true; // 198.18/15 (bench)
     return false;
   }
   if (v === 6) {
@@ -38,82 +41,120 @@ function isPrivateIp(ip: string): boolean {
   return true; // format inconnu → on refuse
 }
 
-/** Valide le schéma et interdit toute cible interne (résolution DNS incluse). */
-async function assertSafeUrl(raw: string): Promise<URL> {
-  let u: URL;
-  try {
-    u = new URL(raw);
-  } catch {
-    throw new Error("URL invalide");
+/**
+ * Résout l'hôte et renvoie UNE IP publique validée. Rejette si privée/interne.
+ * L'IP retournée est ensuite utilisée telle quelle pour la connexion → aucune
+ * seconde résolution DNS ne peut la « rebinder » (anti-TOCTOU / DNS rebinding).
+ */
+async function resolveSafeIp(hostname: string): Promise<string> {
+  if (net.isIP(hostname)) {
+    if (isPrivateIp(hostname)) throw new Error("Cible interne interdite");
+    return hostname;
   }
-  if (u.protocol !== "http:" && u.protocol !== "https:") {
-    throw new Error("Schéma non autorisé");
-  }
-  const host = u.hostname;
-  let addrs: string[];
-  if (net.isIP(host)) {
-    addrs = [host];
-  } else {
-    const results = await dns.lookup(host, { all: true });
-    addrs = results.map((r) => r.address);
-  }
+  const results = await dns.lookup(hostname, { all: true });
+  const addrs = results.map((r) => r.address);
   if (addrs.length === 0 || addrs.some(isPrivateIp)) {
     throw new Error("Cible interne interdite");
   }
-  return u;
+  return addrs[0];
 }
 
-/** fetch sûr : redirections suivies manuellement et revalidées à chaque saut. */
-async function safeFetch(raw: string): Promise<Response> {
+type FetchedResponse = {
+  status: number;
+  contentType: string;
+  location: string | null;
+  read: () => Promise<string>;
+};
+
+/**
+ * Une requête GET épinglée sur l'IP validée : on se connecte à l'IP (pas au nom
+ * → pas de re-résolution), tout en conservant le SNI + l'en-tête Host du nom
+ * d'origine (certificat TLS et vhost corrects). Ports limités à 80/443.
+ */
+function requestOnce(rawUrl: string): Promise<FetchedResponse> {
+  return new Promise((resolve, reject) => {
+    let u: URL;
+    try {
+      u = new URL(rawUrl);
+    } catch {
+      reject(new Error("URL invalide"));
+      return;
+    }
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      reject(new Error("Schéma non autorisé"));
+      return;
+    }
+    if (u.port && u.port !== "80" && u.port !== "443") {
+      reject(new Error("Port non autorisé"));
+      return;
+    }
+
+    resolveSafeIp(u.hostname)
+      .then((ip) => {
+        const isHttps = u.protocol === "https:";
+        const lib = isHttps ? https : http;
+        const port = u.port ? Number(u.port) : isHttps ? 443 : 80;
+        const req = lib.request(
+          {
+            host: ip, // ← connexion à l'IP validée (anti-rebinding)
+            servername: isHttps ? u.hostname : undefined, // SNI correct
+            port,
+            path: u.pathname + u.search,
+            method: "GET",
+            timeout: TIMEOUT_MS,
+            headers: {
+              Host: u.hostname, // ← vhost correct
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+              Accept: "text/html,application/xhtml+xml,image/*,video/*,*/*",
+            },
+          },
+          (res) => {
+            resolve({
+              status: res.statusCode ?? 0,
+              contentType: String(res.headers["content-type"] ?? ""),
+              location: (res.headers.location as string) ?? null,
+              read: () =>
+                new Promise<string>((res2, rej2) => {
+                  const chunks: Buffer[] = [];
+                  let total = 0;
+                  res.on("data", (c: Buffer) => {
+                    total += c.length;
+                    if (total > MAX_BYTES) {
+                      res.destroy();
+                    } else {
+                      chunks.push(c);
+                    }
+                  });
+                  res.on("end", () =>
+                    res2(Buffer.concat(chunks).toString("utf8"))
+                  );
+                  res.on("error", rej2);
+                }),
+            });
+          }
+        );
+        req.on("timeout", () => req.destroy(new Error("Timeout")));
+        req.on("error", reject);
+        req.end();
+      })
+      .catch(reject);
+  });
+}
+
+/** Suit les redirections manuellement, chaque saut étant revalidé (IP publique). */
+async function safeFetch(raw: string): Promise<FetchedResponse> {
   let current = raw;
   for (let i = 0; i <= MAX_REDIRECTS; i++) {
-    const u = await assertSafeUrl(current);
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-    let res: Response;
-    try {
-      res = await fetch(u.toString(), {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
-          Accept: "text/html,application/xhtml+xml,image/*,video/*,*/*",
-        },
-        redirect: "manual",
-        signal: ctrl.signal,
-      });
-    } finally {
-      clearTimeout(timer);
-    }
+    const res = await requestOnce(current);
     if (res.status >= 300 && res.status < 400) {
-      const loc = res.headers.get("location");
-      if (!loc) throw new Error("Redirection invalide");
-      current = new URL(loc, u).toString();
+      if (!res.location) throw new Error("Redirection invalide");
+      current = new URL(res.location, current).toString();
       continue;
     }
     return res;
   }
   throw new Error("Trop de redirections");
-}
-
-/** Lit le corps en bornant la taille (anti-DoS mémoire). */
-async function readCapped(res: Response): Promise<string> {
-  const reader = res.body?.getReader();
-  if (!reader) return "";
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (value) {
-      total += value.byteLength;
-      if (total > MAX_BYTES) {
-        await reader.cancel();
-        break;
-      }
-      chunks.push(value);
-    }
-  }
-  return Buffer.concat(chunks.map((c) => Buffer.from(c))).toString("utf8");
 }
 
 export async function GET(request: Request) {
@@ -135,7 +176,7 @@ export async function GET(request: Request) {
   try {
     const res = await safeFetch(url);
 
-    const ct = res.headers.get("content-type") || "";
+    const ct = res.contentType;
     if (ct.startsWith("image/")) {
       return NextResponse.json({ mediaUrl: url, type: "image" });
     }
@@ -143,7 +184,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ mediaUrl: url, type: "video" });
     }
 
-    const html = await readCapped(res);
+    const html = await res.read();
 
     const meta = (key: string): string | undefined => {
       const patterns = [

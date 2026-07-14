@@ -137,13 +137,14 @@ export default function PlanningClient({
     const prev = moments;
     setMoments((list) => list.filter((m) => m.id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("planning_moments")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setMoments(prev);
-      setError(delErr.message);
+      setError(delErr?.message ?? "Suppression impossible (droits insuffisants ?).");
       return;
     }
     router.refresh();

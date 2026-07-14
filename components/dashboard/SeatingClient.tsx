@@ -69,14 +69,15 @@ export default function SeatingClient({
     setTables((p) => p.filter((t) => t.id !== id));
     setSeats((p) => p.filter((s) => s.table_id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("seating_tables")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setTables(prevT);
       setSeats(prevS);
-      setError(delErr.message);
+      setError(delErr?.message ?? "Suppression impossible (droits insuffisants ?).");
       return;
     }
     router.refresh();
@@ -107,11 +108,12 @@ export default function SeatingClient({
     const prev = seats;
     setSeats((p) => p.filter((s) => s.id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("seating_seats")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setSeats(prev);
       return;
     }

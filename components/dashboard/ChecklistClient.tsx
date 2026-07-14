@@ -71,12 +71,14 @@ export default function ChecklistClient({
       p.map((t) => (t.id === id ? { ...t, done: !current } : t))
     );
     const supabase = createClient();
-    const { error } = await supabase
+    // .select() : une écriture bloquée par le RLS renvoie 0 ligne SANS erreur.
+    const { data, error } = await supabase
       .from("checklist_tasks")
       .update({ done: !current })
-      .eq("id", id);
-    if (error) {
-      // Revert en cas d'échec.
+      .eq("id", id)
+      .select("id");
+    if (error || !data || data.length === 0) {
+      // Revert en cas d'échec (ou de blocage RLS silencieux).
       setTasks((p) =>
         p.map((t) => (t.id === id ? { ...t, done: current } : t))
       );
@@ -90,11 +92,12 @@ export default function ChecklistClient({
     const prev = tasks;
     setTasks((p) => p.filter((t) => t.id !== id));
     const supabase = createClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("checklist_tasks")
       .delete()
-      .eq("id", id);
-    if (error) {
+      .eq("id", id)
+      .select("id");
+    if (error || !data || data.length === 0) {
       setTasks(prev);
       return;
     }

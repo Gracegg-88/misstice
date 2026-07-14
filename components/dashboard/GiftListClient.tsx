@@ -84,11 +84,12 @@ export default function GiftListClient({
       p.map((x) => (x.id === item.id ? { ...x, reserved: next } : x))
     );
     const supabase = createClient();
-    const { error: upErr } = await supabase
+    const { data, error: upErr } = await supabase
       .from("gift_items")
       .update({ reserved: next })
-      .eq("id", item.id);
-    if (upErr) {
+      .eq("id", item.id)
+      .select("id");
+    if (upErr || !data || data.length === 0) {
       setItems((p) =>
         p.map((x) => (x.id === item.id ? { ...x, reserved: item.reserved } : x))
       );
@@ -102,11 +103,12 @@ export default function GiftListClient({
     const prev = items;
     setItems((p) => p.filter((x) => x.id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("gift_items")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setItems(prev);
       return;
     }

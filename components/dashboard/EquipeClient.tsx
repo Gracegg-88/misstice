@@ -101,13 +101,14 @@ export default function EquipeClient({
     const prev = members;
     setMembers((m) => m.filter((x) => x.id !== id));
     const supabase = createClient();
-    const { error: delErr } = await supabase
+    const { data, error: delErr } = await supabase
       .from("event_members")
       .delete()
-      .eq("id", id);
-    if (delErr) {
+      .eq("id", id)
+      .select("id");
+    if (delErr || !data || data.length === 0) {
       setMembers(prev);
-      setError(delErr.message);
+      setError(delErr?.message ?? "Suppression impossible (droits insuffisants ?).");
       return;
     }
     router.refresh();

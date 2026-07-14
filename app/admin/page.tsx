@@ -23,16 +23,11 @@ export default async function AdminOverview() {
   since.setDate(todayMid.getDate() - 6);
   const sinceISO = since.toISOString();
 
-  const [
-    { data: profRows },
-    { data: eventDates },
-    { data: vendorRows },
-  ] = await Promise.all([
+  const [{ data: profRows }, { data: eventDates }] = await Promise.all([
     supabase.from("profiles").select("role, created_at").gte("created_at", sinceISO),
     // Événements privés : pas de lecture directe. On ne récupère que les
     // horodatages de création (agrégés, sans détail) pour le graphe d'activité.
     supabase.rpc("admin_events_created_since", { p_since: sinceISO }),
-    supabase.from("vendors").select("created_at").gte("created_at", sinceISO),
   ]);
 
   // Libellés + répartition par jour
@@ -57,7 +52,9 @@ export default async function AdminOverview() {
   const profs = (profRows as { role: string; created_at: string }[]) ?? [];
   const usersSpark = bucket(profs.map((p) => p.created_at));
   const familiesSpark = bucket(profs.filter((p) => p.role === "particulier").map((p) => p.created_at));
-  const vendorsSpark = bucket(((vendorRows as { created_at: string }[]) ?? []).map((v) => v.created_at));
+  // Cohérence : la carte « Prestataires » compte les COMPTES (role='prestataire'),
+  // donc la courbe aussi (pas la table vendors qui inclut les 18 fiches démo).
+  const vendorsSpark = bucket(profs.filter((p) => p.role === "prestataire").map((p) => p.created_at));
   const eventsSpark = bucket((eventDates as string[] | null) ?? []);
   const activity = usersSpark.map((v, i) => v + eventsSpark[i]);
   const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
@@ -70,10 +67,12 @@ export default async function AdminOverview() {
   ];
 
   const repTotal = s.families + s.vendors + s.events;
+  // Couleurs alignées sur les cartes (Familles=festif, Prestataires=emerald,
+  // Événements=violet) pour ne pas dérouter (avant : donut permuté).
   const repartition = [
-    { label: "Familles", value: s.families, color: "#6C3CE1" },
-    { label: "Prestataires", value: s.vendors, color: "#FF8C42" },
-    { label: "Événements", value: s.events, color: "#10B981" },
+    { label: "Familles", value: s.families, color: "#FF8C42" },
+    { label: "Prestataires", value: s.vendors, color: "#10B981" },
+    { label: "Événements", value: s.events, color: "#6C3CE1" },
   ];
   const pct = (v: number) => (repTotal ? Math.round((v / repTotal) * 100) : 0);
 
