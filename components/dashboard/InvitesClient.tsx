@@ -42,6 +42,8 @@ export default function InvitesClient({
 }) {
   const router = useRouter();
   const [guests, setGuests] = useState<Guest[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setGuests(initial), [initial]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("Tous");
   const [open, setOpen] = useState(false);

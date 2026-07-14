@@ -37,6 +37,9 @@ create policy "profiles_update_own" on public.profiles
 -- Création automatique du profil à l'inscription (lit les métadonnées).
 -- SÉCURITÉ : le rôle vient de métadonnées client → on n'accepte JAMAIS 'admin'
 -- ici (anti-escalade), indépendamment de l'ordre d'exécution des scripts.
+-- NOTE : version d'AMORÇAGE (profil seul). La version autoritaire et complète
+-- (crée aussi vendor_profiles + vendors pour les prestataires) vit dans
+-- security.sql, exécuté en dernier. Le trigger ci-dessous reste défini ici.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -261,7 +264,6 @@ create or replace view public.budget_categories_with_spent
 
 -- Fin du schéma.
 
-
 -- ### SOURCE : profile.sql
 
 -- ============================================================================
@@ -300,7 +302,6 @@ create policy "avatars_delete" on storage.objects
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- Fin.
-
 
 -- ### SOURCE : admin.sql
 
@@ -500,7 +501,6 @@ grant execute on function public.admin_delete_user(uuid) to authenticated;
 
 -- Fin.
 
-
 -- ### SOURCE : super-admin.sql
 
 -- ============================================================================
@@ -638,7 +638,6 @@ grant execute on function public.sadmin_set_banned(uuid, boolean) to authenticat
 
 -- Fin.
 
-
 -- ### SOURCE : vendors.sql
 
 -- ============================================================================
@@ -709,7 +708,6 @@ where not exists (select 1 from public.vendors);
 
 -- Fin.
 
-
 -- ### SOURCE : vendor-categories.sql
 
 -- ============================================================================
@@ -775,7 +773,6 @@ insert into public.vendor_categories (name, position) values
 on conflict (name) do nothing;
 
 -- Fin.
-
 
 -- ### SOURCE : dashboard.sql
 
@@ -941,7 +938,6 @@ create policy "inspiration_delete" on storage.objects
   );
 
 -- Fin.
-
 
 -- ### SOURCE : messaging.sql
 
@@ -1115,7 +1111,6 @@ end $$;
 
 -- Fin.
 
-
 -- ### SOURCE : pro.sql
 
 -- ============================================================================
@@ -1287,54 +1282,13 @@ create policy "views_select_owner" on public.profile_views
     exists (select 1 from public.vendors v where v.id = vendor_id and v.user_id = auth.uid())
   );
 
--- 6. Inscription prestataire : créer la fiche automatiquement (via trigger)
---    à partir des métadonnées, même si la confirmation d'email est active
---    (pas de session côté client → l'insert client échouerait sinon).
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql security definer set search_path = public
-as $$
-declare
-  v_role     text;
-  v_company  text;
-  v_category text;
-  v_city     text;
-begin
-  v_role := coalesce(new.raw_user_meta_data ->> 'role', 'particulier');
-  -- Anti-escalade : jamais 'admin' depuis les métadonnées client.
-  if v_role not in ('particulier', 'prestataire') then
-    v_role := 'particulier';
-  end if;
-
-  insert into public.profiles (id, full_name, role)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    v_role
-  )
-  on conflict (id) do nothing;
-
-  if v_role = 'prestataire' then
-    v_company  := new.raw_user_meta_data ->> 'company';
-    v_category := new.raw_user_meta_data ->> 'category';
-    v_city     := new.raw_user_meta_data ->> 'city';
-
-    if coalesce(v_company, '') <> '' then
-      insert into public.vendor_profiles (id, company, category, city)
-      values (new.id, v_company, v_category, v_city)
-      on conflict (id) do nothing;
-
-      insert into public.vendors (name, category, city, user_id, verified)
-      values (v_company, coalesce(nullif(v_category, ''), 'Autre'), v_city, new.id, false);
-    end if;
-  end if;
-
-  return new;
-end;
-$$;
+-- 6. Inscription prestataire : la fiche (profiles + vendor_profiles + vendors)
+--    est créée automatiquement à l'inscription par le trigger on_auth_user_created.
+--    SOURCE UNIQUE de handle_new_user() : security.sql (exécuté en dernier, il
+--    contient la version durcie et complète). On ne la redéfinit plus ici pour
+--    éviter des définitions divergentes selon l'ordre d'exécution.
 
 -- Fin.
-
 
 -- ### SOURCE : reviews.sql
 
@@ -1426,7 +1380,6 @@ update public.vendors v
   where r.vendor_id = v.id;
 
 -- Fin.
-
 
 -- ### SOURCE : notifications.sql
 
@@ -1604,7 +1557,6 @@ begin
 end $$;
 
 -- Fin.
-
 
 -- ### SOURCE : security.sql
 
@@ -2029,7 +1981,6 @@ create trigger budget_expenses_check_cat
 
 -- Fin.
 
-
 -- ### SOURCE : permissions.sql
 
 -- ============================================================================
@@ -2177,7 +2128,6 @@ create policy "inspiration_delete" on storage.objects
 
 -- Fin.
 
-
 -- ### SOURCE : collaboration.sql
 
 -- ============================================================================
@@ -2263,7 +2213,6 @@ grant execute on function public.rsvp_guest(uuid, text) to anon, authenticated;
 
 -- Fin.
 
-
 -- ### SOURCE : collaboration-extra.sql
 
 -- ============================================================================
@@ -2288,7 +2237,6 @@ $$;
 grant execute on function public.event_organizer(uuid) to authenticated;
 
 -- Fin.
-
 
 -- ### SOURCE : quote-details.sql
 
@@ -2406,7 +2354,6 @@ end $$;
 
 -- Fin.
 
-
 -- ### SOURCE : event-details.sql
 
 -- ============================================================================
@@ -2452,7 +2399,6 @@ grant execute on function public.guest_rsvp_info(uuid) to anon, authenticated;
 
 -- Fin.
 
-
 -- ### SOURCE : event-vendors-status.sql
 
 -- ============================================================================
@@ -2478,7 +2424,6 @@ alter table public.event_vendors
   check (status in ('confirmé', 'en attente', 'refusé'));
 
 -- Fin.
-
 
 -- ### SOURCE : invitation-card.sql
 
@@ -2521,7 +2466,6 @@ grant execute on function public.guest_rsvp_info(uuid) to anon, authenticated;
 
 -- Fin.
 
-
 -- ### SOURCE : inspiration-media.sql
 
 -- ============================================================================
@@ -2540,7 +2484,6 @@ alter table public.inspiration_ideas
   add column if not exists source_url text;
 
 -- Fin.
-
 
 -- ### SOURCE : message-reads.sql
 
@@ -2618,7 +2561,6 @@ end $$;
 
 -- Fin.
 
-
 -- ### SOURCE : messaging-dedupe.sql
 
 -- ============================================================================
@@ -2694,7 +2636,6 @@ create unique index if not exists conversations_pair_uniq
   on public.conversations (particulier_id, prestataire_id);
 
 -- Fin.
-
 
 -- ### SOURCE : team-chat.sql
 
@@ -2841,7 +2782,6 @@ end $$;
 
 -- Fin.
 
-
 -- ### SOURCE : category-fields.sql
 
 -- ============================================================================
@@ -2858,7 +2798,6 @@ alter table public.vendor_categories
   add column if not exists active boolean not null default true;
 
 -- Fin.
-
 
 -- ### SOURCE : profile-extras.sql
 
@@ -2879,7 +2818,6 @@ alter table public.profiles
 
 -- Fin.
 
-
 -- ### SOURCE : vibes.sql
 
 -- ============================================================================
@@ -2897,7 +2835,6 @@ alter table public.vendors add column if not exists atmospheres text[] not null 
 alter table public.vendors add column if not exists music_styles text[] not null default '{}';
 
 -- Fin.
-
 
 -- ### SOURCE : gift-list.sql
 
@@ -2937,7 +2874,6 @@ create policy "gift_items_write" on public.gift_items
   with check (public.can_edit_section(event_id, 'cadeaux'));
 
 -- Fin.
-
 
 -- ### SOURCE : seating.sql
 
@@ -2992,7 +2928,6 @@ create policy "seating_seats_write" on public.seating_seats
   with check (public.can_edit_section(event_id, 'plan_table'));
 
 -- Fin.
-
 
 -- ### SOURCE : event-invitation.sql
 
@@ -3084,7 +3019,6 @@ grant execute on function public.rsvp_public(uuid, text, text, text, boolean) to
 
 -- Fin.
 
-
 -- ### SOURCE : rsvp-token.sql
 
 -- ============================================================================
@@ -3131,7 +3065,6 @@ grant execute on function public.rsvp_guest(uuid, text, uuid) to anon, authentic
 
 -- Fin.
 
-
 -- ### SOURCE : favorites.sql
 
 -- ============================================================================
@@ -3157,7 +3090,6 @@ create policy "favorites_own" on public.vendor_favorites
   with check (user_id = auth.uid());
 
 -- Fin.
-
 
 -- ### SOURCE : availability-public.sql
 
@@ -3194,4 +3126,3 @@ $$;
 grant execute on function public.public_next_availability(uuid) to anon, authenticated;
 
 -- Fin.
-

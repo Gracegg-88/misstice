@@ -33,6 +33,9 @@ create policy "profiles_update_own" on public.profiles
 -- Création automatique du profil à l'inscription (lit les métadonnées).
 -- SÉCURITÉ : le rôle vient de métadonnées client → on n'accepte JAMAIS 'admin'
 -- ici (anti-escalade), indépendamment de l'ordre d'exécution des scripts.
+-- NOTE : version d'AMORÇAGE (profil seul). La version autoritaire et complète
+-- (crée aussi vendor_profiles + vendors pour les prestataires) vit dans
+-- security.sql, exécuté en dernier. Le trigger ci-dessous reste défini ici.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql

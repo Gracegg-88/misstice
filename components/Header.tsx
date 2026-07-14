@@ -14,12 +14,20 @@ const navLinks = [
 
 type Account = { href: string; createHref: string };
 
-export default function Header() {
+export default function Header({
+  initialAccount = null,
+}: {
+  // Résolu côté serveur pour éviter le clignotement (FOUC) des boutons ; si
+  // absent (appelé depuis un composant client), on le résout côté navigateur.
+  initialAccount?: Account | null;
+}) {
   const [open, setOpen] = useState(false);
-  const [account, setAccount] = useState<Account | null>(null);
+  const [account, setAccount] = useState<Account | null>(initialAccount);
 
-  // Détecte l'utilisateur connecté pour adapter les boutons.
+  // Détecte l'utilisateur connecté pour adapter les boutons (repli client si le
+  // serveur ne l'a pas déjà fourni).
   useEffect(() => {
+    if (initialAccount) return;
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
@@ -34,7 +42,7 @@ export default function Header() {
       const createHref = role === "particulier" ? "/dashboard/nouveau" : href;
       setAccount({ href, createHref });
     });
-  }, []);
+  }, [initialAccount]);
 
   return (
     <>

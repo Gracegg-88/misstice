@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +36,8 @@ export default function ChecklistClient({
 }) {
   const router = useRouter();
   const [tasks, setTasks] = useState<ChecklistTask[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setTasks(initial), [initial]);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Toutes");
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);

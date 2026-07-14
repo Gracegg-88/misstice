@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarDays, Check, Plus, Trash2, Users, X, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +25,8 @@ export default function EventsManagerClient({
 }) {
   const router = useRouter();
   const [events, setEvents] = useState<ManagedEvent[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setEvents(initial), [initial]);
   const [current, setCurrent] = useState(currentId);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

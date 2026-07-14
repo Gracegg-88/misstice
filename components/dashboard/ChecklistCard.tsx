@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -14,6 +14,8 @@ export default function ChecklistCard({
 }) {
   const router = useRouter();
   const [tasks, setTasks] = useState<ChecklistTask[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setTasks(initial), [initial]);
   const done = tasks.filter((t) => t.done).length;
 
   const toggle = async (id: string, current: boolean) => {

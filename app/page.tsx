@@ -6,11 +6,13 @@ import FeaturedVendors from "@/components/FeaturedVendors";
 import FAQ from "@/components/FAQ";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
+import { getHeaderAccount } from "@/lib/header-account";
 
-export default function Home() {
+export default async function Home() {
+  const account = await getHeaderAccount();
   return (
     <>
-      <Header />
+      <Header initialAccount={account} />
       <main>
         <Hero />
         <EventTypes />

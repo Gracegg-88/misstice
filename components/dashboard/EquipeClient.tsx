@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Send, Copy, Check, UserPlus, Users, Trash2, Eye, Lock, MessagesSquare } from "lucide-react";
@@ -28,6 +28,8 @@ export default function EquipeClient({
 }) {
   const router = useRouter();
   const [members, setMembers] = useState<TeamMember[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setMembers(initial), [initial]);
 
   const [email, setEmail] = useState("");
   const [permissions, setPermissions] = useState<string[]>([]);

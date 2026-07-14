@@ -26,7 +26,7 @@ export default function ProfileForm({
   extras?: boolean;
 }) {
   const router = useRouter();
-  const [name, setName] = useState(initialName === "Admin" ? "" : initialName);
+  const [name, setName] = useState(initialName);
   const [email, setEmail] = useState(initialEmail);
   const [birthdate, setBirthdate] = useState(initialBirthdate ?? "");
   const [phone, setPhone] = useState(initialPhone ?? "");

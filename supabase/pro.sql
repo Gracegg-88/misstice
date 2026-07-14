@@ -167,50 +167,10 @@ create policy "views_select_owner" on public.profile_views
     exists (select 1 from public.vendors v where v.id = vendor_id and v.user_id = auth.uid())
   );
 
--- 6. Inscription prestataire : créer la fiche automatiquement (via trigger)
---    à partir des métadonnées, même si la confirmation d'email est active
---    (pas de session côté client → l'insert client échouerait sinon).
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql security definer set search_path = public
-as $$
-declare
-  v_role     text;
-  v_company  text;
-  v_category text;
-  v_city     text;
-begin
-  v_role := coalesce(new.raw_user_meta_data ->> 'role', 'particulier');
-  -- Anti-escalade : jamais 'admin' depuis les métadonnées client.
-  if v_role not in ('particulier', 'prestataire') then
-    v_role := 'particulier';
-  end if;
-
-  insert into public.profiles (id, full_name, role)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data ->> 'full_name', ''),
-    v_role
-  )
-  on conflict (id) do nothing;
-
-  if v_role = 'prestataire' then
-    v_company  := new.raw_user_meta_data ->> 'company';
-    v_category := new.raw_user_meta_data ->> 'category';
-    v_city     := new.raw_user_meta_data ->> 'city';
-
-    if coalesce(v_company, '') <> '' then
-      insert into public.vendor_profiles (id, company, category, city)
-      values (new.id, v_company, v_category, v_city)
-      on conflict (id) do nothing;
-
-      insert into public.vendors (name, category, city, user_id, verified)
-      values (v_company, coalesce(nullif(v_category, ''), 'Autre'), v_city, new.id, false);
-    end if;
-  end if;
-
-  return new;
-end;
-$$;
+-- 6. Inscription prestataire : la fiche (profiles + vendor_profiles + vendors)
+--    est créée automatiquement à l'inscription par le trigger on_auth_user_created.
+--    SOURCE UNIQUE de handle_new_user() : security.sql (exécuté en dernier, il
+--    contient la version durcie et complète). On ne la redéfinit plus ici pour
+--    éviter des définitions divergentes selon l'ordre d'exécution.
 
 -- Fin.

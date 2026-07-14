@@ -38,13 +38,16 @@ export async function getMyConversations(): Promise<ConversationListItem[]> {
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const [{ data }, { data: unreadRows }] = await Promise.all([
-    supabase
-      .from("conversations")
-      .select(CONV_SELECT)
-      .order("last_message_at", { ascending: false }),
-    supabase.rpc("my_unread_counts"),
-  ]);
+  const [{ data, error }, { data: unreadRows, error: unreadErr }] =
+    await Promise.all([
+      supabase
+        .from("conversations")
+        .select(CONV_SELECT)
+        .order("last_message_at", { ascending: false }),
+      supabase.rpc("my_unread_counts"),
+    ]);
+  if (error) console.error("messaging:", error.message);
+  if (unreadErr) console.error("messaging:", unreadErr.message);
   const convs = (data as unknown as ConvRow[]) ?? [];
   const unreadByConv = new Map<string, number>(
     ((unreadRows as { conversation_id: string; unread: number }[]) ?? []).map(
@@ -75,7 +78,8 @@ export async function getUnreadTotal(): Promise<number> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return 0;
-  const { data } = await supabase.rpc("my_unread_counts");
+  const { data, error } = await supabase.rpc("my_unread_counts");
+  if (error) console.error("messaging:", error.message);
   return ((data as { unread: number }[]) ?? []).reduce(
     (s, r) => s + Number(r.unread),
     0
@@ -96,11 +100,12 @@ export async function getConversation(
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("conversations")
     .select(CONV_SELECT)
     .eq("id", id)
     .maybeSingle();
+  if (error) console.error("messaging:", error.message);
   if (!data) return null;
   const c = data as unknown as ConvRow;
 
@@ -111,12 +116,13 @@ export async function getConversation(
 
   // Dernière lecture de l'autre partie → accusé « Vu » sur mes messages.
   const otherId = iAmPrestataire ? c.particulier_id : c.prestataire_id;
-  const { data: readRow } = await supabase
+  const { data: readRow, error: readErr } = await supabase
     .from("conversation_reads")
     .select("last_read_at")
     .eq("conversation_id", id)
     .eq("user_id", otherId)
     .maybeSingle();
+  if (readErr) console.error("messaging:", readErr.message);
 
   return {
     conv: {
@@ -136,11 +142,12 @@ export async function getMessages(conversationId: string): Promise<Message[]> {
   const supabase = createClient();
   // On borne le chargement (perf/DOM) : les 100 derniers messages suffisent
   // pour l'affichage ; le temps réel ajoute les nouveaux ensuite.
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("messages")
     .select("id, conversation_id, sender_id, body, created_at")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: false })
     .limit(100);
+  if (error) console.error("messaging:", error.message);
   return ((data as Message[]) ?? []).reverse();
 }

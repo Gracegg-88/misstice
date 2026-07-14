@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ExplorerClient from "@/components/explorer/ExplorerClient";
 import { getVendors } from "@/lib/vendors";
+import { getHeaderAccount } from "@/lib/header-account";
 
 export const metadata: Metadata = {
   title: "Explorer les prestataires — Misstice",
@@ -17,9 +18,10 @@ export default async function PrestatairesPage() {
   const categories = Array.from(new Set(vendors.map((v) => v.category))).sort(
     (a, b) => a.localeCompare(b, "fr")
   );
+  const account = await getHeaderAccount();
   return (
     <>
-      <Header />
+      <Header initialAccount={account} />
       <main className="min-h-screen bg-cream">
         <ExplorerClient vendors={vendors} categories={categories} />
       </main>

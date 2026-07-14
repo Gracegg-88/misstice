@@ -54,11 +54,12 @@ export async function getProfile(): Promise<Profile | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .select("id, full_name, role, avatar_url, can_manage_admins")
     .eq("id", user.id)
     .single();
+  if (error) console.error("queries:", error.message);
 
   return (data as Profile) ?? null;
 }
@@ -80,10 +81,11 @@ export async function getUserEvents(): Promise<EventListItem[]> {
 
   // Pas de filtre owner_id : le RLS (can_access_event) inclut déjà les
   // événements où l'utilisateur est membre accepté (collaboration).
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("events")
     .select("id, name, event_date")
     .order("created_at", { ascending: false });
+  if (error) console.error("queries:", error.message);
 
   return (data as EventListItem[]) ?? [];
 }
@@ -105,20 +107,22 @@ export async function getCurrentEvent(): Promise<EventRow | null> {
 
   // Le RLS garantit l'accès : owner OU membre accepté (can_access_event).
   if (selected) {
-    const { data } = await supabase
+    const { data, error: selectedErr } = await supabase
       .from("events")
       .select(cols)
       .eq("id", selected)
       .maybeSingle();
+    if (selectedErr) console.error("queries:", selectedErr.message);
     if (data) return data as EventRow;
   }
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("events")
     .select(cols)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (error) console.error("queries:", error.message);
 
   return (data as EventRow) ?? null;
 }
@@ -128,11 +132,12 @@ export async function getBudgetCategories(
   eventId: string
 ): Promise<BudgetCategory[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("budget_categories_with_spent")
     .select("id, event_id, name, budget, color, position, spent")
     .eq("event_id", eventId)
     .order("position", { ascending: true });
+  if (error) console.error("queries:", error.message);
 
   return (data as BudgetCategory[]) ?? [];
 }

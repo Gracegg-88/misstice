@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Heart, Plus, X, Link2, Upload, Trash2, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -47,6 +47,8 @@ export default function InspirationClient({
 }) {
   const router = useRouter();
   const [ideas, setIdeas] = useState<InspirationIdea[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setIdeas(initial), [initial]);
   const [cat, setCat] = useState("Tout");
   const [query, setQuery] = useState("");
   const [importOpen, setImportOpen] = useState(false);

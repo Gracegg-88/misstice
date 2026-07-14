@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Gift,
@@ -28,6 +28,8 @@ export default function GiftListClient({
 }) {
   const router = useRouter();
   const [items, setItems] = useState<GiftItem[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setItems(initial), [initial]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);

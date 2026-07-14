@@ -35,7 +35,8 @@ export async function getMyTeamThreads(): Promise<TeamThread[]> {
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase.rpc("my_team_threads");
+  const { data, error } = await supabase.rpc("my_team_threads");
+  if (error) console.error("team-chat:", error.message);
   return ((data as ThreadRow[]) ?? [])
     .map((r) => ({
       eventId: r.event_id,
@@ -64,18 +65,20 @@ export async function getTeamThread(
   if (!user) return null;
 
   // Le RLS de events limite déjà la lecture aux membres → maybeSingle null = pas d'accès.
-  const { data: event } = await supabase
+  const { data: event, error: eventErr } = await supabase
     .from("events")
     .select("id, name")
     .eq("id", eventId)
     .maybeSingle();
+  if (eventErr) console.error("team-chat:", eventErr.message);
   if (!event) return null;
 
-  const { data: msgs } = await supabase
+  const { data: msgs, error: msgErr } = await supabase
     .from("team_messages")
     .select("id, event_id, sender_id, sender_name, sender_avatar, body, created_at")
     .eq("event_id", eventId)
     .order("created_at", { ascending: true });
+  if (msgErr) console.error("team-chat:", msgErr.message);
 
   return {
     eventName: (event as { name: string }).name,

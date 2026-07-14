@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Armchair, Plus, X, Trash2, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -25,6 +25,9 @@ export default function SeatingClient({
   const router = useRouter();
   const [tables, setTables] = useState<SeatingTable[]>(initialTables);
   const [seats, setSeats] = useState<SeatingSeat[]>(initialSeats);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setTables(initialTables), [initialTables]);
+  useEffect(() => setSeats(initialSeats), [initialSeats]);
   const [newTable, setNewTable] = useState({ name: "", capacity: "8" });
   const [seatDraft, setSeatDraft] = useState<Record<string, string>>({});
   const [error, setError] = useState("");

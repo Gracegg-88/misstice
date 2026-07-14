@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -73,6 +73,8 @@ export default function BookedVendorsClient({
 }) {
   const router = useRouter();
   const [vendors, setVendors] = useState<EventVendor[]>(initial);
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setVendors(initial), [initial]);
   const [filter, setFilter] = useState<"Tous" | Status>("Tous");
 
   // Modale « ajouter un prestataire »

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarHeart, MapPin, User, Clock, Plus, X, Trash2, Search } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -33,6 +33,8 @@ export default function PlanningClient({
 }) {
   const router = useRouter();
   const [moments, setMoments] = useState<PlanningMoment[]>(sortMoments(initial));
+  // Resynchronise avec le serveur après un router.refresh().
+  useEffect(() => setMoments(sortMoments(initial)), [initial]);
 
   const [open, setOpen] = useState(false);
   const [startTime, setStartTime] = useState("");
