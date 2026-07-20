@@ -21,11 +21,11 @@ const dmSans = DM_Sans({
 
 // SEO dès le jour 1 (principe 5)
 export const metadata: Metadata = {
-  title: "Misstice — On transforme le stress de l'organisation en plaisir",
+  title: "Misstice Organisez vos plus beaux événements",
   description:
     "Planifiez mariages, anniversaires, baptêmes et galas en un seul endroit : budget, checklist, invités et les meilleurs prestataires. Pour les familles, pensé pour la fête.",
   openGraph: {
-    title: "Misstice — Le planneur d'événements des familles",
+    title: "Misstice Organisez vos plus beaux événements",
     description:
       "Budget, checklist, invités et prestataires vérifiés, réunis sur une seule plateforme.",
     locale: "fr_FR",
