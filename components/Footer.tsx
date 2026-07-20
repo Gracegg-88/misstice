@@ -66,8 +66,13 @@ export default function Footer() {
             >
               Mentions légales
             </a>
-            <a
+                     <a
               href="/cgu"
+              className="text-sm text-slate transition-colors hover:text-violet"
+            >
+              CGU
+            </a>
+            <a
               href="https://www.iubenda.com/privacy-policy/93417670"
               className="iubenda-white iubenda-noiframe iubenda-embed text-sm text-slate transition-colors hover:text-violet"
               title="Politique de confidentialité"
