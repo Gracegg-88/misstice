@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import ProfileForm from "@/components/admin/ProfileForm";
+import DeleteAccountButton from "@/components/dashboard/DeleteAccountButton";
 import { getProfile } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -45,6 +46,8 @@ export default async function DashboardProfilePage() {
         newsletter={e?.newsletter_opt_in ?? true}
         extras
       />
+
+      <DeleteAccountButton />
     </div>
   );
 }
