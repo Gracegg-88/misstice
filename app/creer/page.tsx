@@ -44,6 +44,7 @@ export default function CreerPage() {
   // données
   const [account, setAccount] = useState({ name: "", email: "", password: "" });
   const [pro, setPro] = useState({ company: "", category: "", city: "" });
+  const [consent, setConsent] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -175,9 +176,9 @@ export default function CreerPage() {
 
   // validation minimale pour activer "Continuer / Créer"
   const canSubmit =
-    step === 0
+    (step === 0
       ? account.email.trim() !== "" && account.password.trim() !== ""
-      : pro.company.trim() !== "" && pro.category.trim() !== "";
+      : pro.company.trim() !== "" && pro.category.trim() !== "") && consent;
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream bg-cover bg-center bg-no-repeat bg-[url('/background_signup_mobile.png')] sm:bg-[url('/background_login.png')]">
@@ -290,9 +291,31 @@ export default function CreerPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-plum"
                     >
                       {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+                                        </button>
                   </div>
                 </div>
+
+                <label className="mt-3 flex items-start gap-2 text-sm text-slate">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-black/20 accent-violet"
+                  />
+                  <span>
+                    J&apos;accepte les{" "}
+                    <a href="/cgu" className="font-semibold text-violet hover:text-violet-dark">
+                      Conditions Générales d&apos;Utilisation
+                    </a>{" "}
+                    et la{" "}
+                    <a
+                      href="https://www.iubenda.com/privacy-policy/93417670"
+                      className="font-semibold text-violet hover:text-violet-dark"
+                    >
+                      Politique de confidentialité
+                    </a>
+                  </span>
+                </label>
               </div>
             )}
 
