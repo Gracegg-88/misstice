@@ -7,11 +7,11 @@ const types: {
   label: string;
   text: string;
 }[] = [
-  { icon: Gem, label: "Mariage", text: "Célébrez votre amour" },
-  { icon: Cake, label: "Anniversaire", text: "Créez des souvenirs inoubliables" },
-  { icon: Church, label: "Baptême", text: "Un moment rempli de douceur" },
-  { icon: Sparkles, label: "Gala", text: "Organisez des événements d'exception" },
-  { icon: Baby, label: "Baby Shower", text: "Accueillez bébé comme il se doit" },
+  { icon: Gem, label: "Mariage", text: "Gérez chaque détail de votre grand jour" },
+  { icon: Cake, label: "Anniversaire", text: "Planifiez en toute sérénité" },
+  { icon: Church, label: "Baptême", text: "Organisez chaque instant avec soin" },
+  { icon: Sparkles, label: "Gala", text: "Un événement professionnel et mémorable" },
+  { icon: Baby, label: "Baby Shower", text: "Préparez l'arrivée de bébé sereinement" },
 ];
 
 export default function EventTypes() {
