@@ -59,14 +59,15 @@ export default function Footer() {
           <p className="text-sm text-slate">
             © {new Date().getFullYear()} Misstice. Tous droits réservés.
           </p>
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4">
             <a
-              href="/cgu"
+              href="/mentions-legales"
               className="text-sm text-slate transition-colors hover:text-violet"
             >
-              CGU
+              Mentions légales
             </a>
             <a
+              href="/cgu"
               href="https://www.iubenda.com/privacy-policy/93417670"
               className="iubenda-white iubenda-noiframe iubenda-embed text-sm text-slate transition-colors hover:text-violet"
               title="Politique de confidentialité"
