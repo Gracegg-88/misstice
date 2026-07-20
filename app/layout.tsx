@@ -40,12 +40,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
-           <body className="font-sans bg-cream text-plum antialiased">
+      <body className="font-sans bg-cream text-plum antialiased">
         {children}
-        <script
-          type="text/javascript"
-          src="https://embeds.iubenda.com/widgets/78e1feec-f4d4-4ffe-b29a-d7f27e507df8.js"
-        ></script>
       </body>
     </html>
   );
