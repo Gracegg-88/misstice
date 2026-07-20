@@ -59,13 +59,21 @@ export default function Footer() {
           <p className="text-sm text-slate">
             © {new Date().getFullYear()} Misstice. Tous droits réservés.
           </p>
-          <a
-            href="https://www.iubenda.com/privacy-policy/93417670"
-            className="iubenda-white iubenda-noiframe iubenda-embed text-sm text-slate transition-colors hover:text-violet"
-            title="Politique de confidentialité"
-          >
-            Politique de confidentialité
-          </a>
+                    <div className="flex items-center gap-4">
+            <a
+              href="/cgu"
+              className="text-sm text-slate transition-colors hover:text-violet"
+            >
+              CGU
+            </a>
+            <a
+              href="https://www.iubenda.com/privacy-policy/93417670"
+              className="iubenda-white iubenda-noiframe iubenda-embed text-sm text-slate transition-colors hover:text-violet"
+              title="Politique de confidentialité"
+            >
+              Politique de confidentialité
+            </a>
+          </div>
           <script type="text/javascript">
             {`(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);`}
           </script>
