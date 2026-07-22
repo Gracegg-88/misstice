@@ -217,7 +217,7 @@ export default function CreerPage() {
   };
 
   const verifyEmail = async () => {
-    if (emailCode.trim().length !== 6 || verifyingEmail) return;
+    if (emailCode.trim().length < 6 || verifyingEmail) return;
     setError("");
     setVerifyingEmail(true);
     const supabase = createClient();
@@ -278,7 +278,7 @@ export default function CreerPage() {
   };
 
   const verifyPhone = async () => {
-    if (phoneCode.trim().length !== 6 || verifyingPhone) return;
+    if (phoneCode.trim().length < 6 || verifyingPhone) return;
     setError("");
     setVerifyingPhone(true);
     const supabase = createClient();
@@ -505,20 +505,20 @@ export default function CreerPage() {
                   Vérifiez votre email
                 </h1>
                 <p className="mt-1 text-sm text-slate">
-                  Nous avons envoyé un code à 6 chiffres à{" "}
+                  Nous avons envoyé un code de vérification à{" "}
                   <span className="font-semibold text-plum">{account.email}</span>.
                 </p>
                 <input
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={10}
                   value={emailCode}
                   onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="123456"
+                  placeholder="Code reçu par email"
                   className={`mt-4 ${codeInputCls}`}
                 />
                 <button
                   onClick={verifyEmail}
-                  disabled={verifyingEmail || emailCode.trim().length !== 6}
+                  disabled={verifyingEmail || emailCode.trim().length < 6}
                   className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
                 >
                   {verifyingEmail ? "Vérification…" : "Vérifier le code"}
@@ -573,15 +573,15 @@ export default function CreerPage() {
                     </p>
                     <input
                       inputMode="numeric"
-                      maxLength={6}
+                      maxLength={10}
                       value={phoneCode}
                       onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, ""))}
-                      placeholder="123456"
+                      placeholder="Code reçu par SMS"
                       className={`mt-4 ${codeInputCls}`}
                     />
                     <button
                       onClick={verifyPhone}
-                      disabled={verifyingPhone || phoneCode.trim().length !== 6}
+                      disabled={verifyingPhone || phoneCode.trim().length < 6}
                       className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
                     >
                       {verifyingPhone ? "Vérification…" : "Vérifier le code"}
