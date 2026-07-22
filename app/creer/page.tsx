@@ -103,11 +103,13 @@ export default function CreerPage() {
     return () => clearTimeout(id);
   }, [phoneCooldown]);
 
-  // Le particulier ne crée qu'un compte, puis vérifie email + téléphone. Le
-  // prestataire renseigne en plus sa fiche avant les mêmes vérifications.
+  // Le particulier ne crée qu'un compte puis vérifie son email — la
+  // confiance étant moins critique côté BtoC, pas de vérification
+  // téléphone à ce stade. Le prestataire renseigne en plus sa fiche et
+  // vérifie aussi son téléphone (cohérent avec la vérification SIRET à venir).
   const steps =
     type === "particulier"
-      ? ["Compte", "Vérifier l'email", "Vérifier le téléphone"]
+      ? ["Compte", "Vérifier l'email"]
       : ["Compte", "Profil pro", "Vérifier l'email", "Vérifier le téléphone"];
   // Dernière étape de saisie (avant les vérifications OTP) : 0 pour un
   // particulier, 1 pour un prestataire (après « Profil pro »).
@@ -198,9 +200,14 @@ export default function CreerPage() {
     }
 
     // Si la confirmation email est désactivée côté projet, une session est
-    // déjà ouverte : on passe directement à la vérification du téléphone.
+    // déjà ouverte : on passe directement à la suite (téléphone pour un
+    // prestataire, sinon c'est terminé).
     if (signUp.session) {
-      setStep(phoneStepIndex);
+      if (type === "professionnel") {
+        setStep(phoneStepIndex);
+      } else {
+        completeSignup();
+      }
       return;
     }
 
@@ -229,7 +236,12 @@ export default function CreerPage() {
       return;
     }
     setEmailCode("");
-    setStep(phoneStepIndex);
+    // Téléphone vérifié uniquement côté prestataire ; un particulier a fini.
+    if (type === "professionnel") {
+      setStep(phoneStepIndex);
+    } else {
+      completeSignup();
+    }
   };
 
   const resendEmail = async () => {
