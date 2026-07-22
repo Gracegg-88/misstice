@@ -22,6 +22,12 @@ function GoogleIcon() {
 const inputCls =
   "w-full rounded-xl border border-black/10 bg-cream px-4 py-1.5 text-sm text-plum outline-none focus:border-violet";
 
+const codeInputCls =
+  "w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-center text-lg tracking-[0.5em] text-plum outline-none focus:border-violet";
+
+// Numéro nettoyé pour Supabase Auth (format international attendu, ex. +33612345678).
+const toE164 = (raw: string) => raw.trim().replace(/[\s().-]/g, "");
+
 export default function CreerPage() {
   const router = useRouter();
   const [type, setType] = useState<"particulier" | "professionnel">("particulier");
@@ -48,7 +54,20 @@ export default function CreerPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+
+  // Vérification email (OTP à 6 chiffres, envoyé par Supabase Auth au signUp).
+  const [emailCode, setEmailCode] = useState("");
+  const [verifyingEmail, setVerifyingEmail] = useState(false);
+  const [emailCooldown, setEmailCooldown] = useState(0);
+
+  // Vérification téléphone (OTP par SMS, en deux temps : saisie du numéro
+  // puis saisie du code reçu).
+  const [phonePhase, setPhonePhase] = useState<"number" | "code">("number");
+  const [phone, setPhone] = useState("");
+  const [phoneCode, setPhoneCode] = useState("");
+  const [sendingPhone, setSendingPhone] = useState(false);
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const [phoneCooldown, setPhoneCooldown] = useState(0);
 
   // Liste des catégories existantes (lecture publique) pour le menu déroulant.
   useEffect(() => {
@@ -72,9 +91,29 @@ export default function CreerPage() {
     void load();
   }, []);
 
-  // Le particulier ne crée qu'un compte ; ses événements se créent ensuite
-  // depuis le dashboard. Le prestataire renseigne en plus sa fiche.
-  const steps = type === "particulier" ? ["Compte"] : ["Compte", "Profil pro"];
+  // Décompte des boutons « Renvoyer le code » (30s, un seul tick à la fois).
+  useEffect(() => {
+    if (emailCooldown <= 0) return;
+    const id = setTimeout(() => setEmailCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [emailCooldown]);
+  useEffect(() => {
+    if (phoneCooldown <= 0) return;
+    const id = setTimeout(() => setPhoneCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [phoneCooldown]);
+
+  // Le particulier ne crée qu'un compte, puis vérifie email + téléphone. Le
+  // prestataire renseigne en plus sa fiche avant les mêmes vérifications.
+  const steps =
+    type === "particulier"
+      ? ["Compte", "Vérifier l'email", "Vérifier le téléphone"]
+      : ["Compte", "Profil pro", "Vérifier l'email", "Vérifier le téléphone"];
+  // Dernière étape de saisie (avant les vérifications OTP) : 0 pour un
+  // particulier, 1 pour un prestataire (après « Profil pro »).
+  const dataLast = type === "professionnel" ? 1 : 0;
+  const emailStepIndex = dataLast + 1;
+  const phoneStepIndex = dataLast + 2;
   const last = steps.length - 1;
 
   const next = () => setStep((s) => Math.min(s + 1, last));
@@ -90,9 +129,35 @@ export default function CreerPage() {
     if (oauthErr) setError(oauthErr.message);
   };
 
+  // Redirection finale, une fois email ET téléphone vérifiés.
+  const completeSignup = () => {
+    try {
+      // Inscription via une invitation : on va d'abord accepter l'invitation
+      // (page /invitation/<id>), qui redirige ensuite vers le dashboard avec
+      // l'événement rejoint sélectionné.
+      if (nextParam) {
+        router.push(nextParam);
+        return;
+      }
+      if (type === "professionnel") {
+        // La fiche prestataire (vendor_profiles + vendors annuaire) est créée
+        // automatiquement par le trigger handle_new_user à partir des
+        // métadonnées — pas d'insert client nécessaire.
+        router.push("/pro");
+        return;
+      }
+      // Particulier : on l'emmène sur son dashboard, où il pourra créer
+      // un ou plusieurs événements.
+      router.push("/dashboard");
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Une erreur est survenue pendant la création."
+      );
+    }
+  };
+
   const finish = async () => {
     setError("");
-    setSuccess("");
     setLoading(true);
     const supabase = createClient();
     const role = type === "professionnel" ? "prestataire" : "particulier";
@@ -121,8 +186,9 @@ export default function CreerPage() {
       },
     });
 
+    setLoading(false);
+
     if (signUpErr) {
-      setLoading(false);
       setError(
         signUpErr.message.includes("registered")
           ? "Un compte existe déjà avec cet email. Connectez-vous."
@@ -131,47 +197,117 @@ export default function CreerPage() {
       return;
     }
 
-    // Si la confirmation d'email est activée, aucune session n'est ouverte :
-    // on ne peut pas encore écrire côté DB (RLS). On informe l'utilisateur.
-    if (!signUp.session) {
-      setLoading(false);
-      setError("");
-      setSuccess(
-        nextParam
-          ? "Compte créé ! Vérifiez votre boîte mail : le lien de confirmation vous amènera directement à votre invitation."
-          : "Compte créé ! Vérifiez votre boîte mail pour confirmer, puis connectez-vous."
-      );
+    // Si la confirmation email est désactivée côté projet, une session est
+    // déjà ouverte : on passe directement à la vérification du téléphone.
+    if (signUp.session) {
+      setStep(phoneStepIndex);
       return;
     }
 
-    try {
-      // Inscription via une invitation : on va d'abord accepter l'invitation
-      // (page /invitation/<id>), qui redirige ensuite vers le dashboard avec
-      // l'événement rejoint sélectionné.
-      if (nextParam) {
-        router.push(nextParam);
-        return;
-      }
+    // Cas normal : Supabase vient d'envoyer le code à 6 chiffres par email.
+    setEmailCooldown(30);
+    setStep(emailStepIndex);
+  };
 
-      if (type === "professionnel") {
-        // La fiche prestataire (vendor_profiles + vendors annuaire) est créée
-        // automatiquement par le trigger handle_new_user à partir des
-        // métadonnées — pas d'insert client nécessaire.
-        router.push("/pro");
-        return;
-      }
-
-      // Particulier : on l'emmène sur son dashboard, où il pourra créer
-      // un ou plusieurs événements.
-      router.push("/dashboard");
-    } catch (e) {
-      setLoading(false);
+  const verifyEmail = async () => {
+    if (emailCode.trim().length !== 6 || verifyingEmail) return;
+    setError("");
+    setVerifyingEmail(true);
+    const supabase = createClient();
+    const { error: vErr } = await supabase.auth.verifyOtp({
+      email: account.email.trim(),
+      token: emailCode.trim(),
+      type: "signup",
+    });
+    setVerifyingEmail(false);
+    if (vErr) {
       setError(
-        e instanceof Error
-          ? e.message
-          : "Une erreur est survenue pendant la création."
+        /expired|invalid/i.test(vErr.message)
+          ? "Code invalide ou expiré. Vérifiez le code ou demandez-en un nouveau."
+          : vErr.message
       );
+      return;
     }
+    setEmailCode("");
+    setStep(phoneStepIndex);
+  };
+
+  const resendEmail = async () => {
+    if (emailCooldown > 0) return;
+    setError("");
+    const supabase = createClient();
+    const { error: rErr } = await supabase.auth.resend({
+      type: "signup",
+      email: account.email.trim(),
+    });
+    if (rErr) {
+      setError(rErr.message);
+      return;
+    }
+    setEmailCooldown(30);
+  };
+
+  const sendPhoneCode = async () => {
+    const trimmed = toE164(phone);
+    if (!trimmed || sendingPhone) return;
+    setError("");
+    setSendingPhone(true);
+    const supabase = createClient();
+    // Rattache et vérifie ce numéro pour le compte déjà authentifié (envoie
+    // le SMS via le Send SMS Hook Supabase → Brevo).
+    const { error: pErr } = await supabase.auth.updateUser({ phone: trimmed });
+    setSendingPhone(false);
+    if (pErr) {
+      setError(pErr.message);
+      return;
+    }
+    setPhonePhase("code");
+    setPhoneCooldown(30);
+  };
+
+  const verifyPhone = async () => {
+    if (phoneCode.trim().length !== 6 || verifyingPhone) return;
+    setError("");
+    setVerifyingPhone(true);
+    const supabase = createClient();
+    const { error: vErr } = await supabase.auth.verifyOtp({
+      phone: toE164(phone),
+      token: phoneCode.trim(),
+      type: "phone_change",
+    });
+    if (vErr) {
+      setVerifyingPhone(false);
+      setError(
+        /expired|invalid/i.test(vErr.message)
+          ? "Code invalide ou expiré. Vérifiez le code ou demandez-en un nouveau."
+          : vErr.message
+      );
+      return;
+    }
+    // Miroir dans profiles.phone pour affichage (dashboard, messagerie…).
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("profiles").update({ phone: toE164(phone) }).eq("id", user.id);
+    }
+    setVerifyingPhone(false);
+    completeSignup();
+  };
+
+  const resendPhone = async () => {
+    if (phoneCooldown > 0) return;
+    setError("");
+    const supabase = createClient();
+    const { error: rErr } = await supabase.auth.resend({
+      type: "phone_change",
+      phone: toE164(phone),
+    });
+    if (rErr) {
+      setError(rErr.message);
+      return;
+    }
+    setPhoneCooldown(30);
   };
 
   // validation minimale pour activer "Continuer / Créer"
@@ -186,7 +322,7 @@ export default function CreerPage() {
 
       <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-2">
         <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-sm">
-          {/* Stepper (seulement pour le parcours pro, à 2 étapes) */}
+          {/* Stepper */}
           {steps.length > 1 && (
             <div className="flex w-full items-center">
               {steps.map((s, i) => (
@@ -291,7 +427,7 @@ export default function CreerPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-plum"
                     >
                       {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
+                    </button>
                   </div>
                 </div>
 
@@ -350,62 +486,176 @@ export default function CreerPage() {
               </div>
             )}
 
-            {/* Navigation */}
-            <div className="mt-2.5 flex items-center justify-between">
-              {step > 0 ? (
+            {/* ÉTAPE — Vérifier l'email */}
+            {step === emailStepIndex && (
+              <div>
+                <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
+                  Vérifiez votre email
+                </h1>
+                <p className="mt-1 text-sm text-slate">
+                  Nous avons envoyé un code à 6 chiffres à{" "}
+                  <span className="font-semibold text-plum">{account.email}</span>.
+                </p>
+                <input
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={emailCode}
+                  onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ""))}
+                  placeholder="123456"
+                  className={`mt-4 ${codeInputCls}`}
+                />
                 <button
-                  onClick={back}
-                  className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-slate hover:text-plum"
+                  onClick={verifyEmail}
+                  disabled={verifyingEmail || emailCode.trim().length !== 6}
+                  className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
                 >
-                  <ArrowLeft size={16} />
-                  Retour
+                  {verifyingEmail ? "Vérification…" : "Vérifier le code"}
                 </button>
-              ) : (
-                <span />
-              )}
+                <button
+                  type="button"
+                  onClick={resendEmail}
+                  disabled={emailCooldown > 0}
+                  className="mt-2 w-full text-center text-sm font-medium text-violet hover:text-violet-dark disabled:text-slate"
+                >
+                  {emailCooldown > 0
+                    ? `Renvoyer le code (${emailCooldown}s)`
+                    : "Renvoyer le code"}
+                </button>
+              </div>
+            )}
 
-              {step < last ? (
-                <button
-                  onClick={next}
-                  disabled={!canSubmit}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
-                >
-                  Continuer
-                </button>
-              ) : (
-                <button
-                  onClick={finish}
-                  disabled={loading || !canSubmit}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
-                >
-                  <PartyPopper size={17} />
-                  {loading
-                    ? "Création…"
-                    : type === "particulier"
-                    ? "Créer mon compte"
-                    : "Créer mon profil"}
-                </button>
-              )}
-            </div>
+            {/* ÉTAPE — Vérifier le téléphone */}
+            {step === phoneStepIndex && (
+              <div>
+                {phonePhase === "number" ? (
+                  <>
+                    <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
+                      Vérifiez votre téléphone
+                    </h1>
+                    <p className="mt-1 text-sm text-slate">
+                      Un code par SMS confirmera votre numéro.
+                    </p>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+33 6 12 34 56 78"
+                      className={`mt-4 ${inputCls}`}
+                    />
+                    <button
+                      onClick={sendPhoneCode}
+                      disabled={sendingPhone || !toE164(phone)}
+                      className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
+                    >
+                      {sendingPhone ? "Envoi…" : "Recevoir le code"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
+                      Entrez le code reçu
+                    </h1>
+                    <p className="mt-1 text-sm text-slate">
+                      Code envoyé au{" "}
+                      <span className="font-semibold text-plum">{phone}</span>.
+                    </p>
+                    <input
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={phoneCode}
+                      onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="123456"
+                      className={`mt-4 ${codeInputCls}`}
+                    />
+                    <button
+                      onClick={verifyPhone}
+                      disabled={verifyingPhone || phoneCode.trim().length !== 6}
+                      className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
+                    >
+                      {verifyingPhone ? "Vérification…" : "Vérifier le code"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resendPhone}
+                      disabled={phoneCooldown > 0}
+                      className="mt-2 w-full text-center text-sm font-medium text-violet hover:text-violet-dark disabled:text-slate"
+                    >
+                      {phoneCooldown > 0
+                        ? `Renvoyer le code (${phoneCooldown}s)`
+                        : "Renvoyer le code"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhonePhase("number");
+                        setPhoneCode("");
+                        setError("");
+                      }}
+                      className="mt-3 block w-full text-center text-xs text-slate hover:text-plum"
+                    >
+                      Modifier le numéro
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Navigation (masquée pendant les étapes de vérification OTP,
+                qui ont leurs propres boutons dédiés) */}
+            {step <= dataLast && (
+              <div className="mt-2.5 flex items-center justify-between">
+                {step > 0 ? (
+                  <button
+                    onClick={back}
+                    className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-slate hover:text-plum"
+                  >
+                    <ArrowLeft size={16} />
+                    Retour
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                {step < dataLast ? (
+                  <button
+                    onClick={next}
+                    disabled={!canSubmit}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
+                  >
+                    Continuer
+                  </button>
+                ) : (
+                  <button
+                    onClick={finish}
+                    disabled={loading || !canSubmit}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-2 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+                  >
+                    <PartyPopper size={17} />
+                    {loading
+                      ? "Création…"
+                      : type === "particulier"
+                      ? "Créer mon compte"
+                      : "Créer mon profil"}
+                  </button>
+                )}
+              </div>
+            )}
 
             {error && (
               <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
                 {error}
               </p>
             )}
-            {success && (
-              <p className="mt-4 rounded-xl bg-emerald-soft px-4 py-3 text-sm text-emerald">
-                {success}
-              </p>
-            )}
           </div>
 
-          <p className="mt-3 text-center text-sm text-slate">
-            Déjà un compte ?{" "}
-            <a href="/auth" className="font-semibold text-violet">
-              Se connecter
-            </a>
-          </p>
+          {step <= dataLast && (
+            <p className="mt-3 text-center text-sm text-slate">
+              Déjà un compte ?{" "}
+              <a href="/auth" className="font-semibold text-violet">
+                Se connecter
+              </a>
+            </p>
+          )}
         </div>
       </div>
     </div>
