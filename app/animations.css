@@ -26,9 +26,9 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-@keyframes ev-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+@keyframes ev-aurora {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 /* ---------- Apparition au montage ---------- */
@@ -38,8 +38,12 @@
 .ev-zoom-in   { animation: ev-zoom-in 0.5s ease both; }
 .ev-float     { animation: ev-float 6s ease-in-out infinite; }
 
-/* ---------- Banderole défilante (annonces) ---------- */
-.ev-marquee-track { animation: ev-marquee 16s linear infinite; }
+/* ---------- Aurora / aura lumineuse (bandeau d'annonce) ---------- */
+.ev-aurora {
+  background: linear-gradient(120deg, #6C3CE1, #FFA3C7, #FF8C42, #6C3CE1);
+  background-size: 300% 300%;
+  animation: ev-aurora 14s ease-in-out infinite;
+}
 
 /* ---------- Stagger (cascade) ----------
    Sur un enfant marqué .ev-stagger-item, on pose --i (index)
