@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Info,
   Globe,
+  Lock,
 } from "lucide-react";
 import type { Quote } from "@/lib/pro-types";
 import { euro, quoteTotals } from "@/lib/quote-doc";
@@ -84,6 +85,9 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
   const t = quoteTotals(quote.items, quote.service_fee, quote.tax_rate);
   const dash = "À définir";
   const showGuests = categoryUsesGuests(quote.presta_category);
+  // Coordonnées (email, téléphone, adresse) masquées tant que le devis n'est
+  // pas accepté par le client, pour éviter tout contact hors plateforme.
+  const revealed = quote.status === "accepté";
 
   return (
     <div className="devis-sheet mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm">
@@ -163,6 +167,7 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
             icon={User}
             role="Client"
             name={quote.client_name || "Client"}
+            masked={!revealed}
             lines={[
               { icon: Mail, value: quote.client_email },
               { icon: Phone, value: quote.client_phone },
@@ -174,6 +179,7 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
             role="Prestataire"
             name={quote.presta_name || "Prestataire"}
             subtitle={quote.presta_category}
+            masked={!revealed}
             lines={[
               { icon: Mail, value: quote.presta_email },
               { icon: Phone, value: quote.presta_phone },
@@ -311,11 +317,13 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
         <span className="flex items-center gap-1.5 font-display font-semibold text-violet">
           <span className="text-festif">✦</span> Misstice
         </span>
-        {quote.presta_phone && (
+        {revealed && quote.presta_phone && (
           <ContactLine icon={Phone}>{quote.presta_phone}</ContactLine>
         )}
         <ContactLine icon={Mail}>
-          {quote.presta_email || "contact@misstice.com"}
+          {revealed && quote.presta_email
+            ? quote.presta_email
+            : "contact@misstice.com"}
         </ContactLine>
         <ContactLine icon={Globe}>www.misstice.com</ContactLine>
       </div>
@@ -357,12 +365,14 @@ function PartyCard({
   name,
   subtitle,
   lines,
+  masked = false,
 }: {
   icon: React.ElementType;
   role: string;
   name: string;
   subtitle?: string | null;
   lines: { icon: React.ElementType; value: string | null }[];
+  masked?: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-black/5 bg-cream/60 px-6 py-5">
@@ -378,13 +388,20 @@ function PartyCard({
         </div>
       </div>
       {subtitle && <p className="mt-2 text-sm text-slate">{subtitle}</p>}
-      <div className="mt-3 space-y-1.5">
-        {lines.map((l, i) => (
-          <ContactLine key={i} icon={l.icon}>
-            {l.value || "À définir"}
-          </ContactLine>
-        ))}
-      </div>
+      {masked ? (
+        <p className="mt-3 flex items-center gap-2 text-sm italic text-slate/70">
+          <Lock size={14} className="shrink-0" />
+          Coordonnées masquées jusqu&apos;à l&apos;acceptation du devis
+        </p>
+      ) : (
+        <div className="mt-3 space-y-1.5">
+          {lines.map((l, i) => (
+            <ContactLine key={i} icon={l.icon}>
+              {l.value || "À définir"}
+            </ContactLine>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

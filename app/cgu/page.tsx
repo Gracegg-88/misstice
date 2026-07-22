@@ -27,7 +27,7 @@ const sections = [
   },
   {
     title: "5. Prestataires",
-    body: "Les prestataires s'engagent à fournir des informations exactes. La vérification du badge est manuelle par l'équipe Misstice.",
+    body: "Les prestataires s'engagent à fournir des informations exactes. La vérification du badge est manuelle par l'équipe Misstice. Tout prestataire réalisant plus de 3 prestations par mois via Misstice s'engage à disposer d'un statut légal adapté (auto-entrepreneur ou équivalent) conformément à la législation française en vigueur.",
   },
   {
     title: "6. Responsabilité",

@@ -68,7 +68,7 @@ export default function Header({
           {!account && (
             <a
               href="/creer?type=pro"
-              className="text-sm font-semibold text-plum/80 transition-colors hover:text-violet"
+              className="rounded-xl border border-violet px-5 py-2.5 text-sm font-semibold text-violet transition-colors hover:bg-violet-soft"
             >
               Je suis prestataire
             </a>

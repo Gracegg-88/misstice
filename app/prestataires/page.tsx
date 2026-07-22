@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PromoBanner from "@/components/PromoBanner";
 import ExplorerClient from "@/components/explorer/ExplorerClient";
 import { getVendors } from "@/lib/vendors";
 import { getHeaderAccount } from "@/lib/header-account";
@@ -21,6 +22,7 @@ export default async function PrestatairesPage() {
   const account = await getHeaderAccount();
   return (
     <>
+      <PromoBanner />
       <Header initialAccount={account} />
       <main className="min-h-screen bg-cream">
         <ExplorerClient vendors={vendors} categories={categories} />

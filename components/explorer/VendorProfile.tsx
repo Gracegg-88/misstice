@@ -887,7 +887,8 @@ function QuoteForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || sending) return;
+    if (!eventType || !date || !location.trim() || sending) return;
+    if (message.trim().length < 50) return;
     setSending(true);
     setError("");
     const supabase = createClient();
@@ -1043,6 +1044,7 @@ function QuoteForm({
             Type d&apos;événement
           </label>
           <select
+            required
             value={eventType}
             onChange={(e) => setEventType(e.target.value)}
             className={`mt-1.5 ${inputCls}`}
@@ -1058,6 +1060,7 @@ function QuoteForm({
         <div>
           <label className="text-sm font-medium text-plum">Date</label>
           <input
+            required
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -1067,6 +1070,7 @@ function QuoteForm({
         <div className="sm:col-span-2">
           <label className="text-sm font-medium text-plum">Lieu</label>
           <input
+            required
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="ex. Paris 11e, salle des fêtes…"
@@ -1145,12 +1149,16 @@ function QuoteForm({
         <label className="text-sm font-medium text-plum">Message</label>
         <textarea
           required
+          minLength={50}
           rows={3}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className={`mt-1.5 ${inputCls}`}
-          placeholder="Décrivez votre projet, vos attentes, votre budget…"
+          placeholder="Décrivez votre projet, vos attentes, votre budget… (50 caractères minimum)"
         />
+        <p className="mt-1 text-xs text-slate">
+          {message.trim().length}/50 caractères minimum
+        </p>
       </div>
       {error && <p className="text-sm text-festif">{error}</p>}
       <button

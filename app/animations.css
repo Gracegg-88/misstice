@@ -26,6 +26,10 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
+@keyframes ev-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 
 /* ---------- Apparition au montage ---------- */
 .ev-fade-in   { animation: ev-fade-in 0.6s ease both; }
@@ -33,6 +37,9 @@
 .ev-slide-up  { animation: ev-slide-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .ev-zoom-in   { animation: ev-zoom-in 0.5s ease both; }
 .ev-float     { animation: ev-float 6s ease-in-out infinite; }
+
+/* ---------- Banderole défilante (annonces) ---------- */
+.ev-marquee-track { animation: ev-marquee 16s linear infinite; }
 
 /* ---------- Stagger (cascade) ----------
    Sur un enfant marqué .ev-stagger-item, on pose --i (index)
