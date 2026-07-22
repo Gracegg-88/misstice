@@ -505,7 +505,7 @@ export default function CreerPage() {
                   Vérifiez votre email
                 </h1>
                 <p className="mt-1 text-sm text-slate">
-                  Nous avons envoyé un code de vérification à{" "}
+                  Nous avons envoyé un code à 6 chiffres à{" "}
                   <span className="font-semibold text-plum">{account.email}</span>.
                 </p>
                 <input
@@ -513,7 +513,7 @@ export default function CreerPage() {
                   maxLength={10}
                   value={emailCode}
                   onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Code reçu par email"
+                  placeholder="123456"
                   className={`mt-4 ${codeInputCls}`}
                 />
                 <button
@@ -545,7 +545,7 @@ export default function CreerPage() {
                       Vérifiez votre téléphone
                     </h1>
                     <p className="mt-1 text-sm text-slate">
-                      Un code par SMS confirmera votre numéro.
+                      Un code à 6 chiffres par SMS confirmera votre numéro.
                     </p>
                     <input
                       type="tel"
@@ -576,7 +576,7 @@ export default function CreerPage() {
                       maxLength={10}
                       value={phoneCode}
                       onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, ""))}
-                      placeholder="Code reçu par SMS"
+                      placeholder="123456"
                       className={`mt-4 ${codeInputCls}`}
                     />
                     <button
