@@ -65,7 +65,9 @@ returns trigger
 language plpgsql security definer set search_path = public
 as $$
 begin
-  if not public.is_admin() and new.role is distinct from old.role then
+  if not public.is_admin()
+     and current_setting('misstice.role_change', true) is distinct from 'on'
+     and new.role is distinct from old.role then
     new.role := old.role; -- toute tentative de changement est ignorée
   end if;
   return new;
@@ -76,6 +78,27 @@ drop trigger if exists profiles_freeze_role on public.profiles;
 create trigger profiles_freeze_role
   before update on public.profiles
   for each row execute function public.freeze_profile_role();
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- C3 — Devenir prestataire (auto-service, particulier → prestataire
+--      uniquement). Ne touche qu'au compte de l'appelant (auth.uid()),
+--      jamais à un tiers — inverse de sadmin_promote qui interdit le ciblage
+--      de soi-même. Un "prestataire" n'est pas un rôle privilégié comme
+--      'admin' : pas d'élévation de droits ici, juste un type de compte.
+-- ─────────────────────────────────────────────────────────────────────────
+create or replace function public.become_prestataire()
+returns void
+language plpgsql security definer set search_path = public
+as $$
+begin
+  perform set_config('misstice.role_change', 'on', true);
+  update public.profiles
+    set role = 'prestataire'
+    where id = auth.uid() and role = 'particulier';
+end;
+$$;
+
+grant execute on function public.become_prestataire() to authenticated;
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- E1 — Le propriétaire d'une fiche ne doit pas pouvoir se marquer 'verified'

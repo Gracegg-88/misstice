@@ -31,12 +31,18 @@ export default function AuthPage() {
   const [signupHref, setSignupHref] = useState("/creer");
 
   useEffect(() => {
-    const raw = safeNext(
-      new URLSearchParams(window.location.search).get("next"),
-      ""
-    );
+    const sp = new URLSearchParams(window.location.search);
+    const raw = safeNext(sp.get("next"), "");
     if (raw) {
       setSignupHref(`/creer?next=${encodeURIComponent(raw)}`);
+    }
+    // Retour de /auth/callback en échec (ex. lien de réinitialisation ou
+    // d'invitation expiré/déjà utilisé) : sans ce message, la page semblait
+    // juste se recharger sans rien dire.
+    if (sp.get("error")) {
+      setError(
+        "Ce lien est invalide ou a expiré. Merci de recommencer (ex. redemandez un lien de réinitialisation)."
+      );
     }
   }, []);
 

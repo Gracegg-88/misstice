@@ -16,6 +16,14 @@ export async function GET(request: Request) {
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Signup Google avec « Je suis prestataire » sélectionné : l'OAuth ne
+      // transmet aucune métadonnée custom (contrairement à signUp), donc le
+      // rôle bascule ici, après coup, via une RPC volontairement limitée à
+      // soi-même (voir supabase/security.sql, become_prestataire).
+      if (searchParams.get("intent") === "pro") {
+        await supabase.rpc("become_prestataire");
+      }
+
       let dest = explicitNext;
       if (!dest) {
         const {

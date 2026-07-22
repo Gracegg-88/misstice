@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/Header";
 import CategorySelect from "@/components/pro/CategorySelect";
+import PhoneVerification from "@/components/PhoneVerification";
 import { safeNext } from "@/lib/safe-next";
 import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 
@@ -24,9 +25,6 @@ const inputCls =
 
 const codeInputCls =
   "w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-center text-lg tracking-[0.5em] text-plum outline-none focus:border-violet";
-
-// Numéro nettoyé pour Supabase Auth (format international attendu, ex. +33612345678).
-const toE164 = (raw: string) => raw.trim().replace(/[\s().-]/g, "");
 
 export default function CreerPage() {
   const router = useRouter();
@@ -60,15 +58,6 @@ export default function CreerPage() {
   const [verifyingEmail, setVerifyingEmail] = useState(false);
   const [emailCooldown, setEmailCooldown] = useState(0);
 
-  // Vérification téléphone (OTP par SMS, en deux temps : saisie du numéro
-  // puis saisie du code reçu).
-  const [phonePhase, setPhonePhase] = useState<"number" | "code">("number");
-  const [phone, setPhone] = useState("");
-  const [phoneCode, setPhoneCode] = useState("");
-  const [sendingPhone, setSendingPhone] = useState(false);
-  const [verifyingPhone, setVerifyingPhone] = useState(false);
-  const [phoneCooldown, setPhoneCooldown] = useState(0);
-
   // Liste des catégories existantes (lecture publique) pour le menu déroulant.
   useEffect(() => {
     const supabase = createClient();
@@ -91,17 +80,12 @@ export default function CreerPage() {
     void load();
   }, []);
 
-  // Décompte des boutons « Renvoyer le code » (30s, un seul tick à la fois).
+  // Décompte du bouton « Renvoyer le code » email (30s).
   useEffect(() => {
     if (emailCooldown <= 0) return;
     const id = setTimeout(() => setEmailCooldown((c) => c - 1), 1000);
     return () => clearTimeout(id);
   }, [emailCooldown]);
-  useEffect(() => {
-    if (phoneCooldown <= 0) return;
-    const id = setTimeout(() => setPhoneCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(id);
-  }, [phoneCooldown]);
 
   // Le particulier ne crée qu'un compte puis vérifie son email — la
   // confiance étant moins critique côté BtoC, pas de vérification
@@ -124,9 +108,15 @@ export default function CreerPage() {
   const goGoogle = async () => {
     setError("");
     const supabase = createClient();
+    // L'OAuth Google ne transmet aucune métadonnée custom (contrairement à
+    // signUp) : on signale l'intention "prestataire" via l'URL de retour,
+    // consommée uniquement côté serveur dans /auth/callback.
+    const redirectTo = `${window.location.origin}/auth/callback${
+      type === "professionnel" ? "?intent=pro" : ""
+    }`;
     const { error: oauthErr } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo },
     });
     if (oauthErr) setError(oauthErr.message);
   };
@@ -199,6 +189,16 @@ export default function CreerPage() {
       return;
     }
 
+    // Par sécurité anti-énumération, Supabase ne renvoie PAS d'erreur pour un
+    // email déjà inscrit et déjà confirmé — il répond comme un succès mais
+    // avec un tableau `identities` vide (aucun nouveau compte créé, aucun
+    // nouvel email envoyé). Sans ce contrôle, l'utilisateur restait bloqué
+    // sur l'étape "code email" à attendre un email qui n'arrivera jamais.
+    if (signUp.user && signUp.user.identities?.length === 0) {
+      setError("Un compte existe déjà avec cet email. Connectez-vous.");
+      return;
+    }
+
     // Si la confirmation email est désactivée côté projet, une session est
     // déjà ouverte : on passe directement à la suite (téléphone pour un
     // prestataire, sinon c'est terminé).
@@ -257,69 +257,6 @@ export default function CreerPage() {
       return;
     }
     setEmailCooldown(30);
-  };
-
-  const sendPhoneCode = async () => {
-    const trimmed = toE164(phone);
-    if (!trimmed || sendingPhone) return;
-    setError("");
-    setSendingPhone(true);
-    const supabase = createClient();
-    // Rattache et vérifie ce numéro pour le compte déjà authentifié (envoie
-    // le SMS via le Send SMS Hook Supabase → Brevo).
-    const { error: pErr } = await supabase.auth.updateUser({ phone: trimmed });
-    setSendingPhone(false);
-    if (pErr) {
-      setError(pErr.message);
-      return;
-    }
-    setPhonePhase("code");
-    setPhoneCooldown(30);
-  };
-
-  const verifyPhone = async () => {
-    if (phoneCode.trim().length < 6 || verifyingPhone) return;
-    setError("");
-    setVerifyingPhone(true);
-    const supabase = createClient();
-    const { error: vErr } = await supabase.auth.verifyOtp({
-      phone: toE164(phone),
-      token: phoneCode.trim(),
-      type: "phone_change",
-    });
-    if (vErr) {
-      setVerifyingPhone(false);
-      setError(
-        /expired|invalid/i.test(vErr.message)
-          ? "Code invalide ou expiré. Vérifiez le code ou demandez-en un nouveau."
-          : vErr.message
-      );
-      return;
-    }
-    // Miroir dans profiles.phone pour affichage (dashboard, messagerie…).
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("profiles").update({ phone: toE164(phone) }).eq("id", user.id);
-    }
-    setVerifyingPhone(false);
-    completeSignup();
-  };
-
-  const resendPhone = async () => {
-    if (phoneCooldown > 0) return;
-    setError("");
-    const supabase = createClient();
-    const { error: rErr } = await supabase.auth.resend({
-      type: "phone_change",
-      phone: toE164(phone),
-    });
-    if (rErr) {
-      setError(rErr.message);
-      return;
-    }
-    setPhoneCooldown(30);
   };
 
   // validation minimale pour activer "Continuer / Créer"
@@ -538,78 +475,7 @@ export default function CreerPage() {
 
             {/* ÉTAPE — Vérifier le téléphone */}
             {step === phoneStepIndex && (
-              <div>
-                {phonePhase === "number" ? (
-                  <>
-                    <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
-                      Vérifiez votre téléphone
-                    </h1>
-                    <p className="mt-1 text-sm text-slate">
-                      Un code à 6 chiffres par SMS confirmera votre numéro.
-                    </p>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+33 6 12 34 56 78"
-                      className={`mt-4 ${inputCls}`}
-                    />
-                    <button
-                      onClick={sendPhoneCode}
-                      disabled={sendingPhone || !toE164(phone)}
-                      className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
-                    >
-                      {sendingPhone ? "Envoi…" : "Recevoir le code"}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
-                      Entrez le code reçu
-                    </h1>
-                    <p className="mt-1 text-sm text-slate">
-                      Code envoyé au{" "}
-                      <span className="font-semibold text-plum">{phone}</span>.
-                    </p>
-                    <input
-                      inputMode="numeric"
-                      maxLength={10}
-                      value={phoneCode}
-                      onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, ""))}
-                      placeholder="123456"
-                      className={`mt-4 ${codeInputCls}`}
-                    />
-                    <button
-                      onClick={verifyPhone}
-                      disabled={verifyingPhone || phoneCode.trim().length < 6}
-                      className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
-                    >
-                      {verifyingPhone ? "Vérification…" : "Vérifier le code"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={resendPhone}
-                      disabled={phoneCooldown > 0}
-                      className="mt-2 w-full text-center text-sm font-medium text-violet hover:text-violet-dark disabled:text-slate"
-                    >
-                      {phoneCooldown > 0
-                        ? `Renvoyer le code (${phoneCooldown}s)`
-                        : "Renvoyer le code"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPhonePhase("number");
-                        setPhoneCode("");
-                        setError("");
-                      }}
-                      className="mt-3 block w-full text-center text-xs text-slate hover:text-plum"
-                    >
-                      Modifier le numéro
-                    </button>
-                  </>
-                )}
-              </div>
+              <PhoneVerification onVerified={completeSignup} />
             )}
 
             {/* Navigation (masquée pendant les étapes de vérification OTP,
