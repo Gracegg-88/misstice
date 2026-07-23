@@ -90,7 +90,7 @@ export async function POST(request: Request) {
   const { data: linkData } = await admin.auth.admin.generateLink({
     type: "recovery",
     email,
-    options: { redirectTo: `${base}/auth/callback?next=/auth/reset` },
+    options: { redirectTo: `${base}/auth/confirm?next=/auth/reset` },
   });
   const generated = (
     linkData as { properties?: { action_link?: string } } | null
