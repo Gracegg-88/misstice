@@ -9,7 +9,24 @@ const codeInputCls =
   "w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-center text-lg tracking-[0.5em] text-plum outline-none focus:border-violet";
 
 // Numéro nettoyé pour Supabase Auth (format international attendu, ex. +33612345678).
-const toE164 = (raw: string) => raw.trim().replace(/[\s().-]/g, "");
+// Corrige l'erreur fréquente qui consiste à garder le 0 initial du format
+// national (ex. « +33 » + « 07 82 89 16 15 » tapé tel quel → +330782891615).
+const toE164 = (raw: string) => {
+  let v = raw.trim().replace(/[\s().-]/g, "");
+  if (/^\+330\d{9}$/.test(v)) {
+    v = "+33" + v.slice(4);
+  } else if (/^0\d{9}$/.test(v)) {
+    v = "+33" + v.slice(1);
+  }
+  return v;
+};
+
+// Un message d'erreur Supabase/Edge Function vide ou mal formé ne doit
+// jamais s'afficher tel quel (ex. "{}") — on retombe sur un message clair.
+const errMsg = (err: { message?: string } | null | undefined, fallback: string) => {
+  const m = err?.message?.trim();
+  return m && m !== "{}" ? m : fallback;
+};
 
 /**
  * Vérification téléphone par OTP SMS (numéro puis code) — réutilisée dans
@@ -47,7 +64,12 @@ export default function PhoneVerification({
     const { error: pErr } = await supabase.auth.updateUser({ phone: trimmed });
     setSending(false);
     if (pErr) {
-      setError(pErr.message);
+      setError(
+        errMsg(
+          pErr,
+          "Impossible d'envoyer le SMS. Vérifiez le numéro (format +33 6 XX XX XX XX) et réessayez."
+        )
+      );
       return;
     }
     setPhase("code");
@@ -69,7 +91,7 @@ export default function PhoneVerification({
       setError(
         /expired|invalid/i.test(vErr.message)
           ? "Code invalide ou expiré. Vérifiez le code ou demandez-en un nouveau."
-          : vErr.message
+          : errMsg(vErr, "Une erreur est survenue. Réessayez.")
       );
       return;
     }
@@ -97,7 +119,7 @@ export default function PhoneVerification({
       phone: toE164(phone),
     });
     if (rErr) {
-      setError(rErr.message);
+      setError(errMsg(rErr, "Impossible de renvoyer le code. Réessayez dans un instant."));
       return;
     }
     setCooldown(30);
@@ -117,7 +139,7 @@ export default function PhoneVerification({
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+33 6 12 34 56 78"
+            placeholder="06 12 34 56 78"
             className={`mt-4 ${inputCls}`}
           />
           <button
