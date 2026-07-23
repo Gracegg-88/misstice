@@ -25,7 +25,22 @@ export default function VerifyRedirectPage() {
     const hash = window.location.hash.slice(1);
     const marker = "confirm=";
     if (hash.startsWith(marker)) {
-      setTarget(hash.slice(marker.length));
+      let extracted = hash.slice(marker.length);
+      // Certaines messageries (Outlook.com notamment) réencodent le lien
+      // affiché dans l'email — le fragment reçu ici est alors du type
+      // "https%3a%2f%2f..." au lieu de "https://...". Un lien valide
+      // (cas normal) n'a pas besoin de ce traitement ; on ne décode donc
+      // que si le texte brut n'est pas déjà une URL absolue exploitable.
+      try {
+        new URL(extracted);
+      } catch {
+        try {
+          extracted = decodeURIComponent(extracted);
+        } catch {
+          // Reste tel quel : l'erreur sera de toute façon visible au clic.
+        }
+      }
+      setTarget(extracted);
     } else {
       setMissing(true);
     }
