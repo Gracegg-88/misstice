@@ -21,8 +21,8 @@ const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
 const SENDER_NAME = Deno.env.get("BREVO_SMS_SENDER") ?? "Misstice";
 
 type HookPayload = {
-  user: { phone?: string };
-  sms: { otp: string };
+  user: { phone?: string; new_phone?: string };
+  sms: { otp: string; phone?: string };
 };
 
 Deno.serve(async (req) => {
@@ -44,13 +44,13 @@ Deno.serve(async (req) => {
     return new Response("Invalid signature", { status: 401 });
   }
 
-  // Diagnostic temporaire : la doc Supabase ne documente que le cas
-  // "inscription par téléphone" (user.phone déjà peuplé du nouveau numéro).
-  // Ici on ajoute un téléphone à un compte existant (updateUser({phone})) —
-  // il faut voir la forme réelle reçue dans ce cas précis avant de corriger.
-  console.log("send-sms-hook: payload reçu", JSON.stringify(payload));
-
-  const phone = payload.user?.phone;
+  // Pour un ajout de téléphone à un compte existant (notre cas, via
+  // updateUser({phone})), `user.phone` reste vide (c'est l'ancien numéro
+  // confirmé, ici aucun) — le nouveau numéro en attente de confirmation
+  // arrive dans `user.new_phone` et/ou `sms.phone` (confirmé par les logs
+  // de la fonction). `user.phone` ne sert que pour le cas "inscription par
+  // téléphone", où il est déjà peuplé du nouveau numéro dès le départ.
+  const phone = payload.sms?.phone || payload.user?.new_phone || payload.user?.phone;
   const otp = payload.sms?.otp;
   if (!phone || !otp) {
     return new Response("Payload incomplet", { status: 400 });
