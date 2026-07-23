@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import ProfilClient from "@/components/pro/ProfilClient";
+import ProfileForm from "@/components/admin/ProfileForm";
+import DeleteAccountButton from "@/components/dashboard/DeleteAccountButton";
 import { getMyVendor, getMyPackages, getMyPhotos } from "@/lib/pro";
 import { getProfile } from "@/lib/queries";
 import { getCategories } from "@/lib/vendors";
@@ -10,15 +12,30 @@ export default async function ProProfilPage() {
   const vendor = await getMyVendor();
   const categories = await getCategories();
 
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/auth?next=/pro/profil");
+  const profile = await getProfile();
+
+  // Informations de connexion (email, mot de passe) + suppression de compte —
+  // communes à tout compte, mêmes composants que côté particulier
+  // (app/dashboard/profil/page.tsx).
+  const accountSection = (
+    <div className="mx-auto mt-8 max-w-3xl space-y-6">
+      <ProfileForm
+        id={user.id}
+        name={profile?.full_name?.trim() || ""}
+        avatarUrl={profile?.avatar_url ?? null}
+        email={user.email ?? ""}
+      />
+      <DeleteAccountButton />
+    </div>
+  );
+
   // Pas encore de fiche : on affiche quand même le formulaire pour la créer.
   if (!vendor) {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) redirect("/auth?next=/pro/profil");
-    const profile = await getProfile();
-
     const shell: ProVendor = {
       profileId: user.id,
       vendorId: null,
@@ -52,6 +69,7 @@ export default async function ProProfilPage() {
           photos={[]}
           categories={categories}
         />
+        {accountSection}
       </div>
     );
   }
@@ -59,11 +77,14 @@ export default async function ProProfilPage() {
   const [packages, photos] = await Promise.all([getMyPackages(), getMyPhotos()]);
 
   return (
-    <ProfilClient
-      vendor={vendor}
-      packages={packages}
-      photos={photos}
-      categories={categories}
-    />
+    <div>
+      <ProfilClient
+        vendor={vendor}
+        packages={packages}
+        photos={photos}
+        categories={categories}
+      />
+      {accountSection}
+    </div>
   );
 }
