@@ -97,6 +97,12 @@ export async function POST(request: Request) {
   )?.properties?.action_link;
   if (generated) actionLink = generated;
 
+  // Le lien réel est mis dans le fragment (#...), jamais transmis à un
+  // serveur : les scanners anti-spam qui visitent automatiquement les liens
+  // d'un email à sa réception ne peuvent donc pas le griller avant que la
+  // personne invitée ne clique elle-même (voir app/auth/verify-redirect).
+  const safeLink = `${base}/auth/verify-redirect#confirm=${actionLink}`;
+
   // 4. Email d'invitation (lien, pas d'identifiants en clair).
   const html = emailShell(`
     <h1 style="margin:0 0 8px;font-size:22px;color:#1A1A2E">Bienvenue dans l'administration Misstice</h1>
@@ -105,7 +111,7 @@ export async function POST(request: Request) {
         fullName ? `, ${escapeHtml(fullName)}` : ""
       }. Cliquez ci-dessous pour définir votre mot de passe et vous connecter.
     </p>
-    <a href="${escapeAttr(actionLink)}"
+    <a href="${escapeAttr(safeLink)}"
        style="display:inline-block;background:#6C3CE1;color:#fff;text-decoration:none;
               padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px">
       Définir mon mot de passe
@@ -117,7 +123,7 @@ export async function POST(request: Request) {
 
   const text =
     `Bienvenue dans l'administration Misstice.\n\n` +
-    `Définissez votre mot de passe : ${actionLink}\n\n— Misstice`;
+    `Définissez votre mot de passe : ${safeLink}\n\n— Misstice`;
 
   let mailFailed = false;
   try {

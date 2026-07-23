@@ -7,13 +7,10 @@ import Header from "@/components/Header";
 import { safeNext } from "@/lib/safe-next";
 
 /**
- * Étape intermédiaire pour les liens envoyés par email (réinitialisation de
- * mot de passe, invitation admin) : certains clients mail/antivirus visitent
- * automatiquement les liens reçus pour les scanner, ce qui consomme le code
- * à usage unique avant même que la personne ne clique elle-même — le lien
- * paraît alors "invalide" au premier vrai clic. En n'échangeant le code que
- * sur une action explicite (clic du bouton), ces scanners automatiques
- * (qui ne cliquent pas de bouton) ne le consomment plus.
+ * Dernière étape après /auth/verify-redirect : le code présent ici n'a pu
+ * être généré que par un vrai clic humain (voir ce fichier), donc plus de
+ * risque de pré-consommation par un scanner — on peut échanger dès l'arrivée
+ * sur la page. Le bouton reste en secours (nouvel onglet, échec réseau, etc.).
  */
 export default function ConfirmPage() {
   const router = useRouter();
@@ -27,6 +24,11 @@ export default function ConfirmPage() {
     setCode(sp.get("code"));
     setNext(safeNext(sp.get("next"), "") || "/dashboard");
   }, []);
+
+  useEffect(() => {
+    if (code) confirm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code]);
 
   const confirm = async () => {
     if (!code || loading) return;
