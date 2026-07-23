@@ -86,10 +86,11 @@ Deno.serve(async (req) => {
     return hookError(500, `Échec de l'envoi du SMS : ${detail}`);
   }
 
-  // Succès : corps vide accepté par Supabase, mais un en-tête Content-Type
-  // reste exigé (son absence totale a provoqué une erreur "Missing
-  // Content-Type header" en conditions réelles).
-  return new Response(null, {
+  // Succès : Supabase lit systématiquement le corps de la réponse comme du
+  // JSON (même en cas de succès) — un corps réellement vide provoque
+  // "unexpected end of JSON input" côté GoTrue (constaté en conditions
+  // réelles). Un objet JSON vide est le strict minimum valide.
+  return new Response(JSON.stringify({}), {
     status: 200,
     headers: { "content-type": "application/json" },
   });
