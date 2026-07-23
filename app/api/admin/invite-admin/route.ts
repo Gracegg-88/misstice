@@ -85,23 +85,28 @@ export async function POST(request: Request) {
   }
 
   // 3. Lien de DÉFINITION du mot de passe (HIGH-10 : aucun mot de passe en clair).
+  // token_hash + verifyOtp plutôt que le lien PKCE "action_link" : ce
+  // dernier exige un "code verifier" posé dans le navigateur au moment de
+  // la génération, ce qui échoue systématiquement ici puisque c'est nous
+  // (le super-admin), pas la personne invitée, qui déclenche la génération.
   const base = siteUrl(request);
-  let actionLink = `${base}/auth`;
+  let safeLink = `${base}/auth`;
   const { data: linkData } = await admin.auth.admin.generateLink({
     type: "recovery",
     email,
     options: { redirectTo: `${base}/auth/confirm?next=/auth/reset` },
   });
-  const generated = (
-    linkData as { properties?: { action_link?: string } } | null
-  )?.properties?.action_link;
-  if (generated) actionLink = generated;
-
-  // Le lien réel est mis dans le fragment (#...), jamais transmis à un
-  // serveur : les scanners anti-spam qui visitent automatiquement les liens
-  // d'un email à sa réception ne peuvent donc pas le griller avant que la
-  // personne invitée ne clique elle-même (voir app/auth/verify-redirect).
-  const safeLink = `${base}/auth/verify-redirect#confirm=${actionLink}`;
+  const hashedToken = (
+    linkData as { properties?: { hashed_token?: string } } | null
+  )?.properties?.hashed_token;
+  if (hashedToken) {
+    const target = `${base}/auth/confirm?token_hash=${hashedToken}&type=recovery&next=/auth/reset`;
+    // Le lien réel est mis dans le fragment (#...), jamais transmis à un
+    // serveur : les scanners anti-spam qui visitent automatiquement les
+    // liens d'un email à sa réception ne peuvent donc pas le griller avant
+    // que la personne invitée ne clique elle-même (voir app/auth/verify-redirect).
+    safeLink = `${base}/auth/verify-redirect#confirm=${target}`;
+  }
 
   // 4. Email d'invitation (lien, pas d'identifiants en clair).
   const html = emailShell(`

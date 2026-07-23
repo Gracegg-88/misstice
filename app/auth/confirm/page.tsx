@@ -3,49 +3,59 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import Header from "@/components/Header";
 import { safeNext } from "@/lib/safe-next";
 
 /**
- * Dernière étape après /auth/verify-redirect : le code présent ici n'a pu
- * être généré que par un vrai clic humain (voir ce fichier), donc plus de
- * risque de pré-consommation par un scanner — on peut échanger dès l'arrivée
- * sur la page. Le bouton reste en secours (nouvel onglet, échec réseau, etc.).
+ * Dernière étape après /auth/verify-redirect. Utilise `token_hash` +
+ * verifyOtp plutôt que le code PKCE + exchangeCodeForSession : ce dernier
+ * exige un "code verifier" posé dans le navigateur au moment de la demande,
+ * introuvable si l'échange a lieu dans un nouvel onglet/fenêtre ou un autre
+ * appareil — cause confirmée des échecs précédents. token_hash est
+ * autonome, sans cette contrainte (voir doc Supabase Next.js officielle).
  */
 export default function ConfirmPage() {
   const router = useRouter();
-  const [code, setCode] = useState<string | null>(null);
+  const [tokenHash, setTokenHash] = useState<string | null>(null);
+  const [type, setType] = useState<EmailOtpType | null>(null);
   const [next, setNext] = useState("/dashboard");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
-    setCode(sp.get("code"));
+    setTokenHash(sp.get("token_hash"));
+    setType(sp.get("type") as EmailOtpType | null);
     setNext(safeNext(sp.get("next"), "") || "/dashboard");
   }, []);
 
   useEffect(() => {
-    if (code) confirm();
+    if (tokenHash && type) confirm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
+  }, [tokenHash, type]);
 
   const confirm = async () => {
-    if (!code || loading) return;
+    if (!tokenHash || !type || loading) return;
     setLoading(true);
     setError("");
     const supabase = createClient();
-    const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: verifyErr } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type,
+    });
     setLoading(false);
-    if (exErr) {
+    if (verifyErr) {
       setError(
-        `Ce lien est invalide, a déjà été utilisé ou a expiré. Merci de redemander un nouveau lien. (Détail technique : ${exErr.message})`
+        `Ce lien est invalide, a déjà été utilisé ou a expiré. Merci de redemander un nouveau lien. (Détail technique : ${verifyErr.message})`
       );
       return;
     }
     router.push(next);
     router.refresh();
   };
+
+  const ready = Boolean(tokenHash && type);
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream">
@@ -61,12 +71,12 @@ export default function ConfirmPage() {
           </p>
           <button
             onClick={confirm}
-            disabled={!code || loading}
+            disabled={!ready || loading}
             className="mt-4 w-full rounded-xl bg-violet py-3 text-sm font-semibold text-white transition-colors hover:bg-violet-dark disabled:opacity-50"
           >
             {loading ? "Vérification…" : "Continuer"}
           </button>
-          {!code && (
+          {!ready && (
             <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
               Lien incomplet ou invalide.{" "}
               <a href="/auth" className="font-semibold underline">
