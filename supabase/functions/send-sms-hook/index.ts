@@ -44,6 +44,12 @@ Deno.serve(async (req) => {
     return new Response("Invalid signature", { status: 401 });
   }
 
+  // Diagnostic temporaire : la doc Supabase ne documente que le cas
+  // "inscription par téléphone" (user.phone déjà peuplé du nouveau numéro).
+  // Ici on ajoute un téléphone à un compte existant (updateUser({phone})) —
+  // il faut voir la forme réelle reçue dans ce cas précis avant de corriger.
+  console.log("send-sms-hook: payload reçu", JSON.stringify(payload));
+
   const phone = payload.user?.phone;
   const otp = payload.sms?.otp;
   if (!phone || !otp) {
