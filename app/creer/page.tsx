@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/Header";
 import CategorySelect from "@/components/pro/CategorySelect";
+import PhoneVerification from "@/components/PhoneVerification";
 import { safeNext } from "@/lib/safe-next";
 import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 
@@ -57,10 +58,11 @@ export default function CreerPage() {
   const [verifyingEmail, setVerifyingEmail] = useState(false);
   const [emailCooldown, setEmailCooldown] = useState(0);
 
-  // Reprise après interruption : si une session existe déjà (compte créé et
-  // email confirmé lors d'une visite précédente), on redirige directement
-  // vers le bon espace au lieu de repartir de zéro — un nouveau signUp() sur
-  // le même email échouerait de toute façon avec « déjà inscrit ».
+  // Reprise après interruption : si une session existe déjà (email confirmé
+  // puis page quittée/rafraîchie avant la vérification du téléphone), on
+  // reprend directement à la bonne étape au lieu de repartir de zéro — un
+  // nouveau signUp() sur le même email échouerait de toute façon avec
+  // « déjà inscrit ».
   const [checkingResume, setCheckingResume] = useState(true);
   useEffect(() => {
     const supabase = createClient();
@@ -74,16 +76,27 @@ export default function CreerPage() {
       }
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, phone_verified_at")
         .eq("id", user.id)
         .maybeSingle();
+      const p = profile as
+        | { role: string; phone_verified_at: string | null }
+        | null;
+      if (p?.role === "prestataire" && !p.phone_verified_at) {
+        setType("professionnel");
+        setAccount((a) => ({ ...a, email: user.email ?? a.email }));
+        setStep(3); // étape "Vérifier le téléphone" du parcours prestataire
+        setCheckingResume(false);
+        return;
+      }
+      // Déjà entièrement configuré (ou particulier) : direction le bon espace.
       const n = safeNext(
         new URLSearchParams(window.location.search).get("next"),
         ""
       );
       if (n) {
         router.push(n);
-      } else if ((profile as { role: string } | null)?.role === "prestataire") {
+      } else if (p?.role === "prestataire") {
         router.push("/pro");
       } else {
         router.push("/dashboard");
@@ -120,18 +133,19 @@ export default function CreerPage() {
     return () => clearTimeout(id);
   }, [emailCooldown]);
 
-  // Le particulier ne crée qu'un compte puis vérifie son email. Le
-  // prestataire renseigne en plus sa fiche, puis vérifie aussi son email —
-  // pas de vérification téléphone pour l'instant (mise de côté, voir
-  // components/PhoneVerification.tsx si on la réactive un jour).
+  // Le particulier ne crée qu'un compte puis vérifie son email — la
+  // confiance étant moins critique côté BtoC, pas de vérification
+  // téléphone à ce stade. Le prestataire renseigne en plus sa fiche et
+  // vérifie aussi son téléphone (cohérent avec la vérification SIRET à venir).
   const steps =
     type === "particulier"
       ? ["Compte", "Vérifier l'email"]
-      : ["Compte", "Profil pro", "Vérifier l'email"];
-  // Dernière étape de saisie (avant l'OTP email) : 0 pour un particulier,
-  // 1 pour un prestataire (après « Profil pro »).
+      : ["Compte", "Profil pro", "Vérifier l'email", "Vérifier le téléphone"];
+  // Dernière étape de saisie (avant les vérifications OTP) : 0 pour un
+  // particulier, 1 pour un prestataire (après « Profil pro »).
   const dataLast = type === "professionnel" ? 1 : 0;
   const emailStepIndex = dataLast + 1;
+  const phoneStepIndex = dataLast + 2;
   const last = steps.length - 1;
 
   const next = () => setStep((s) => Math.min(s + 1, last));
@@ -232,9 +246,14 @@ export default function CreerPage() {
     }
 
     // Si la confirmation email est désactivée côté projet, une session est
-    // déjà ouverte : c'est terminé.
+    // déjà ouverte : on passe directement à la suite (téléphone pour un
+    // prestataire, sinon c'est terminé).
     if (signUp.session) {
-      completeSignup();
+      if (type === "professionnel") {
+        setStep(phoneStepIndex);
+      } else {
+        completeSignup();
+      }
       return;
     }
 
@@ -263,7 +282,12 @@ export default function CreerPage() {
       return;
     }
     setEmailCode("");
-    completeSignup();
+    // Téléphone vérifié uniquement côté prestataire ; un particulier a fini.
+    if (type === "professionnel") {
+      setStep(phoneStepIndex);
+    } else {
+      completeSignup();
+    }
   };
 
   const resendEmail = async () => {
@@ -508,8 +532,13 @@ export default function CreerPage() {
               </div>
             )}
 
-            {/* Navigation (masquée pendant l'étape de vérification OTP email,
-                qui a son propre bouton dédié) */}
+            {/* ÉTAPE — Vérifier le téléphone */}
+            {step === phoneStepIndex && (
+              <PhoneVerification onVerified={completeSignup} />
+            )}
+
+            {/* Navigation (masquée pendant les étapes de vérification OTP,
+                qui ont leurs propres boutons dédiés) */}
             {step <= dataLast && (
               <div className="mt-2.5 flex items-center justify-between">
                 {step > 0 ? (

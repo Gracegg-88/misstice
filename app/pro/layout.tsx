@@ -4,6 +4,7 @@ import ProSidebar from "@/components/pro/ProSidebar";
 import { getProfile } from "@/lib/queries";
 import { getMyVendor } from "@/lib/pro";
 import { getUnreadTotal } from "@/lib/messaging";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function ProLayout({
   children,
@@ -14,6 +15,20 @@ export default async function ProLayout({
   if (!profile) redirect("/auth?next=/pro");
   if (profile.role !== "prestataire" && profile.role !== "admin") {
     redirect("/dashboard");
+  }
+
+  // Filet de sécurité : un prestataire arrivé sans passer par le stepper
+  // d'inscription (ex. via Google) n'a jamais vérifié son téléphone.
+  if (profile.role === "prestataire") {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("phone_verified_at")
+      .eq("id", profile.id)
+      .maybeSingle();
+    if (!(data as { phone_verified_at: string | null } | null)?.phone_verified_at) {
+      redirect("/verifier-telephone");
+    }
   }
 
   const [vendor, unread] = await Promise.all([getMyVendor(), getUnreadTotal()]);
