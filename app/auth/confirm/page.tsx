@@ -39,7 +39,7 @@ export default function ConfirmPage() {
     setLoading(false);
     if (exErr) {
       setError(
-        "Ce lien est invalide, a déjà été utilisé ou a expiré. Merci de redemander un nouveau lien."
+        `Ce lien est invalide, a déjà été utilisé ou a expiré. Merci de redemander un nouveau lien. (Détail technique : ${exErr.message})`
       );
       return;
     }
