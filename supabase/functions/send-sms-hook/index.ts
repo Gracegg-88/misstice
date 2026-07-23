@@ -86,6 +86,11 @@ Deno.serve(async (req) => {
     return hookError(500, `Échec de l'envoi du SMS : ${detail}`);
   }
 
-  // Succès : un 200 avec un corps vide suffit (voir doc Supabase).
-  return new Response(null, { status: 200 });
+  // Succès : corps vide accepté par Supabase, mais un en-tête Content-Type
+  // reste exigé (son absence totale a provoqué une erreur "Missing
+  // Content-Type header" en conditions réelles).
+  return new Response(null, {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
 });
