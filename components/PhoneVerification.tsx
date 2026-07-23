@@ -22,10 +22,16 @@ const toE164 = (raw: string) => {
 };
 
 // Un message d'erreur Supabase/Edge Function vide ou mal formé ne doit
-// jamais s'afficher tel quel (ex. "{}") — on retombe sur un message clair.
-const errMsg = (err: { message?: string } | null | undefined, fallback: string) => {
+// jamais s'afficher tel quel (ex. "{}") — on retombe sur un message clair,
+// en ajoutant le détail technique brut le temps de diagnostiquer une
+// panne réelle (Twilio / Brevo / fonction technique).
+const errMsg = (
+  err: { message?: string; status?: number; name?: string } | null | undefined,
+  fallback: string
+) => {
   const m = err?.message?.trim();
-  return m && m !== "{}" ? m : fallback;
+  const detail = m && m !== "{}" ? m : "(vide)";
+  return `${fallback} (Détail technique : status=${err?.status ?? "?"}, name=${err?.name ?? "?"}, message=${detail})`;
 };
 
 /**
