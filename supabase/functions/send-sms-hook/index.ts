@@ -25,9 +25,19 @@ type HookPayload = {
   sms: { otp: string; phone?: string };
 };
 
+// Format d'erreur attendu par Supabase pour un Auth Hook (contrairement à
+// un succès, qui n'exige qu'un 200 avec un corps vide) : un texte brut
+// n'est pas exploité correctement par GoTrue et produit des erreurs vides
+// ou mal formées côté client (constaté en conditions réelles).
+const hookError = (httpCode: number, message: string) =>
+  new Response(JSON.stringify({ error: { http_code: httpCode, message } }), {
+    status: httpCode,
+    headers: { "content-type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return hookError(405, "Method not allowed");
   }
 
   const body = await req.text();
@@ -41,7 +51,7 @@ Deno.serve(async (req) => {
     payload = wh.verify(body, headers) as HookPayload;
   } catch (err) {
     console.error("send-sms-hook: signature invalide", err);
-    return new Response("Invalid signature", { status: 401 });
+    return hookError(401, "Invalid signature");
   }
 
   // Pour un ajout de téléphone à un compte existant (notre cas, via
@@ -53,7 +63,7 @@ Deno.serve(async (req) => {
   const phone = payload.sms?.phone || payload.user?.new_phone || payload.user?.phone;
   const otp = payload.sms?.otp;
   if (!phone || !otp) {
-    return new Response("Payload incomplet", { status: 400 });
+    return hookError(400, "Payload incomplet");
   }
 
   const res = await fetch("https://api.brevo.com/v3/transactionalSMS/send", {
@@ -73,8 +83,9 @@ Deno.serve(async (req) => {
   if (!res.ok) {
     const detail = await res.text();
     console.error("send-sms-hook: échec envoi Brevo", res.status, detail);
-    return new Response("Échec de l'envoi du SMS", { status: 500 });
+    return hookError(500, `Échec de l'envoi du SMS : ${detail}`);
   }
 
-  return new Response("ok", { status: 200 });
+  // Succès : un 200 avec un corps vide suffit (voir doc Supabase).
+  return new Response(null, { status: 200 });
 });
