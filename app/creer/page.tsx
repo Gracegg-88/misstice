@@ -58,6 +58,52 @@ export default function CreerPage() {
   const [verifyingEmail, setVerifyingEmail] = useState(false);
   const [emailCooldown, setEmailCooldown] = useState(0);
 
+  // Reprise après interruption : si une session existe déjà (email confirmé
+  // puis page quittée/rafraîchie avant la vérification du téléphone), on
+  // reprend directement à la bonne étape au lieu de repartir de zéro — un
+  // nouveau signUp() sur le même email échouerait de toute façon avec
+  // « déjà inscrit ».
+  const [checkingResume, setCheckingResume] = useState(true);
+  useEffect(() => {
+    const supabase = createClient();
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setCheckingResume(false);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, phone_verified_at")
+        .eq("id", user.id)
+        .maybeSingle();
+      const p = profile as
+        | { role: string; phone_verified_at: string | null }
+        | null;
+      if (p?.role === "prestataire" && !p.phone_verified_at) {
+        setType("professionnel");
+        setAccount((a) => ({ ...a, email: user.email ?? a.email }));
+        setStep(3); // étape "Vérifier le téléphone" du parcours prestataire
+        setCheckingResume(false);
+        return;
+      }
+      // Déjà entièrement configuré (ou particulier) : direction le bon espace.
+      const n = safeNext(
+        new URLSearchParams(window.location.search).get("next"),
+        ""
+      );
+      if (n) {
+        router.push(n);
+      } else if (p?.role === "prestataire") {
+        router.push("/pro");
+      } else {
+        router.push("/dashboard");
+      }
+    })();
+  }, [router]);
+
   // Liste des catégories existantes (lecture publique) pour le menu déroulant.
   useEffect(() => {
     const supabase = createClient();
@@ -264,6 +310,19 @@ export default function CreerPage() {
     (step === 0
       ? account.email.trim() !== "" && account.password.trim() !== ""
       : pro.company.trim() !== "" && pro.category.trim() !== "") && consent;
+
+  // Évite d'afficher "Créez votre compte" une fraction de seconde avant de
+  // rediriger/reprendre le parcours d'un utilisateur déjà en cours d'inscription.
+  if (checkingResume) {
+    return (
+      <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream bg-cover bg-center bg-no-repeat bg-[url('/background_signup_mobile.png')] sm:bg-[url('/background_login.png')]">
+        <Header />
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-slate">Chargement…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream bg-cover bg-center bg-no-repeat bg-[url('/background_signup_mobile.png')] sm:bg-[url('/background_login.png')]">
