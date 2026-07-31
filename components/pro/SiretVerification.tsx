@@ -35,7 +35,10 @@ export default function SiretVerification({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || "La vérification a échoué.");
+        const detail = data.debug
+          ? ` (Détail technique : ${JSON.stringify(data.debug)})`
+          : "";
+        throw new Error((data.error || "La vérification a échoué.") + detail);
       }
       setSuccess(
         data.companyName
