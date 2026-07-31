@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import ProfilClient from "@/components/pro/ProfilClient";
 import ProfileForm from "@/components/admin/ProfileForm";
 import DeleteAccountButton from "@/components/dashboard/DeleteAccountButton";
+import SiretVerification from "@/components/pro/SiretVerification";
 import { getMyVendor, getMyPackages, getMyPhotos } from "@/lib/pro";
 import { getProfile } from "@/lib/queries";
 import { getCategories } from "@/lib/vendors";
@@ -74,7 +75,20 @@ export default async function ProProfilPage() {
     );
   }
 
-  const [packages, photos] = await Promise.all([getMyPackages(), getMyPhotos()]);
+  const [packages, photos, { data: siretRow }] = await Promise.all([
+    getMyPackages(),
+    getMyPhotos(),
+    supabase
+      .from("vendor_profiles")
+      .select("siret, siret_verified_at, siret_company_name")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
+  const siretInfo = siretRow as {
+    siret: string | null;
+    siret_verified_at: string | null;
+    siret_company_name: string | null;
+  } | null;
 
   return (
     <div>
@@ -84,6 +98,13 @@ export default async function ProProfilPage() {
         photos={photos}
         categories={categories}
       />
+      <div className="mx-auto max-w-3xl">
+        <SiretVerification
+          siret={siretInfo?.siret ?? null}
+          verifiedAt={siretInfo?.siret_verified_at ?? null}
+          companyName={siretInfo?.siret_company_name ?? null}
+        />
+      </div>
       {accountSection}
     </div>
   );
