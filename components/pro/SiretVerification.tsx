@@ -17,7 +17,6 @@ export default function SiretVerification({
   const [value, setValue] = useState(siret ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const digits = value.replace(/\s/g, "");
   const canSubmit = /^\d{14}$/.test(digits) && !loading;
@@ -26,7 +25,6 @@ export default function SiretVerification({
     if (!canSubmit) return;
     setLoading(true);
     setError("");
-    setSuccess("");
     try {
       const res = await fetch("/api/vendor/siret", {
         method: "POST",
@@ -35,16 +33,10 @@ export default function SiretVerification({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const detail = data.debug
-          ? ` (Détail technique : ${JSON.stringify(data.debug)})`
-          : "";
-        throw new Error((data.error || "La vérification a échoué.") + detail);
+        throw new Error(data.error || "La vérification a échoué.");
       }
-      setSuccess(
-        data.companyName
-          ? `SIRET vérifié — ${data.companyName}`
-          : "SIRET vérifié."
-      );
+      // Le bandeau ci-dessus (verifiedAt) reflète déjà le succès après ce
+      // rafraîchissement — pas besoin d'un second message de confirmation.
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");
@@ -96,11 +88,6 @@ export default function SiretVerification({
       {error && (
         <p className="mt-3 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
           {error}
-        </p>
-      )}
-      {success && !error && (
-        <p className="mt-3 rounded-xl bg-emerald-soft px-4 py-3 text-sm text-emerald">
-          {success}
         </p>
       )}
     </div>

@@ -42,7 +42,6 @@ export async function POST(request: Request) {
   }
 
   let result: GouvResult | undefined;
-  let rawForDebug: unknown;
   try {
     // Pour un SIRET (14 chiffres), l'API attend le numéro brut en recherche
     // texte — contrairement au SIREN, il n'y a pas de préfixe "siret:".
@@ -55,7 +54,6 @@ export async function POST(request: Request) {
     }
     const data = (await res.json()) as { results?: GouvResult[] };
     result = data.results?.[0];
-    rawForDebug = data;
   } catch (e) {
     console.error("siret-check: appel API gouvernementale échoué", e);
     return NextResponse.json(
@@ -78,7 +76,6 @@ export async function POST(request: Request) {
       {
         error:
           "Ce numéro SIRET est introuvable. Vérifiez qu'il est correctement saisi.",
-        debug: rawForDebug,
       },
       { status: 400 }
     );
