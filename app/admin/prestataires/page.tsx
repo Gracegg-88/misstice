@@ -7,6 +7,7 @@ type Vendor = {
   category: string | null;
   city: string | null;
   verified: boolean;
+  reviewed_at: string | null;
 };
 
 export default async function AdminPrestataires() {
@@ -15,9 +16,16 @@ export default async function AdminPrestataires() {
   // 18 fiches vitrines (user_id null) que l'admin ne gère pas.
   const { data } = await supabase
     .from("vendors")
-    .select("id, name, category, city, verified")
+    .select("id, name, category, city, verified, reviewed_at")
     .not("user_id", "is", null)
     .order("position", { ascending: true });
 
-  return <PrestatairesClient vendors={(data as Vendor[]) ?? []} />;
+  // Pas encore relues d'abord — sert aussi de liste "à faire".
+  const vendors = ((data as Vendor[]) ?? []).sort((a, b) => {
+    if (!a.reviewed_at && b.reviewed_at) return -1;
+    if (a.reviewed_at && !b.reviewed_at) return 1;
+    return 0;
+  });
+
+  return <PrestatairesClient vendors={vendors} />;
 }

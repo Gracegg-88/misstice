@@ -13,6 +13,7 @@ type Row = {
   rating: number;
   reviews: number;
   verified: boolean;
+  reviewed_at: string | null;
   response_hours: number;
   response_rate: number;
   languages: string[] | null;
@@ -42,6 +43,7 @@ function map(r: Row): Vendor {
     rating: Number(r.rating),
     reviews: r.reviews,
     verified: r.verified,
+    isNew: !r.reviewed_at,
     responseHours: r.response_hours,
     responseRate: r.response_rate,
     languages: r.languages ?? [],

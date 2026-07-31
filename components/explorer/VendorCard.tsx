@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, BadgeCheck, MapPin, Heart } from "lucide-react";
+import { Star, BadgeCheck, MapPin, Heart, Sparkles } from "lucide-react";
 import type { Vendor } from "./vendors";
 import { vibesVisible } from "@/lib/vibes";
 
@@ -51,11 +51,21 @@ export default function VendorCard({
           <Heart size={18} className={saved ? "fill-white" : ""} />
         </button>
 
-        {vendor.verified && vendor.userId && (
-          <span className="absolute bottom-4 left-4 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-violet shadow-sm">
-            <BadgeCheck size={14} />
-            Vérifié par Misstice
-          </span>
+        {vendor.userId && (
+          <div className="absolute bottom-4 left-4 flex flex-wrap gap-1.5">
+            {vendor.verified && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-violet shadow-sm">
+                <BadgeCheck size={14} />
+                Vérifié par Misstice
+              </span>
+            )}
+            {vendor.isNew && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-festif shadow-sm">
+                <Sparkles size={14} />
+                Nouveau
+              </span>
+            )}
+          </div>
         )}
       </div>
 

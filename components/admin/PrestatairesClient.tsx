@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, Trash2, ShieldOff, ShieldCheck, ExternalLink } from "lucide-react";
+import {
+  BadgeCheck,
+  Trash2,
+  ShieldOff,
+  ShieldCheck,
+  ExternalLink,
+  Eye,
+  Sparkles,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -12,6 +20,7 @@ type Vendor = {
   category: string | null;
   city: string | null;
   verified: boolean;
+  reviewed_at: string | null;
 };
 
 export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
@@ -27,6 +36,22 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
     const { error: upErr } = await supabase
       .from("vendors")
       .update({ verified: !v.verified })
+      .eq("id", v.id);
+    setBusy(null);
+    if (upErr) {
+      setError(upErr.message);
+      return;
+    }
+    router.refresh();
+  };
+
+  const markReviewed = async (v: Vendor) => {
+    setBusy(v.id);
+    setError("");
+    const supabase = createClient();
+    const { error: upErr } = await supabase
+      .from("vendors")
+      .update({ reviewed_at: new Date().toISOString() })
       .eq("id", v.id);
     setBusy(null);
     if (upErr) {
@@ -102,16 +127,24 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                   </td>
                   <td className="px-5 py-3 text-slate">{v.city ?? "—"}</td>
                   <td className="px-5 py-3">
-                    {v.verified ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2 py-0.5 text-xs font-semibold text-emerald">
-                        <BadgeCheck size={12} />
-                        Vérifié
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold text-slate">
-                        Non vérifié
-                      </span>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {v.verified ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2 py-0.5 text-xs font-semibold text-emerald">
+                          <BadgeCheck size={12} />
+                          Vérifié
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold text-slate">
+                          Non vérifié
+                        </span>
+                      )}
+                      {!v.reviewed_at && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                          <Sparkles size={12} />
+                          Nouveau
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center justify-end gap-2">
@@ -133,6 +166,17 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                         {v.verified ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
                         {v.verified ? "Retirer" : "Vérifier"}
                       </button>
+                      {!v.reviewed_at && (
+                        <button
+                          type="button"
+                          disabled={busy === v.id}
+                          onClick={() => markReviewed(v)}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-1.5 text-xs font-semibold text-plum transition-colors hover:border-violet/40 disabled:opacity-60"
+                        >
+                          <Eye size={14} />
+                          Marquer comme relu
+                        </button>
+                      )}
                       <button
                         type="button"
                         aria-label={`Supprimer ${v.name}`}

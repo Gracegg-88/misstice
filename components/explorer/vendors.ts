@@ -9,6 +9,7 @@ export type Vendor = {
   rating: number;
   reviews: number;
   verified: boolean; // vérifié par Misstice
+  isNew: boolean; // pas encore relu manuellement par l'admin
   responseHours: number;
   responseRate: number;
   languages: string[];

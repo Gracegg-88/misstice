@@ -16,6 +16,7 @@ import {
   Send,
   Euro,
   CalendarCheck,
+  Sparkles,
 } from "lucide-react";
 import type { Vendor } from "./vendors";
 import type { Pkg, Review } from "./profileData";
@@ -180,6 +181,12 @@ export default function VendorProfile({
                       <span className="inline-flex items-center gap-1 font-medium text-violet">
                         <BadgeCheck size={15} />
                         Vérifié par Misstice
+                      </span>
+                    )}
+                    {vendor.isNew && vendor.userId && (
+                      <span className="inline-flex items-center gap-1 font-medium text-festif">
+                        <Sparkles size={15} />
+                        Nouveau
                       </span>
                     )}
                   </div>
