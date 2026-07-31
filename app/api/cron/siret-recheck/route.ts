@@ -27,7 +27,9 @@ function safeEqual(a: string, b: string): boolean {
 async function checkStillActive(
   siret: string
 ): Promise<{ active: boolean; companyName: string }> {
-  const res = await fetch(`${GOUV_API}?q=siret:${siret}`, {
+  // Pour un SIRET (14 chiffres), l'API attend le numéro brut en recherche
+  // texte — contrairement au SIREN, il n'y a pas de préfixe "siret:".
+  const res = await fetch(`${GOUV_API}?q=${siret}`, {
     headers: { accept: "application/json" },
   });
   if (!res.ok) throw new Error(`gouv api status ${res.status}`);

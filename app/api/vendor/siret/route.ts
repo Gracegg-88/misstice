@@ -44,8 +44,10 @@ export async function POST(request: Request) {
   let result: GouvResult | undefined;
   let rawForDebug: unknown;
   try {
+    // Pour un SIRET (14 chiffres), l'API attend le numéro brut en recherche
+    // texte — contrairement au SIREN, il n'y a pas de préfixe "siret:".
     const res = await fetch(
-      `${GOUV_API}?q=siret:${digits}`,
+      `${GOUV_API}?q=${digits}`,
       { headers: { accept: "application/json" } }
     );
     if (!res.ok) {
