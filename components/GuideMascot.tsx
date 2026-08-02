@@ -72,15 +72,18 @@ export default function GuideMascot() {
         onClick={() => setOpen((v) => !v)}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-violet shadow-lg shadow-violet/30 transition-transform hover:scale-105"
       >
-        <svg viewBox="0 0 64 64" className="h-8 w-8" aria-hidden="true">
+        <svg viewBox="0 0 64 64" className="h-9 w-9" aria-hidden="true">
+          {/* Chignon/pompon en étincelle, reprise du logo Misstice */}
           <path
-            d="M32 3 Q32 32 61 32 Q32 32 32 61 Q32 32 3 32 Q32 32 32 3 Z"
+            d="M32 2 Q32 12 42 12 Q32 12 32 22 Q32 12 22 12 Q32 12 32 2 Z"
             fill="#FF8C42"
           />
-          <circle cx="26" cy="30" r="2.6" fill="#1A1A2E" />
-          <circle cx="38" cy="30" r="2.6" fill="#1A1A2E" />
+          {/* Visage rond façon emoji */}
+          <circle cx="32" cy="38" r="20" fill="#FAFAF9" />
+          <circle cx="25" cy="36" r="2.6" fill="#1A1A2E" />
+          <circle cx="39" cy="36" r="2.6" fill="#1A1A2E" />
           <path
-            d="M25 37 Q32 42 39 37"
+            d="M25 43 Q32 48 39 43"
             stroke="#1A1A2E"
             strokeWidth="2.4"
             strokeLinecap="round"
