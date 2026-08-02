@@ -15,12 +15,14 @@ export default function MobileNav({
   homeHref = "/",
   homeLabel = "Retour à l'accueil",
   switchMode,
+  switchModeActivates = false,
 }: {
   items: NavItem[];
   rootHref: string;
   homeHref?: string;
   homeLabel?: string;
   switchMode?: "pro" | "particulier";
+  switchModeActivates?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
@@ -65,7 +67,7 @@ export default function MobileNav({
                 className="mb-3 flex justify-center"
                 onClick={() => setOpen(false)}
               >
-                <ModeSwitch current={switchMode} />
+                <ModeSwitch current={switchMode} activatesOnClick={switchModeActivates} />
               </div>
             )}
 

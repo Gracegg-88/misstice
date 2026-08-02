@@ -46,11 +46,8 @@ export default function DashboardTopbar({
           <MobileNav
             items={DASHBOARD_NAV}
             rootHref="/dashboard"
-            switchMode={
-              role === "prestataire" || role === "admin"
-                ? "particulier"
-                : undefined
-            }
+            switchMode="particulier"
+            switchModeActivates={role !== "prestataire" && role !== "admin"}
           />
           <Logo />
           {(role === "prestataire" || role === "admin") && (
@@ -62,12 +59,14 @@ export default function DashboardTopbar({
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-          {/* Bascule d'espace — comptes ayant aussi un espace pro. */}
-          {(role === "prestataire" || role === "admin") && (
-            <div className="hidden sm:block">
-              <ModeSwitch current="particulier" />
-            </div>
-          )}
+          {/* Bascule d'espace — un particulier qui clique "Prestataire" pour
+              la première fois active ce statut sur son compte (voir ModeSwitch). */}
+          <div className="hidden sm:block">
+            <ModeSwitch
+              current="particulier"
+              activatesOnClick={role !== "prestataire" && role !== "admin"}
+            />
+          </div>
 
           <NotificationBell />
 
