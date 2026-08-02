@@ -95,6 +95,47 @@ export default function DevisActions({
             price: autoAdd.price,
           });
         }
+
+        // Budget : ajoute automatiquement une dépense correspondant à ce
+        // devis, dans la catégorie du prestataire (créée si besoin, ou
+        // catégorie générique de repli). quote_id évite tout doublon si
+        // cette action se déclenche deux fois pour le même devis.
+        const { data: alreadyAdded } = await supabase
+          .from("budget_expenses")
+          .select("id")
+          .eq("quote_id", quoteId)
+          .maybeSingle();
+
+        if (!alreadyAdded) {
+          let categoryId: string | null = null;
+          if (autoAdd.category) {
+            const { data: catMatch } = await supabase
+              .from("budget_categories")
+              .select("id")
+              .eq("event_id", autoAdd.eventId)
+              .ilike("name", autoAdd.category)
+              .maybeSingle();
+            categoryId = (catMatch as { id: string } | null)?.id ?? null;
+          }
+          if (!categoryId) {
+            const { data: fallback } = await supabase
+              .from("budget_categories")
+              .select("id")
+              .eq("event_id", autoAdd.eventId)
+              .ilike("name", "Divers")
+              .maybeSingle();
+            categoryId = (fallback as { id: string } | null)?.id ?? null;
+          }
+          if (categoryId) {
+            await supabase.from("budget_expenses").insert({
+              category_id: categoryId,
+              event_id: autoAdd.eventId,
+              label: autoAdd.name,
+              amount: autoAdd.price,
+              quote_id: quoteId,
+            });
+          }
+        }
       } else {
         // refusé
         if (ex) {
