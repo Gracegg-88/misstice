@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
+import GuideMascot from "@/components/GuideMascot";
 
 // Titres éditoriaux
 const playfair = Playfair_Display({
@@ -42,6 +43,7 @@ export default function RootLayout({
     <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
       <body className="font-sans bg-cream text-plum antialiased">
         {children}
+        <GuideMascot />
       </body>
     </html>
   );
