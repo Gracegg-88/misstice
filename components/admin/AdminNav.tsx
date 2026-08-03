@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Store, Users, Tags, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Store, Users, Tags, ShieldCheck, Star } from "lucide-react";
 
 export default function AdminNav({
   canManageAdmins = false,
@@ -21,6 +21,7 @@ export default function AdminNav({
       items: [
         { icon: Store, label: "Prestataires", href: "/admin/prestataires" },
         { icon: Users, label: "Utilisateurs", href: "/admin/utilisateurs" },
+        { icon: Star, label: "Avis", href: "/admin/avis" },
         // Les événements sont privés (visibles seulement des personnes
         // concernées) : pas de page de détail côté admin, juste un compteur.
         { icon: Tags, label: "Catégories", href: "/admin/categories" },
