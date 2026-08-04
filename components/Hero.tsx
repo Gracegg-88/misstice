@@ -1,11 +1,68 @@
 import { Users } from "lucide-react";
 
+// Étincelles Misstice superposées à la photo de fond (indépendantes de l'image,
+// donc redimensionnables librement — contrairement à celles dessinées dans background.png).
+const SPARKLES = [
+  { top: "8%", left: "5%", size: 44, color: "#FF8C42", rotate: -10, delay: "0s" },
+  { top: "18%", left: "18%", size: 26, color: "#6C3CE1", rotate: 14, delay: "1.4s" },
+  { top: "60%", left: "3%", size: 34, color: "#6C3CE1", rotate: 6, delay: "2.2s" },
+  { top: "10%", right: "8%", size: 38, color: "#FF8C42", rotate: -14, delay: "0.7s" },
+  { top: "28%", right: "20%", size: 52, color: "#6C3CE1", rotate: 10, delay: "1.9s" },
+  { top: "64%", right: "5%", size: 30, color: "#FF8C42", rotate: -6, delay: "0.4s" },
+];
+
+function Sparkle({
+  top,
+  left,
+  right,
+  size,
+  color,
+  rotate,
+  delay,
+}: {
+  top: string;
+  left?: string;
+  right?: string;
+  size: number;
+  color: string;
+  rotate: number;
+  delay: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      aria-hidden="true"
+      className="ev-float pointer-events-none absolute drop-shadow-[0_4px_12px_rgba(108,60,225,0.3)]"
+      style={{
+        top,
+        left,
+        right,
+        width: size,
+        height: size,
+        transform: `rotate(${rotate}deg)`,
+        animationDelay: delay,
+      }}
+    >
+      <path
+        d="M32 3 Q32 32 61 32 Q32 32 32 61 Q32 32 3 32 Q32 32 32 3 Z"
+        fill={color}
+      />
+    </svg>
+  );
+}
+
 export default function Hero() {
   return (
     <section
       className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-cream bg-cover bg-top bg-no-repeat"
       style={{ backgroundImage: "url('/background.png')" }}
     >
+      <div className="pointer-events-none absolute inset-0">
+        {SPARKLES.map((s, i) => (
+          <Sparkle key={i} {...s} />
+        ))}
+      </div>
+
       <div className="relative mx-auto grid w-full max-w-content items-center gap-10 px-4 py-10 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:py-12">
         {/* ── Colonne texte ── */}
         <div className="animate-fade-up">
