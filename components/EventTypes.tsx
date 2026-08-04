@@ -1,17 +1,16 @@
-import { Gem, Cake, Church, Sparkles, Baby } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import Reveal from "./Reveal";
 
 const types: {
-  icon: LucideIcon;
+  img: string;
   label: string;
   text: string;
+  tint: string;
 }[] = [
-  { icon: Gem, label: "Mariage", text: "Gérez chaque détail de votre grand jour" },
-  { icon: Cake, label: "Anniversaire", text: "Planifiez en toute sérénité" },
-  { icon: Church, label: "Baptême", text: "Organisez chaque instant avec soin" },
-  { icon: Sparkles, label: "Gala", text: "Un événement professionnel et mémorable" },
-  { icon: Baby, label: "Baby Shower", text: "Préparez l'arrivée de bébé sereinement" },
+  { img: "/mariage.png", label: "Mariage", text: "Gérez chaque détail de votre grand jour", tint: "bg-violet-soft" },
+  { img: "/anniversaire.png", label: "Anniversaire", text: "Planifiez en toute sérénité", tint: "bg-festif-soft" },
+  { img: "/bapteme.png", label: "Baptême", text: "Organisez chaque instant avec soin", tint: "bg-violet-soft" },
+  { img: "/gala.png", label: "Gala", text: "Un événement professionnel et mémorable", tint: "bg-festif-soft" },
+  { img: "/babyshower.png", label: "Baby Shower", text: "Préparez l'arrivée de bébé sereinement", tint: "bg-violet-soft" },
 ];
 
 export default function EventTypes() {
@@ -32,14 +31,20 @@ export default function EventTypes() {
             <Reveal key={t.label} delay={i * 70}>
               <a
                 href="/creer"
-                className="flex h-full items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5"
+                className="ev-zoom-hover flex h-full flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
-                  <t.icon size={22} strokeWidth={1.75} />
+                <span className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${t.tint}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={t.img}
+                    alt=""
+                    aria-hidden="true"
+                    className="ev-zoom-target h-11 w-11 object-contain"
+                  />
                 </span>
                 <span className="min-w-0">
                   <span className="block font-semibold text-plum">{t.label}</span>
-                  <span className="block text-sm leading-snug text-slate">
+                  <span className="mt-0.5 block text-sm leading-snug text-slate">
                     {t.text}
                   </span>
                 </span>
