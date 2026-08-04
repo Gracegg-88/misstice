@@ -7,15 +7,16 @@ const SPARK_PATH =
   "M32 3 Q32 32 61 32 Q32 32 32 61 Q32 32 3 32 Q32 32 32 3 Z";
 
 // Profondeur : chaque étincelle a une échelle propre pour un effet de dispersion
-// moins mécanique (certaines vont plus loin / restent plus grandes que d'autres).
+// moins mécanique (certaines vont plus loin / restent plus grandes que d'autres),
+// et pour un flou façon bokeh sur celles "loin" de la caméra.
 const SPARKLES = [
-  { color: "#FF8C42", size: 34, depth: 1 },
-  { color: "#6C3CE1", size: 22, depth: 0.7 },
-  { color: "#6C3CE1", size: 28, depth: 1 },
-  { color: "#FF8C42", size: 30, depth: 0.85 },
-  { color: "#6C3CE1", size: 40, depth: 1.2 },
-  { color: "#FF8C42", size: 24, depth: 0.7 },
-  { color: "#6C3CE1", size: 20, depth: 0.6 },
+  { color: "#FF8C42", size: 58, depth: 1 },
+  { color: "#6C3CE1", size: 38, depth: 0.7 },
+  { color: "#6C3CE1", size: 48, depth: 1 },
+  { color: "#FF8C42", size: 52, depth: 0.85 },
+  { color: "#6C3CE1", size: 68, depth: 1.2 },
+  { color: "#FF8C42", size: 42, depth: 0.7 },
+  { color: "#6C3CE1", size: 34, depth: 0.6 },
 ];
 
 function clamp(v: number, a: number, b: number) {
@@ -23,6 +24,15 @@ function clamp(v: number, a: number, b: number) {
 }
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
+}
+function hexToRgba(hex: string, a: number) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+function sparkGlow(color: string, depth: number) {
+  const blur = depth < 0.9 ? (0.9 - depth) * 3.5 : 0;
+  const glowSize = lerp(10, 30, clamp(depth / 1.2, 0, 1));
+  return `blur(${blur}px) drop-shadow(0 0 ${glowSize}px ${hexToRgba(color, 0.65)}) drop-shadow(0 8px 16px rgba(20,10,40,0.22))`;
 }
 
 export default function Hero() {
@@ -59,6 +69,7 @@ export default function Hero() {
         const y = Math.sin(angle) * radius;
         el.style.transform = `translate(${x}px, ${y}px) scale(${cfg.depth})`;
         el.style.opacity = "0.85";
+        el.style.filter = sparkGlow(cfg.color, cfg.depth);
       });
       return;
     }
@@ -93,6 +104,7 @@ export default function Hero() {
           const opacity = 1 - revealP * 0.25;
           el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${scale})`;
           el.style.opacity = String(opacity);
+          el.style.filter = sparkGlow(cfg.color, cfg.depth);
         });
 
         if (eyebrowRef.current) {
@@ -123,7 +135,7 @@ export default function Hero() {
       style={{ height: reducedMotion ? undefined : "220vh" }}
     >
       <div
-        className="sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center overflow-hidden bg-cream bg-cover bg-top bg-no-repeat"
+        className="grain sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center overflow-hidden bg-cream bg-cover bg-top bg-no-repeat"
         style={{ backgroundImage: "url('/background.png')" }}
       >
         {/* ── Étincelles animées (rassemblées puis dispersées au scroll) ── */}
@@ -142,11 +154,7 @@ export default function Hero() {
                 marginTop: -s.size / 2,
               }}
             >
-              <svg
-                viewBox="0 0 64 64"
-                aria-hidden="true"
-                className="h-full w-full drop-shadow-[0_6px_14px_rgba(108,60,225,0.25)]"
-              >
+              <svg viewBox="0 0 64 64" aria-hidden="true" className="h-full w-full">
                 <path d={SPARK_PATH} fill={s.color} />
               </svg>
             </div>
