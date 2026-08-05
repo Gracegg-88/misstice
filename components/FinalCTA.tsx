@@ -13,26 +13,27 @@ export default function FinalCTA() {
       <Reveal>
         <div
           className="relative overflow-hidden rounded-[32px] border border-black/5 bg-cream bg-cover bg-center shadow-sm"
-          style={{ backgroundImage: "url('/bacground_session.png')" }}
+          style={{ backgroundImage: "url('/discoball-flatlay.jpg')" }}
         >
-          {/* Voile clair pour la lisibilité du texte à gauche */}
+          {/* Voile dégradé aux couleurs de la marque, pour la lisibilité du
+              texte à gauche et la continuité avec le reste du site. */}
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent lg:from-white/60"
+            className="absolute inset-0 bg-gradient-to-r from-violet/90 via-violet/60 to-cream/20"
           />
 
           <div className="relative max-w-2xl p-6 sm:p-8">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-violet backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-cream/90 px-3 py-1 text-xs font-semibold text-violet backdrop-blur-sm">
               <Heart size={13} className="text-festif" />
               Gratuit pour commencer
             </span>
 
-            <h2 className="mt-3 font-display text-2xl font-semibold leading-[1.15] tracking-tight text-plum sm:text-3xl">
+            <h2 className="mt-3 font-display text-2xl font-semibold leading-[1.15] tracking-tight text-cream sm:text-3xl">
               Prêt à organiser votre événement{" "}
               <span className="text-festif">sans stress</span> ?
             </h2>
 
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-slate">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-cream/80">
               Créez votre événement gratuitement, centralisez vos invités, votre
               budget et vos prestataires, puis profitez pleinement du moment.
             </p>
@@ -40,14 +41,14 @@ export default function FinalCTA() {
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/creer"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet/25 transition-all hover:bg-violet-dark hover:shadow-xl"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-cream shadow-lg shadow-violet/25 transition-all hover:brightness-110 hover:shadow-xl"
               >
                 <CalendarDays size={17} />
                 Créer mon événement
               </a>
               <a
                 href="/creer?type=pro"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-violet/30 bg-white/70 px-6 py-3 text-sm font-semibold text-violet backdrop-blur-sm transition-colors hover:bg-white"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cream/40 bg-cream/15 px-6 py-3 text-sm font-semibold text-cream backdrop-blur-sm transition-colors hover:bg-cream/25"
               >
                 <Users size={17} />
                 Devenir prestataire
@@ -61,8 +62,8 @@ export default function FinalCTA() {
                     <f.icon size={15} />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-plum">{f.title}</p>
-                    <p className="text-xs text-slate">{f.sub}</p>
+                    <p className="text-sm font-semibold text-cream">{f.title}</p>
+                    <p className="text-xs text-cream/70">{f.sub}</p>
                   </div>
                 </div>
               ))}
