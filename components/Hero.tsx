@@ -225,59 +225,47 @@ export default function Hero() {
         {/* ── Contenu final, révélé une fois les étincelles dispersées ── */}
         <div
           ref={contentRef}
-          className="relative mx-auto grid w-full max-w-content items-center gap-10 px-4 py-10 opacity-0 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:py-12"
+          className="relative mx-auto w-full max-w-2xl px-4 py-10 text-center opacity-0 sm:px-8 lg:py-12"
         >
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-festif/30 bg-ink/60 px-4 py-1.5 text-sm font-medium text-festif backdrop-blur-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/icon.svg"
-                alt=""
-                aria-hidden="true"
-                className="h-4 w-4"
-              />
-              On transforme le stress de l&apos;organisation en plaisir.
-            </span>
-
-            <h1 className="mt-5 max-w-[16ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-[52px]">
-              Mille petits détails, dispersés partout.
-              <br />
-              On les réunit{" "}
-              <span className="bg-gradient-to-r from-festif to-[#FFB27A] bg-clip-text text-transparent">
-                au même endroit.
-              </span>
-            </h1>
-
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-cream/75 sm:text-lg">
-              Budget, invités, checklist, équipe et prestataires réunis dans une
-              seule plateforme.
-            </p>
-
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="/creer"
-                className="inline-flex items-center justify-center rounded-2xl bg-gradient-primary px-7 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25 transition-all hover:brightness-110 hover:shadow-xl"
-              >
-                Créer mon événement
-              </a>
-              <a
-                href="/creer?type=pro"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-premium px-7 py-4 text-base font-semibold text-cream shadow-lg shadow-navy/20 transition-all hover:brightness-110 hover:shadow-xl"
-              >
-                Je suis prestataire
-                <Users size={18} />
-              </a>
-            </div>
-          </div>
-
-          {/* ── Colonne visuel : aperçu du tableau de bord ── */}
-          <div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-festif/30 bg-ink/60 px-4 py-1.5 text-sm font-medium text-festif backdrop-blur-sm">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/hero.png"
-              alt="Aperçu du tableau de bord Misstice : budget, checklist, invités et prestataires"
-              className="w-full rounded-2xl border border-black/5 shadow-2xl shadow-violet/10"
+              src="/icon.svg"
+              alt=""
+              aria-hidden="true"
+              className="h-4 w-4"
             />
+            On transforme le stress de l&apos;organisation en plaisir.
+          </span>
+
+          <h1 className="mx-auto mt-5 max-w-[16ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-[52px]">
+            Mille petits détails, dispersés partout.
+            <br />
+            On les réunit{" "}
+            <span className="bg-gradient-to-r from-festif to-[#FFB27A] bg-clip-text text-transparent">
+              au même endroit.
+            </span>
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-cream/75 sm:text-lg">
+            Budget, invités, checklist, équipe et prestataires réunis dans une
+            seule plateforme.
+          </p>
+
+          <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href="/creer"
+              className="inline-flex items-center justify-center rounded-2xl bg-gradient-primary px-7 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25 transition-all hover:brightness-110 hover:shadow-xl"
+            >
+              Créer mon événement
+            </a>
+            <a
+              href="/creer?type=pro"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-premium px-7 py-4 text-base font-semibold text-cream shadow-lg shadow-navy/20 transition-all hover:brightness-110 hover:shadow-xl"
+            >
+              Je suis prestataire
+              <Users size={18} />
+            </a>
           </div>
         </div>
       </div>
