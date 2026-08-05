@@ -3,6 +3,7 @@
 import { Star, BadgeCheck, MapPin, Heart, Sparkles } from "lucide-react";
 import type { Vendor } from "./vendors";
 import { vibesVisible } from "@/lib/vibes";
+import { priceFromLabel } from "@/lib/price";
 
 export default function VendorCard({
   vendor,
@@ -13,7 +14,7 @@ export default function VendorCard({
   saved: boolean;
   onToggleSave: (id: string) => void;
 }) {
-  const price = vendor.priceFrom.replace("dès", "À partir de");
+  const price = priceFromLabel(vendor.priceFrom);
   const note = vendor.rating > 0 ? vendor.rating.toFixed(1).replace(".", ",") : "—";
   const img = vendor.img;
 

@@ -24,6 +24,7 @@ import { GALLERY_GRADS } from "./profileData";
 import { quoteFields, demandeItems, wantedPlaceholder } from "@/lib/quote-fields";
 import { useFavorites } from "@/lib/useFavorites";
 import { vibesVisible } from "@/lib/vibes";
+import { formatPriceFrom } from "@/lib/price";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -237,7 +238,7 @@ export default function VendorProfile({
           }`}
         >
           {[
-            { icon: Euro, label: "À partir de", value: vendor.priceFrom.replace("dès ", ""), tint: "bg-festif-soft text-festif" },
+            { icon: Euro, label: "À partir de", value: formatPriceFrom(vendor.priceFrom), tint: "bg-festif-soft text-festif" },
             { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-festif-soft text-festif" },
             ...(availabilityLabel
               ? [
@@ -529,30 +530,10 @@ export default function VendorProfile({
           <aside className="lg:col-span-1">
             <div className="space-y-4 lg:sticky lg:top-24">
               <div className="rounded-3xl border border-black/5 bg-white p-6">
-                <p className="flex items-baseline gap-1">
-                  <span className="font-display text-2xl font-semibold text-plum">
-                    {vendor.priceFrom}
-                  </span>
-                </p>
-                <div className="mt-4 space-y-2.5 text-sm">
-                  <p className="flex items-center justify-between">
-                    <span className="text-slate">Note</span>
-                    <span className="inline-flex items-center gap-1 font-semibold text-plum">
-                      {vendor.reviews > 0 ? (
-                        <>
-                          <Star size={14} className="fill-festif text-festif" />
-                          {vendor.rating.toFixed(1).replace(".", ",")} ({vendor.reviews})
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </span>
-                  </p>
-                </div>
                 <button
                   type="button"
                   onClick={() => setQuoteOpen(true)}
-                  className="mt-5 w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark"
+                  className="w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark"
                 >
                   Demander un devis
                 </button>
