@@ -27,6 +27,15 @@ export default function EventTypes() {
           </h2>
         </Reveal>
 
+        <Reveal delay={60} className="mt-8 overflow-hidden rounded-3xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/family-santa.jpg"
+            alt="Famille réunie et complice pour une fête de famille"
+            className="h-56 w-full object-cover sm:h-72"
+          />
+        </Reveal>
+
         <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {types.map((t, i) => (
             <Reveal key={t.label} delay={i * 70}>

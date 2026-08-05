@@ -23,6 +23,21 @@ export default async function FeaturedVendors() {
         </a>
       </Reveal>
 
+      <Reveal delay={40} className="mt-6 grid grid-cols-2 gap-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/floral-table.jpg"
+          alt="Table de réception décorée de compositions florales"
+          className="h-40 w-full rounded-3xl object-cover sm:h-56"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/candlelit-dinner.jpg"
+          alt="Longue tablée extérieure décorée aux chandelles"
+          className="h-40 w-full rounded-3xl object-cover sm:h-56"
+        />
+      </Reveal>
+
       <FeaturedVendorsGrid vendors={vendors} />
     </section>
   );

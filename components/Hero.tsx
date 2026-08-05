@@ -160,9 +160,15 @@ export default function Hero() {
     >
       <div
         ref={viewRef}
-        className="grain sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center overflow-hidden bg-cream bg-cover bg-top bg-no-repeat"
-        style={{ backgroundImage: "url('/background.png')" }}
+        className="grain sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center overflow-hidden bg-ink bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/wedding-crowd.jpg')" }}
       >
+        {/* Voile sombre : garantit la lisibilité du texte quelle que soit la photo. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/55 to-ink/30"
+        />
+
         {/* ── Étincelles animées (rassemblées puis dispersées au scroll) ── */}
         <div
           ref={fieldRef}
@@ -197,14 +203,14 @@ export default function Hero() {
         >
           <div
             ref={eyebrowRef}
-            className="text-[11px] font-bold uppercase tracking-[0.14em] text-violet"
+            className="text-[11px] font-bold uppercase tracking-[0.14em] text-festif"
           >
             On transforme le stress de l&apos;organisation en plaisir.
           </div>
           {/* Zone tampon dédiée à l'étoile "hero" : elle est centrée dans cet
               espace, à distance du bandeau et du titre des deux côtés. */}
           <div ref={gapRef} aria-hidden="true" className="h-12 sm:h-16" />
-          <p className="max-w-[18ch] font-display text-3xl font-semibold leading-tight text-plum sm:text-4xl">
+          <p className="max-w-[18ch] font-display text-3xl font-semibold leading-tight text-cream sm:text-4xl">
             Mille petits détails,
             <br />
             dispersés partout.
@@ -217,7 +223,7 @@ export default function Hero() {
           className="relative mx-auto grid w-full max-w-content items-center gap-10 px-4 py-10 opacity-0 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:py-12"
         >
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-festif/20 bg-white/70 px-4 py-1.5 text-sm font-medium text-festif backdrop-blur-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-festif/30 bg-ink/60 px-4 py-1.5 text-sm font-medium text-festif backdrop-blur-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/icon.svg"
@@ -228,14 +234,14 @@ export default function Hero() {
               On transforme le stress de l&apos;organisation en plaisir.
             </span>
 
-            <h1 className="mt-5 max-w-[14ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl lg:text-[52px]">
+            <h1 className="mt-5 max-w-[14ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-[52px]">
               Organisez vos plus beaux événements,{" "}
               <span className="bg-gradient-to-r from-festif to-[#FFB27A] bg-clip-text text-transparent">
                 sans stress.
               </span>
             </h1>
 
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-slate sm:text-lg">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-cream/75 sm:text-lg">
               Budget, invités, checklist, équipe et prestataires réunis dans une
               seule plateforme.
             </p>
