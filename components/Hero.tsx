@@ -168,6 +168,11 @@ export default function Hero() {
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/55 to-ink/30"
         />
+        {/* Transition vers la section suivante : fondu vers le cream du site. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-cream sm:h-36"
+        />
 
         {/* ── Étincelles animées (rassemblées puis dispersées au scroll) ── */}
         <div
@@ -234,10 +239,12 @@ export default function Hero() {
               On transforme le stress de l&apos;organisation en plaisir.
             </span>
 
-            <h1 className="mt-5 max-w-[14ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-[52px]">
-              Organisez vos plus beaux événements,{" "}
+            <h1 className="mt-5 max-w-[16ch] font-display text-4xl font-semibold leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-[52px]">
+              Mille petits détails, dispersés partout.
+              <br />
+              On les réunit{" "}
               <span className="bg-gradient-to-r from-festif to-[#FFB27A] bg-clip-text text-transparent">
-                sans stress.
+                au même endroit.
               </span>
             </h1>
 

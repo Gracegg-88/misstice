@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Send, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, Send, ArrowLeft, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { QuoteItem } from "@/lib/pro-types";
 import type { DemandeDetails } from "@/lib/messaging-types";
@@ -229,14 +229,27 @@ export default function DevisForm({
         </div>
       </Section>
 
-      {/* Coordonnées client */}
-      <Section title="Coordonnées du client">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Input label="Email" value={clientEmail} onChange={setClientEmail} placeholder="email@exemple.com" />
-          <Input label="Téléphone" value={clientPhone} onChange={setClientPhone} placeholder="06 XX XX XX XX" />
-          <Input label="Adresse" value={clientAddress} onChange={setClientAddress} placeholder="Adresse du client" />
-        </div>
-      </Section>
+      {/* Coordonnées client — masquées côté prestataire tant que le client n'a
+          pas accepté le devis (anti-contournement de la plateforme). Les
+          valeurs restent en état (pré-remplies depuis la demande) et sont
+          bien envoyées avec le devis : elles ne sont juste pas affichées ici. */}
+      {draft ? (
+        <Section title="Coordonnées du client">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Input label="Email" value={clientEmail} onChange={setClientEmail} placeholder="email@exemple.com" />
+            <Input label="Téléphone" value={clientPhone} onChange={setClientPhone} placeholder="06 XX XX XX XX" />
+            <Input label="Adresse" value={clientAddress} onChange={setClientAddress} placeholder="Adresse du client" />
+          </div>
+        </Section>
+      ) : (
+        <Section title="Coordonnées du client">
+          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-4 py-3 text-sm text-violet">
+            <Lock size={15} className="shrink-0" />
+            Masquées pour vous tant que le client n&apos;a pas accepté le devis
+            — elles seront automatiquement jointes au document envoyé.
+          </p>
+        </Section>
+      )}
 
       {/* Mes coordonnées */}
       <Section title="Mes coordonnées (affichées sur le devis)">
