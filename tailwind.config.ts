@@ -26,12 +26,32 @@ const config: Config = {
           DEFAULT: "#10B981",
           soft: "#E7F8F1",
         },
+        // Accent premium neutre (mise en avant prestataire, badges "premium").
+        // Volontairement froid/neutre — jamais de rose/blush/terracotta, pour
+        // rester perçu comme une marketplace neutre en genre, pas "réservée
+        // aux femmes". Réservé aux touches premium, jamais en usage principal.
+        navy: {
+          DEFAULT: "#2B4C7E",
+          soft: "#EAF0F8",
+        },
         // Fonds
         cream: "#FAFAF9", // fond clair (jamais blanc pur)
         ink: "#1E1B2E", // fond sombre des sections "écrin"
         // Texte
         plum: "#1A1A2E", // texte principal
         slate: "#6B7280", // texte secondaire
+      },
+      // Dégradés de marque réutilisables → classes `bg-gradient-*`.
+      // Ne jamais créer de dégradé violet → festif en grand format : l'orange
+      // reste une touche ponctuelle (~10% max d'une section visible), jamais
+      // un aplat dominant.
+      backgroundImage: {
+        // Boutons CTA du quotidien, hero discret.
+        "gradient-primary": "linear-gradient(135deg, #6C3CE1 0%, #5A2FC4 100%)",
+        // Sections premium, mise en avant prestataire, hero principal.
+        "gradient-premium": "linear-gradient(135deg, #6C3CE1 0%, #2B4C7E 100%)",
+        // Fonds de section doux, transitions.
+        "gradient-soft": "linear-gradient(135deg, #F1ECFD 0%, #FAFAF9 100%)",
       },
       fontFamily: {
         // Titres éditoriaux (l'émotion)
