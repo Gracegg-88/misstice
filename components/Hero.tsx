@@ -243,13 +243,13 @@ export default function Hero() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/creer"
-                className="inline-flex items-center justify-center rounded-2xl bg-violet px-7 py-4 text-base font-semibold text-white shadow-lg shadow-violet/25 transition-all hover:bg-violet-dark hover:shadow-xl"
+                className="inline-flex items-center justify-center rounded-2xl bg-gradient-primary px-7 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25 transition-all hover:brightness-110 hover:shadow-xl"
               >
                 Créer mon événement
               </a>
               <a
                 href="/creer?type=pro"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/15 bg-white/70 px-7 py-4 text-base font-semibold text-plum backdrop-blur-sm transition-colors hover:border-plum/30"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-premium px-7 py-4 text-base font-semibold text-cream shadow-lg shadow-navy/20 transition-all hover:brightness-110 hover:shadow-xl"
               >
                 Je suis prestataire
                 <Users size={18} />
