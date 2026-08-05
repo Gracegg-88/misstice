@@ -32,7 +32,7 @@ export default function EventTypes() {
           <img
             src="/family-santa.jpg"
             alt="Famille réunie et complice pour une fête de famille"
-            className="aspect-[3/2] w-full object-cover"
+            className="h-56 w-full object-cover sm:h-72"
           />
         </Reveal>
 
