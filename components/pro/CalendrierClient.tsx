@@ -21,7 +21,7 @@ export type QuoteEvent = {
   date: string; // yyyy-mm-dd
   title: string;
   location: string | null;
-  status: "envoyé" | "accepté" | "refusé" | "expiré";
+  status: "envoyé" | "accepté" | "refusé" | "expiré" | "annulé" | "en litige";
 };
 
 type Status = Availability["status"]; // available | booked | pending | blocked

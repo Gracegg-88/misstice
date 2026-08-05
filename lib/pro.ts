@@ -123,6 +123,17 @@ export async function getMyQuotes(): Promise<Quote[]> {
   return ((data as Record<string, unknown>[]) ?? []).map(normalizeQuote);
 }
 
+/** Tous les devis, réservé admin (RLS quotes_admin_read) — pour la médiation
+ *  en cas de litige (politique d'annulation, art. 6 des CGU). */
+export async function getAdminQuotes(): Promise<Quote[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("quotes")
+    .select(QUOTE_COLS)
+    .order("created_at", { ascending: false });
+  return ((data as Record<string, unknown>[]) ?? []).map(normalizeQuote);
+}
+
 /** Un devis par id (visible par le prestataire ET la famille via le RLS). */
 export async function getQuote(id: string): Promise<Quote | null> {
   const supabase = createClient();

@@ -19,6 +19,8 @@ const QUOTE_BADGE: Record<string, string> = {
   envoyé: "bg-violet-soft text-violet",
   refusé: "bg-festif-soft text-festif",
   expiré: "bg-cream text-slate",
+  annulé: "bg-cream text-slate",
+  "en litige": "bg-festif-soft text-festif",
 };
 
 export default async function ProOverviewPage() {
