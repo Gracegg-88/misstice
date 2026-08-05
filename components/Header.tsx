@@ -67,7 +67,7 @@ export default function Header({
         <div className="hidden items-center gap-3 md:flex">
           {!account && (
             <a
-              href="/creer?type=pro"
+              href="/devenir-prestataire"
               className="rounded-xl border border-violet px-5 py-2.5 text-sm font-semibold text-violet transition-colors hover:bg-violet-soft"
             >
               Je suis prestataire
@@ -133,7 +133,7 @@ export default function Header({
             <div className="mt-3 flex flex-col gap-2 border-t border-black/5 pt-3">
               {!account && (
                 <a
-                  href="/creer?type=pro"
+                  href="/devenir-prestataire"
                   onClick={() => setOpen(false)}
                   className="rounded-xl border border-violet/30 bg-violet-soft px-4 py-2.5 text-center text-sm font-semibold text-violet"
                 >
