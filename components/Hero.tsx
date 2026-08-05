@@ -12,12 +12,13 @@ const SPARK_PATH =
 const SPARKLES = [
   { color: "#FF8C42", size: 58, depth: 1 },
   { color: "#6C3CE1", size: 38, depth: 0.7 },
-  { color: "#6C3CE1", size: 48, depth: 1 },
+  { color: "#6C3CE1", size: 48, depth: 1 }, // ← étoile "hero", seule visible avant le scroll
   { color: "#FF8C42", size: 52, depth: 0.85 },
   { color: "#6C3CE1", size: 68, depth: 1.2 },
   { color: "#FF8C42", size: 42, depth: 0.7 },
   { color: "#6C3CE1", size: 34, depth: 0.6 },
 ];
+const HERO_SPARK_INDEX = 2;
 
 function clamp(v: number, a: number, b: number) {
   return Math.max(a, Math.min(b, v));
@@ -37,6 +38,9 @@ function sparkGlow(color: string, depth: number) {
 
 export default function Hero() {
   const stageRef = useRef<HTMLElement>(null);
+  const viewRef = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const gapRef = useRef<HTMLDivElement>(null);
   const sparkRefs = useRef<(HTMLDivElement | null)[]>([]);
   const eyebrowRef = useRef<HTMLDivElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
@@ -49,6 +53,22 @@ export default function Hero() {
     const onChange = () => setReducedMotion(mq.matches);
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Ancre le champ d'étincelles pile dans l'espace entre le bandeau et le titre
+  // (mesuré dynamiquement, pour rester juste quelle que soit la taille d'écran).
+  useEffect(() => {
+    function positionField() {
+      if (viewRef.current && gapRef.current && fieldRef.current) {
+        const viewRect = viewRef.current.getBoundingClientRect();
+        const gapRect = gapRef.current.getBoundingClientRect();
+        const centerY = gapRect.top - viewRect.top + gapRect.height / 2;
+        fieldRef.current.style.top = `${centerY}px`;
+      }
+    }
+    positionField();
+    window.addEventListener("resize", positionField);
+    return () => window.removeEventListener("resize", positionField);
   }, []);
 
   useEffect(() => {
@@ -101,7 +121,11 @@ export default function Hero() {
           const y = Math.sin(angle) * radius + jitter;
           const rot = lerp(0, i % 2 ? 220 : -180, scatterP) + time * 5;
           const scale = lerp(0.6, cfg.depth, clamp(scatterP * 1.6, 0, 1));
-          const opacity = 1 - revealP * 0.25;
+          // Seule l'étoile "hero" est visible avant le scroll ; les autres
+          // apparaissent en fondu au fur et à mesure qu'elles s'écartent.
+          const appear =
+            i === HERO_SPARK_INDEX ? 1 : clamp(scatterP / 0.18, 0, 1);
+          const opacity = (1 - revealP * 0.25) * appear;
           el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${scale})`;
           el.style.opacity = String(opacity);
           el.style.filter = sparkGlow(cfg.color, cfg.depth);
@@ -135,11 +159,16 @@ export default function Hero() {
       style={{ height: reducedMotion ? undefined : "220vh" }}
     >
       <div
+        ref={viewRef}
         className="grain sticky top-16 flex h-[calc(100vh-4rem)] w-full items-center overflow-hidden bg-cream bg-cover bg-top bg-no-repeat"
         style={{ backgroundImage: "url('/background.png')" }}
       >
         {/* ── Étincelles animées (rassemblées puis dispersées au scroll) ── */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-px w-px">
+        <div
+          ref={fieldRef}
+          className="pointer-events-none absolute left-1/2 h-px w-px"
+          style={{ top: "44%" }}
+        >
           {SPARKLES.map((s, i) => (
             <div
               key={i}
@@ -168,11 +197,14 @@ export default function Hero() {
         >
           <div
             ref={eyebrowRef}
-            className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-violet"
+            className="text-[11px] font-bold uppercase tracking-[0.14em] text-violet"
           >
             On transforme le stress de l&apos;organisation en plaisir.
           </div>
-          <p className="max-w-[18ch] font-display text-3xl font-normal leading-tight text-plum sm:text-4xl">
+          {/* Zone tampon dédiée à l'étoile "hero" : elle est centrée dans cet
+              espace, à distance du bandeau et du titre des deux côtés. */}
+          <div ref={gapRef} aria-hidden="true" className="h-12 sm:h-16" />
+          <p className="max-w-[18ch] font-display text-3xl font-semibold leading-tight text-plum sm:text-4xl">
             Mille petits détails,
             <br />
             dispersés partout.
