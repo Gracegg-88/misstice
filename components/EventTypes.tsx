@@ -27,7 +27,7 @@ export default function EventTypes() {
           </h2>
         </Reveal>
 
-        <Reveal delay={60} className="mt-8 overflow-hidden rounded-3xl">
+        <Reveal delay={60} className="mx-auto mt-8 max-w-md overflow-hidden rounded-3xl sm:max-w-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-santa.jpg"

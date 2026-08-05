@@ -15,11 +15,11 @@ export default function FinalCTA() {
           className="relative overflow-hidden rounded-[32px] border border-black/5 bg-cream bg-cover bg-center shadow-sm"
           style={{ backgroundImage: "url('/discoball-flatlay.jpg')" }}
         >
-          {/* Voile dégradé aux couleurs de la marque, pour la lisibilité du
-              texte à gauche et la continuité avec le reste du site. */}
+          {/* Voile dégradé doré, assorti au velours de la photo — texte foncé
+              (plum) car ce ton est trop clair pour du texte cream lisible. */}
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-r from-violet/90 via-violet/60 to-cream/20"
+            className="absolute inset-0 bg-gradient-to-r from-[#D9B88C]/90 via-[#D9B88C]/60 to-cream/20"
           />
 
           <div className="relative max-w-2xl p-6 sm:p-8">
@@ -28,12 +28,12 @@ export default function FinalCTA() {
               Gratuit pour commencer
             </span>
 
-            <h2 className="mt-3 font-display text-2xl font-semibold leading-[1.15] tracking-tight text-cream sm:text-3xl">
+            <h2 className="mt-3 font-display text-2xl font-semibold leading-[1.15] tracking-tight text-plum sm:text-3xl">
               Prêt à organiser votre événement{" "}
               <span className="text-festif">sans stress</span> ?
             </h2>
 
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-cream/80">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-plum/80">
               Créez votre événement gratuitement, centralisez vos invités, votre
               budget et vos prestataires, puis profitez pleinement du moment.
             </p>
@@ -48,7 +48,7 @@ export default function FinalCTA() {
               </a>
               <a
                 href="/creer?type=pro"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cream/40 bg-cream/15 px-6 py-3 text-sm font-semibold text-cream backdrop-blur-sm transition-colors hover:bg-cream/25"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/20 bg-cream/80 px-6 py-3 text-sm font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-cream"
               >
                 <Users size={17} />
                 Devenir prestataire
@@ -62,8 +62,8 @@ export default function FinalCTA() {
                     <f.icon size={15} />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-cream">{f.title}</p>
-                    <p className="text-xs text-cream/70">{f.sub}</p>
+                    <p className="text-sm font-semibold text-plum">{f.title}</p>
+                    <p className="text-xs text-plum/70">{f.sub}</p>
                   </div>
                 </div>
               ))}
