@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, CircleUserRound } from "lucide-react";
 import Logo from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
 
+// « Accueil » retiré : le logo à gauche fait déjà office de retour à
+// l'accueil. « Prestataires » retiré tant qu'aucun vrai profil n'est publié.
 const navLinks = [
-  { label: "Accueil", href: "/" },
   { label: "Comment ça marche", href: "/#comment-ca-marche" },
   { label: "FAQ", href: "/#faq" },
-  { label: "Prestataires", href: "/prestataires" },
+  { label: "Nous faire confiance", href: "/confiance" },
 ];
 
 type Account = { href: string; createHref: string };
@@ -70,14 +71,16 @@ export default function Header({
               href="/devenir-prestataire"
               className="rounded-xl border border-violet px-5 py-2.5 text-sm font-semibold text-violet transition-colors hover:bg-violet-soft"
             >
-              Je suis prestataire
+              Devenir prestataire
             </a>
           )}
           <a
             href={account ? account.href : "/auth"}
-            className="rounded-xl border border-plum/15 bg-white/70 px-5 py-2.5 text-sm font-semibold text-plum transition-colors hover:border-plum/30"
+            aria-label={account ? "Mon compte" : "Connexion"}
+            title={account ? "Mon compte" : "Connexion"}
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-plum/15 bg-white/70 text-plum transition-colors hover:border-plum/30 hover:text-violet"
           >
-            {account ? "Mon compte" : "Connexion"}
+            <CircleUserRound size={20} />
           </a>
           <a
             href={account ? account.createHref : "/creer"}
@@ -137,14 +140,15 @@ export default function Header({
                   onClick={() => setOpen(false)}
                   className="rounded-xl border border-violet/30 bg-violet-soft px-4 py-2.5 text-center text-sm font-semibold text-violet"
                 >
-                  Je suis prestataire
+                  Devenir prestataire
                 </a>
               )}
               <a
                 href={account ? account.href : "/auth"}
                 onClick={() => setOpen(false)}
-                className="rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-plum"
+                className="flex items-center justify-center gap-2 rounded-xl border border-black/10 px-4 py-2.5 text-center text-sm font-semibold text-plum"
               >
+                <CircleUserRound size={17} />
                 {account ? "Mon compte" : "Connexion"}
               </a>
               <a

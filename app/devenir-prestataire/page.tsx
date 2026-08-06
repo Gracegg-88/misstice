@@ -73,9 +73,12 @@ const differentiators = [
     icon: ShieldCheck,
     text: (
       <>
-        <span className="font-semibold text-festif">
+        <Link
+          href="/confiance"
+          className="font-semibold text-festif underline decoration-festif/40 underline-offset-2 hover:decoration-festif"
+        >
           Vérification réelle de votre SIRET
-        </span>
+        </Link>
         , pas juste une inscription libre.
       </>
     ),
