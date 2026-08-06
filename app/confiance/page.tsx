@@ -49,7 +49,7 @@ export default function ConfiancePage() {
                 key={p.title}
                 className="rounded-3xl border border-black/5 bg-white p-6 shadow-sm"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#D9B88C]/25 text-[#7A5C33]">
                   <p.icon size={20} strokeWidth={1.75} />
                 </span>
                 <h2 className="mt-4 font-display text-lg font-semibold text-plum">
@@ -65,7 +65,7 @@ export default function ConfiancePage() {
           <p className="mt-10 max-w-2xl text-sm leading-relaxed text-slate">
             <Link
               href="/devenir-prestataire"
-              className="font-semibold text-violet hover:text-violet-dark"
+              className="font-semibold text-[#7A5C33] hover:text-[#5F4726]"
             >
               Découvrez comment les prestataires sont vérifiés avant
               publication
@@ -73,7 +73,7 @@ export default function ConfiancePage() {
             , ou consultez notre{" "}
             <Link
               href="/#faq"
-              className="font-semibold text-violet hover:text-violet-dark"
+              className="font-semibold text-[#7A5C33] hover:text-[#5F4726]"
             >
               foire aux questions
             </Link>
