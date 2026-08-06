@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Scale, ShieldCheck, Star, Lock } from "lucide-react";
+import { Scale, ShieldCheck, Star, Lock, CircleUserRound } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -42,6 +42,43 @@ export default function ConfiancePage() {
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
             Pourquoi faire confiance à Misstice
           </h1>
+
+          {/* Notre démarche — avatar générique en attendant une vraie photo,
+              volontairement pas de photo réelle pour l'instant. */}
+          <div className="mt-10 rounded-3xl border border-black/5 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex flex-col items-start gap-6 sm:flex-row">
+              <div className="flex shrink-0 flex-col items-center gap-2 sm:w-40">
+                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-premium text-cream shadow-lg shadow-violet/20">
+                  <CircleUserRound size={38} strokeWidth={1.5} />
+                </span>
+                <p className="text-sm font-semibold text-plum">Grâce</p>
+                <p className="text-xs text-slate">Fondatrice de Misstice</p>
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-semibold text-plum">
+                  Notre démarche
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate">
+                  J&apos;ai créé Misstice parce que j&apos;en avais marre de
+                  voir des amis galérer à organiser leur mariage ou leur
+                  anniv entre 15 tableurs Excel, des messages perdus dans 5
+                  conversations différentes, et des annuaires prestataires
+                  où on ne sait jamais qui est vraiment sérieux derrière le
+                  profil.
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-slate">
+                  Je suis Grâce, fondatrice de Misstice. Pas une grosse
+                  boîte, pas un call center — juste moi, qui construis ce
+                  que j&apos;aurais voulu avoir en organisant mes propres
+                  événements. C&apos;est pour ça que la vérification des
+                  prestataires, la transparence des avis et la protection
+                  de vos coordonnées ne sont pas des arguments marketing
+                  pour moi : c&apos;est la base de ce que je veux que
+                  Misstice soit, dès le premier jour.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2">
             {points.map((p) => (

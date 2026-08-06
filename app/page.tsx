@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import EventTypes from "@/components/EventTypes";
 import HowItWorks from "@/components/HowItWorks";
+import FeaturedVendors from "@/components/FeaturedVendors";
 import FAQ from "@/components/FAQ";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
@@ -16,8 +17,9 @@ export default async function Home() {
         <Hero />
         <EventTypes />
         <HowItWorks />
-        {/* Section "Prestataires disponibles" (fictifs) retirée — sera
-            remplacée par une section "Qui sommes-nous" (contenu à venir). */}
+        {/* Affiche la grille de vrais prestataires dès qu'il y en a un ;
+            sinon un bloc "arrive bientôt" — jamais de fiches fictives. */}
+        <FeaturedVendors />
         <FAQ />
         <FinalCTA />
       </main>
