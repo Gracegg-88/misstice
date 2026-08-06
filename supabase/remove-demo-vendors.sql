@@ -26,4 +26,12 @@ order by position asc;
 -- références dans event_vendors / conversations passent à NULL sans
 -- supprimer les événements ou conversations des vrais utilisateurs.
 
+-- 3. À LANCER APRÈS le DELETE — doit renvoyer 0. Si c'est le cas, il ne
+--    reste plus aucune fiche vitrine en base : tout ce qui subsiste dans
+--    public.vendors est rattaché à un vrai compte prestataire (user_id non
+--    NULL).
+select count(*) as fiches_vitrines_restantes
+from public.vendors
+where user_id is null;
+
 -- Fin.
