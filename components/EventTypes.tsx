@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Gem, Cake, Church, Sparkles, Baby } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Reveal from "./Reveal";
@@ -56,6 +57,17 @@ export default function EventTypes() {
             </Reveal>
           ))}
         </div>
+
+        <p className="mt-8 text-center text-sm text-slate">
+          Une question avant de vous lancer ?{" "}
+          <Link
+            href="/#faq"
+            className="font-semibold text-violet hover:text-violet-dark"
+          >
+            Consultez notre foire aux questions
+          </Link>
+          .
+        </p>
       </div>
     </section>
   );
