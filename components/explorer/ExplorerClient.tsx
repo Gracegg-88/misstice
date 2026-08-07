@@ -151,7 +151,7 @@ export default function ExplorerClient({
       {/* ── HERO ── */}
       <section
         className="relative overflow-hidden bg-cream bg-cover bg-center"
-        style={{ backgroundImage: "url('/salle.png')" }}
+        style={{ backgroundImage: "url('/prestataire_client.png')" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/75 to-white/20" />
         <div className="relative mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
