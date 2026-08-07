@@ -11,7 +11,6 @@ import GuideChecklist, {
 } from "@/components/guide/GuideChecklist";
 import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
-import ScreenshotDashboard from "@/components/guide/ScreenshotDashboard";
 
 export const metadata: Metadata = {
   title:
@@ -162,9 +161,6 @@ export default function OrganiserUnMariagePage() {
         <div className="mt-5">
           <GuideChecklist periods={checklist} />
         </div>
-        <div className="mt-6">
-          <ScreenshotDashboard type="checklist" />
-        </div>
         <p className="mt-5 text-sm leading-relaxed text-slate sm:text-base">
           Une checklist, même complète, ne suffit pas toujours à gérer la
           réalité d&apos;un mariage. C&apos;est là que Misstice devient
@@ -173,6 +169,14 @@ export default function OrganiserUnMariagePage() {
           réel, et vous aide à coordonner vos prestataires sans avoir à
           jongler entre dix outils différents.
         </p>
+        <div className="mt-6 overflow-hidden rounded-2xl border border-black/5 shadow-sm">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/dashboard_budget.png"
+            alt="Aperçu du suivi budget sur le dashboard Misstice"
+            className="w-full"
+          />
+        </div>
         <div className="mt-6">
           <GuideCta href="/creer" label="Créer mon événement gratuitement" />
         </div>
