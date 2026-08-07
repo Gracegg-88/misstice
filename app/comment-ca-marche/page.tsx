@@ -53,19 +53,19 @@ const guides = [
   },
   {
     href: "/organiser-un-bapteme",
-    image: "/bapteme.png",
+    image: "/bapteme-photo.png",
     title: "Organiser un baptême",
     text: "Cérémonie, réception et prestataires : le guide pour organiser un baptême serein du début à la fin.",
   },
   {
     href: "/organiser-un-evenement-professionnel",
-    image: "/gala.png",
+    image: "/cowork.jpg",
     title: "Organiser un événement professionnel",
     text: "Séminaire, gala ou soirée d'entreprise : la méthode pour un événement professionnel maîtrisé.",
   },
   {
     href: "/organiser-une-baby-shower",
-    image: "/babyshower.png",
+    image: "/babyshower-photo.png",
     title: "Organiser une baby shower",
     text: "Préparez l'arrivée de bébé avec une organisation simple, entre budget raisonnable et bons souvenirs.",
   },
