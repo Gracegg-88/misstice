@@ -209,7 +209,7 @@ export default function ProfileForm({
             Informations personnelles
           </h2>
           <p className="mt-1 text-xs text-slate">
-            Facultatif — nous aident à personnaliser vos rappels et attentions
+            Facultatif : nous aident à personnaliser vos rappels et attentions
             (ex. votre anniversaire).
           </p>
           <div className="mt-4 grid gap-5 sm:grid-cols-2">

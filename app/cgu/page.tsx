@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation — Misstice",
+  title: "Conditions Générales d'Utilisation · Misstice",
   description:
     "Conditions Générales d'Utilisation de la plateforme événementielle Misstice.",
 };

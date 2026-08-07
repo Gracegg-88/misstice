@@ -167,10 +167,10 @@ export default async function ProOverviewPage() {
 
   // Messages génériques (repli) qui varient chaque jour.
   const tips = [
-    `${name}, une fiche complète reçoit bien plus de demandes — pensez à la peaufiner.`,
+    `${name}, une fiche complète reçoit bien plus de demandes, pensez à la peaufiner.`,
     `Un book à jour, ${name}, c'est le meilleur moyen de montrer votre talent.`,
     `${name}, répondez vite aux demandes : les familles adorent la réactivité.`,
-    `Ajoutez quelques réalisations récentes, ${name} — on veut voir votre style.`,
+    `Ajoutez quelques réalisations récentes, ${name}, on veut voir votre style.`,
     `${name}, une belle accroche donne envie de vous contacter. La vôtre est-elle à jour ?`,
     `Un tarif clair rassure, ${name}. Vérifiez votre « à partir de ».`,
   ];
@@ -182,7 +182,7 @@ export default async function ProOverviewPage() {
   // Priorité : action urgente > profil incomplet > relance > astuce du jour.
   const tip =
     pendingDemandes > 0
-      ? `${name}, vous avez ${pendingDemandes} demande${pendingDemandes > 1 ? "s" : ""} sans devis — répondez vite pour ne pas ${pendingDemandes > 1 ? "les" : "la"} perdre.`
+      ? `${name}, vous avez ${pendingDemandes} demande${pendingDemandes > 1 ? "s" : ""} sans devis. Répondez vite pour ne pas ${pendingDemandes > 1 ? "les" : "la"} perdre.`
       : completion < 100
         ? `${name}, complétez votre profil (${completion}%) : une fiche complète reçoit bien plus de demandes.`
         : pendingQuotes > 0

@@ -15,7 +15,7 @@ const TIPS: { match: (path: string) => boolean; text: string }[] = [
   },
   {
     match: (p) => p.startsWith("/auth"),
-    text: "Un souci pour vous connecter ? Cliquez sur « Mot de passe oublié » — le lien reçu par email vous permettra d'en choisir un nouveau.",
+    text: "Un souci pour vous connecter ? Cliquez sur « Mot de passe oublié », le lien reçu par email vous permettra d'en choisir un nouveau.",
   },
   {
     match: (p) => p.startsWith("/pro/devis"),

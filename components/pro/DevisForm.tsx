@@ -184,7 +184,7 @@ export default function DevisForm({
     const { error: msgErr } = await supabase.from("messages").insert({
       conversation_id: targetConvId,
       sender_id: prestataireId,
-      body: `[[devis:${data.id}]] Devis ${quoteNumber} — ${euro(totals.total)}`,
+      body: `[[devis:${data.id}]] Devis ${quoteNumber} · ${euro(totals.total)}`,
     });
     if (msgErr) {
       console.error("devis message insert:", msgErr);
@@ -211,7 +211,7 @@ export default function DevisForm({
           <>Rédigez votre devis, puis choisissez le client destinataire à l&apos;envoi.</>
         ) : (
           <>
-            Pour <span className="font-semibold text-plum">{clientName}</span> —
+            Pour <span className="font-semibold text-plum">{clientName}</span> :
             cette fiche sera envoyée au client, qui pourra la télécharger.
           </>
         )}

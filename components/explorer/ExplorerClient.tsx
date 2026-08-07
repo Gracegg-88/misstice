@@ -47,7 +47,7 @@ const SORTS = [
 
 // Cartes de confiance (réponses aux reproches du secteur).
 const PROMISES = [
-  { icon: Eye, title: "Tous les avis publiés", text: "Positifs comme négatifs, jamais supprimés contre paiement — vous lisez de vrais retours." },
+  { icon: Eye, title: "Tous les avis publiés", text: "Positifs comme négatifs, jamais supprimés contre paiement. Vous lisez de vrais retours." },
   { icon: ShieldCheck, title: "Prestataires vérifiés", text: "Le badge « Vérifié » atteste d'une identité contrôlée, de coordonnées professionnelles valides et de réalisations authentifiées par notre équipe." },
   { icon: MailX, title: "Zéro spam, zéro faux lead", text: "Vous contactez qui vous voulez. Les pros reçoivent de vraies demandes, pas du bruit." },
 ];
@@ -151,9 +151,10 @@ export default function ExplorerClient({
       {/* ── HERO ── */}
       <section
         className="relative overflow-hidden bg-cream bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero_prestataire.png')" }}
+        style={{ backgroundImage: "url('/salle.png')" }}
       >
-        <div className="mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/75 to-white/20" />
+        <div className="relative mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}

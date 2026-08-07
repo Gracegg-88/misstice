@@ -80,7 +80,7 @@ export default function EventsManagerClient({
             Mes événements
           </h1>
           <p className="mt-1 text-sm text-slate">
-            {events.length} événement{events.length > 1 ? "s" : ""} — sélectionnez
+            {events.length} événement{events.length > 1 ? "s" : ""} : sélectionnez
             celui sur lequel travailler.
           </p>
         </div>

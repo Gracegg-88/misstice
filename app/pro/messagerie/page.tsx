@@ -13,7 +13,7 @@ export default function ProMessagerieEmpty() {
       </h2>
       <p className="mt-2 max-w-sm text-sm text-slate">
         Sélectionnez une conversation à gauche. Les familles vous contactent
-        depuis votre fiche publique — plus elle est complète, plus vous recevez
+        depuis votre fiche publique : plus elle est complète, plus vous recevez
         de demandes.
       </p>
       <Link

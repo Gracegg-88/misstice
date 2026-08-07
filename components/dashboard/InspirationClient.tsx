@@ -450,7 +450,7 @@ export default function InspirationClient({
                 <input
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Catégorie — choisir ci-dessous ou créer"
+                  placeholder="Catégorie (choisir ci-dessous ou créer)"
                   list="insp-categories"
                   className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
                 />

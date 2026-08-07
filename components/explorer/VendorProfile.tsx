@@ -587,7 +587,7 @@ export default function VendorProfile({
 
       {/* ── Modale devis ── */}
       {quoteOpen && (
-        <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis — ${vendor.name}`}>
+        <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis · ${vendor.name}`}>
           <QuoteForm
             vendor={vendor}
             prefill={prefill}
@@ -599,7 +599,7 @@ export default function VendorProfile({
 
       {/* ── Modale message simple (sans demande de devis) ── */}
       {msgOpen && (
-        <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message — ${vendor.name}`}>
+        <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message · ${vendor.name}`}>
           <MessageForm vendor={vendor} onDone={() => setMsgOpen(false)} />
         </Modal>
       )}
@@ -971,7 +971,7 @@ function QuoteForm({
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
           demande,
-          subject: `Demande de devis — ${vendor.name}`,
+          subject: `Demande de devis · ${vendor.name}`,
         })
         .select("id")
         .single();
@@ -1266,7 +1266,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
           vendor_name: vendor.name,
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
-          subject: `Message — ${vendor.name}`,
+          subject: `Message · ${vendor.name}`,
         })
         .select("id")
         .single();
@@ -1294,7 +1294,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
   return (
     <form onSubmit={submit} className="space-y-4">
       <p className="text-sm text-slate">
-        Une question avant de demander un devis ? Écrivez à {vendor.name} —
+        Une question avant de demander un devis ? Écrivez à {vendor.name},
         l&apos;échange se poursuivra dans votre messagerie.
       </p>
       <textarea
