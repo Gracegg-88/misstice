@@ -23,6 +23,11 @@ export async function GET(request: Request) {
       if (searchParams.get("intent") === "pro") {
         await supabase.rpc("become_prestataire");
       }
+      // Type d'événement choisi dans la modale avant l'OAuth Google (ne
+      // survit pas à l'aller-retour vers Google contrairement à
+      // sessionStorage, d'où le passage par l'URL de retour — même
+      // mécanisme que `intent=pro` ci-dessus).
+      const eventType = searchParams.get("eventType");
 
       let dest = explicitNext;
       if (!dest) {
@@ -39,7 +44,9 @@ export async function GET(request: Request) {
             ? "/admin"
             : profile?.role === "prestataire"
               ? "/pro"
-              : "/dashboard";
+              : eventType
+                ? `/dashboard/nouveau?type=${encodeURIComponent(eventType)}`
+                : "/dashboard";
       }
       return NextResponse.redirect(`${origin}${dest}`);
     }

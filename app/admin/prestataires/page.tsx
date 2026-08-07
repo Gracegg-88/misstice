@@ -8,20 +8,23 @@ type Vendor = {
   city: string | null;
   verified: boolean;
   reviewed_at: string | null;
+  isDemo: boolean;
 };
 
 export default async function AdminPrestataires() {
   const supabase = createClient();
-  // Uniquement les fiches liées à un VRAI compte prestataire : on exclut les
-  // 18 fiches vitrines (user_id null) que l'admin ne gère pas.
   const { data } = await supabase
     .from("vendors")
-    .select("id, name, category, city, verified, reviewed_at")
-    .not("user_id", "is", null)
+    .select("id, name, category, city, verified, reviewed_at, user_id")
     .order("position", { ascending: true });
 
-  // Pas encore relues d'abord — sert aussi de liste "à faire".
-  const vendors = ((data as Vendor[]) ?? []).sort((a, b) => {
+  const vendors = (
+    (data as (Vendor & { user_id: string | null })[]) ?? []
+  ).map(({ user_id, ...v }) => ({ ...v, isDemo: user_id === null }));
+
+  // Fiches vitrines d'abord (à nettoyer en priorité), puis pas encore relues.
+  vendors.sort((a, b) => {
+    if (a.isDemo !== b.isDemo) return a.isDemo ? -1 : 1;
     if (!a.reviewed_at && b.reviewed_at) return -1;
     if (a.reviewed_at && !b.reviewed_at) return 1;
     return 0;

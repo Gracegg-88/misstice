@@ -22,6 +22,8 @@ const STATUS_LABEL: Record<Quote["status"], string> = {
   accepté: "Accepté",
   refusé: "Refusé",
   expiré: "Expiré",
+  annulé: "Annulé",
+  "en litige": "En litige",
 };
 
 const STATUS_STYLE: Record<Quote["status"], string> = {
@@ -29,6 +31,8 @@ const STATUS_STYLE: Record<Quote["status"], string> = {
   accepté: "bg-emerald-soft text-emerald",
   refusé: "bg-black/10 text-slate",
   expiré: "bg-black/10 text-slate",
+  annulé: "bg-black/10 text-slate",
+  "en litige": "bg-festif-soft text-festif",
 };
 
 function fmtDate(iso: string) {

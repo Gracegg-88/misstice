@@ -17,6 +17,8 @@ export default async function Home() {
         <Hero />
         <EventTypes />
         <HowItWorks />
+        {/* Affiche la grille de vrais prestataires dès qu'il y en a un ;
+            sinon un bloc "arrive bientôt" — jamais de fiches fictives. */}
         <FeaturedVendors />
         <FAQ />
         <FinalCTA />

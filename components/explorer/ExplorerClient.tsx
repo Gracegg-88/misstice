@@ -316,6 +316,22 @@ export default function ExplorerClient({
 
             {view === "carte" ? (
               <VendorsMap vendors={results} />
+            ) : results.length === 0 && vendors.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-black/10 bg-white py-20 text-center">
+                <p className="font-display text-xl font-semibold text-plum">
+                  Les premiers prestataires arrivent bientôt
+                </p>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-slate">
+                  Nous sélectionnons et vérifions actuellement les premiers
+                  profils. Revenez très vite !
+                </p>
+                <a
+                  href="/devenir-prestataire"
+                  className="mt-5 inline-block rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Devenir prestataire
+                </a>
+              </div>
             ) : results.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-black/10 bg-white py-20 text-center">
                 <p className="font-display text-xl font-semibold text-plum">

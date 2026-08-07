@@ -12,7 +12,13 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type QuoteStatus = "envoyé" | "accepté" | "refusé" | "expiré";
+type QuoteStatus =
+  | "envoyé"
+  | "accepté"
+  | "refusé"
+  | "expiré"
+  | "annulé"
+  | "en litige";
 
 export type AutoAdd = {
   eventId: string;
@@ -171,6 +177,7 @@ export default function DevisActions({
   return (
     <div className="no-print">
       {error && <p className="mb-3 text-center text-sm text-festif">{error}</p>}
+
       <div className="flex flex-wrap items-center justify-center gap-3">
         <button
           type="button"
@@ -223,6 +230,17 @@ export default function DevisActions({
         {current === "expiré" && (
           <span className="inline-flex items-center gap-2 rounded-2xl bg-festif-soft px-6 py-3 text-sm font-semibold text-festif">
             Devis expiré
+          </span>
+        )}
+        {current === "annulé" && (
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-black/5 px-6 py-3 text-sm font-semibold text-slate">
+            <XCircle size={16} />
+            Devis annulé
+          </span>
+        )}
+        {current === "en litige" && (
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-festif-soft px-6 py-3 text-sm font-semibold text-festif">
+            En litige
           </span>
         )}
 

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Check, Eye, EyeOff } from "lucide-react";
+import { Camera, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ProfileForm({
@@ -136,39 +136,49 @@ export default function ProfileForm({
 
   return (
     <div className="rounded-3xl border border-black/5 bg-white p-6 shadow-sm sm:p-8">
-      {/* Photo */}
-      <div className="flex flex-col items-center">
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="group relative"
-        >
-          {preview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={preview}
-              alt=""
-              className="h-28 w-28 rounded-full object-cover"
-            />
-          ) : (
-            <span className="flex h-28 w-28 items-center justify-center rounded-full bg-violet text-4xl font-semibold text-white">
-              {initial}
-            </span>
-          )}
-          <span className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-white text-violet shadow-md ring-1 ring-black/5">
-            <Camera size={17} />
+      {/* Photo — pas d'upload côté particulier pour l'instant : illustration
+          fixe à la place (voir note sécurité produit, hors scope code). */}
+      {extras ? (
+        <div className="flex flex-col items-center">
+          <span className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-premium text-cream shadow-lg shadow-violet/20">
+            <PartyPopper size={40} strokeWidth={1.5} />
           </span>
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          aria-label="Changer la photo de profil"
-          onChange={onPick}
-          className="hidden"
-        />
-        <p className="mt-3 text-xs text-slate">Cliquez pour changer la photo</p>
-      </div>
+          <p className="mt-3 text-xs text-slate">Photo de profil bientôt disponible</p>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="group relative"
+          >
+            {preview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={preview}
+                alt=""
+                className="h-28 w-28 rounded-full object-cover"
+              />
+            ) : (
+              <span className="flex h-28 w-28 items-center justify-center rounded-full bg-violet text-4xl font-semibold text-white">
+                {initial}
+              </span>
+            )}
+            <span className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-white text-violet shadow-md ring-1 ring-black/5">
+              <Camera size={17} />
+            </span>
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            aria-label="Changer la photo de profil"
+            onChange={onPick}
+            className="hidden"
+          />
+          <p className="mt-3 text-xs text-slate">Cliquez pour changer la photo</p>
+        </div>
+      )}
 
       {/* Informations */}
       <div className="mt-8 grid gap-5 sm:grid-cols-2">

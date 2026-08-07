@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarPlus, Users, Store } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Reveal from "./Reveal";
@@ -67,6 +68,17 @@ export default function HowItWorks() {
             </Reveal>
           ))}
         </div>
+
+        <p className="mt-8 text-center text-sm text-slate">
+          Tous les prestataires sont vérifiés avant publication —{" "}
+          <Link
+            href="/confiance"
+            className="font-semibold text-violet hover:text-violet-dark"
+          >
+            découvrez comment nous vérifions chaque profil
+          </Link>
+          .
+        </p>
       </div>
     </section>
   );

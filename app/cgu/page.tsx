@@ -30,11 +30,76 @@ const sections = [
     body: "Les prestataires s'engagent à fournir des informations exactes. La vérification du badge est manuelle par l'équipe Misstice. Tout prestataire réalisant plus de 3 prestations par mois via Misstice s'engage à disposer d'un statut légal adapté (auto-entrepreneur ou équivalent) conformément à la législation française en vigueur.",
   },
   {
-    title: "6. Responsabilité",
+    title: "6. Annulation et remboursement",
+    body: (
+      <div id="annulation" className="scroll-mt-24 space-y-4">
+        <div>
+          <p className="font-semibold text-plum">1. Annulation par le client</p>
+          <ul className="mt-1.5 list-disc space-y-1 pl-5">
+            <li>Plus de 30 jours avant l&apos;événement : remboursement à 100 %.</li>
+            <li>Entre 30 et 8 jours avant l&apos;événement : remboursement à 50 %.</li>
+            <li>
+              Moins de 8 jours avant l&apos;événement : aucun remboursement, sauf
+              accord du prestataire.
+            </li>
+            <li>
+              Les remboursements sont traités manuellement par l&apos;équipe
+              Misstice sous 5 jours ouvrés.
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="font-semibold text-plum">2. Annulation par le prestataire</p>
+          <ul className="mt-1.5 list-disc space-y-1 pl-5">
+            <li>
+              Remboursement intégral du client (montant total, commission
+              Misstice incluse).
+            </li>
+            <li>
+              Le prestataire s&apos;expose à une suspension de compte en cas
+              d&apos;annulations répétées.
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="font-semibold text-plum">3. Litige / prestation non conforme</p>
+          <ul className="mt-1.5 list-disc space-y-1 pl-5">
+            <li>
+              Le client dispose de 48h après l&apos;événement pour signaler un
+              litige via{" "}
+              <a
+                href="mailto:contact@misstice.com"
+                className="font-semibold text-violet hover:text-violet-dark"
+              >
+                contact@misstice.com
+              </a>
+              .
+            </li>
+            <li>
+              Misstice agit en médiateur, sans garantie automatique de
+              remboursement (étudié au cas par cas).
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="font-semibold text-plum">4. Commission Misstice</p>
+          <ul className="mt-1.5 list-disc space-y-1 pl-5">
+            <li>
+              La commission de 12 % n&apos;est pas remboursable en cas
+              d&apos;annulation par le client (sauf cas de remboursement à 100 %
+              ci-dessus).
+            </li>
+          </ul>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: "7. Responsabilité",
     body: "Misstice est une plateforme de mise en relation. Elle n'est pas responsable des prestations effectuées entre particuliers et prestataires.",
   },
   {
-    title: "7. Données personnelles",
+    title: "8. Données personnelles",
     body: (
       <>
         Traitées conformément à notre politique de confidentialité disponible
@@ -50,11 +115,11 @@ const sections = [
     ),
   },
   {
-    title: "8. Modification",
+    title: "9. Modification",
     body: "Misstice se réserve le droit de modifier les présentes CGU. Les utilisateurs seront informés par email.",
   },
   {
-    title: "9. Droit applicable",
+    title: "10. Droit applicable",
     body: "Les présentes CGU sont soumises au droit français. Tout litige sera soumis aux tribunaux compétents de Versailles.",
   },
 ];
@@ -68,7 +133,7 @@ export default function CguPage() {
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
             Conditions Générales d&apos;Utilisation
           </h1>
-          <p className="mt-3 text-sm text-slate">Dernière mise à jour : 20 juillet 2026</p>
+          <p className="mt-3 text-sm text-slate">Dernière mise à jour : 5 août 2026</p>
 
           <div className="mt-6 rounded-2xl border border-black/5 bg-white p-6 text-sm leading-relaxed text-slate">
             <p>
@@ -92,9 +157,9 @@ export default function CguPage() {
                 <h2 className="font-display text-xl font-semibold text-plum">
                   {section.title}
                 </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate">
+                <div className="mt-2 text-sm leading-relaxed text-slate">
                   {section.body}
-                </p>
+                </div>
               </section>
             ))}
           </div>

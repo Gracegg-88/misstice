@@ -10,6 +10,10 @@ import type { Quote } from "@/lib/pro-types";
 
 type QuoteStatus = Quote["status"]; // "envoyé" | "accepté" | "refusé" | "expiré"
 
+// « annulé » / « en litige » ne sont pas proposés dans le sélecteur du
+// prestataire (STATUSES) : ce sont des statuts déclenchés côté client /
+// admin, pas des transitions manuelles du prestataire. Ils restent listés
+// dans STYLE/FILTER_LABEL pour un affichage correct si un devis les porte.
 const STATUSES: QuoteStatus[] = ["envoyé", "accepté", "refusé", "expiré"];
 
 const STYLE: Record<QuoteStatus, string> = {
@@ -17,15 +21,19 @@ const STYLE: Record<QuoteStatus, string> = {
   accepté: "bg-emerald-soft text-emerald",
   refusé: "bg-black/5 text-slate",
   expiré: "bg-festif-soft text-festif",
+  annulé: "bg-black/5 text-slate",
+  "en litige": "bg-festif-soft text-festif",
 };
 
-const FILTERS: ("tous" | QuoteStatus)[] = ["tous", ...STATUSES];
+const FILTERS: ("tous" | QuoteStatus)[] = ["tous", ...STATUSES, "en litige"];
 const FILTER_LABEL: Record<"tous" | QuoteStatus, string> = {
   tous: "Tous",
   envoyé: "Envoyé",
   accepté: "Accepté",
   refusé: "Refusé",
   expiré: "Expiré",
+  annulé: "Annulé",
+  "en litige": "En litige",
 };
 
 function formatDate(iso: string) {
