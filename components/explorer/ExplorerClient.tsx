@@ -149,29 +149,29 @@ export default function ExplorerClient({
   return (
     <div>
       {/* ── HERO ── */}
-      <section
-        className="relative overflow-hidden bg-cream bg-cover bg-center"
-        style={{ backgroundImage: "url('/prestataire_client.png')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/75 to-white/20" />
-        <div className="relative mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
-          <div className="max-w-xl">
-            <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
-              Trouvez le prestataire{" "}
-              <span className="text-festif">qui vous ressemble</span>
-            </h1>
-            <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate">
-              Photographes, traiteurs, DJ, salles… Comparez en toute
-              transparence et gardez vos favoris.
-            </p>
-            <p className="mt-2 max-w-lg text-base leading-relaxed text-plum/70">
-              Laissez Misstice identifier ce qui vous inspire : filtrez par
-              <span className="font-semibold text-violet"> ambiance, énergie et style</span>,
-              et trouvez le prestataire qui vous ressemble vraiment.
-            </p>
+      <div className="mx-auto max-w-content px-5 pt-8 sm:px-8">
+        <section
+          className="relative min-h-[360px] overflow-hidden rounded-3xl bg-cream sm:min-h-[500px] sm:bg-[url('/prestataire_client_degrade.png')] sm:bg-cover sm:bg-left"
+        >
+          <div className="relative px-6 py-10 sm:px-10 sm:py-12">
+            <div className="max-w-[220px] sm:max-w-[230px] md:max-w-[250px]">
+              <h1 className="font-display text-3xl font-semibold leading-[1.1] tracking-tight text-plum sm:text-4xl">
+                Trouvez le prestataire{" "}
+                <span className="text-festif">qui vous ressemble</span>
+              </h1>
+              <p className="mt-4 text-base leading-relaxed text-slate">
+                Photographes, traiteurs, DJ, salles… Comparez en toute
+                transparence et gardez vos favoris.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-plum/70">
+                Laissez Misstice identifier ce qui vous inspire : filtrez par
+                <span className="font-semibold text-violet"> ambiance, énergie et style</span>,
+                et trouvez le prestataire qui vous ressemble vraiment.
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* ── CARTES DE CONFIANCE ── */}
       <div className="mx-auto max-w-content px-5 sm:px-8">
