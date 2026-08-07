@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 // « Accueil » retiré : le logo à gauche fait déjà office de retour à
 // l'accueil. « Prestataires » retiré tant qu'aucun vrai profil n'est publié.
 const navLinks = [
-  { label: "Comment ça marche", href: "/#comment-ca-marche" },
+  { label: "Comment ça marche", href: "/comment-ca-marche" },
   { label: "FAQ", href: "/#faq" },
   { label: "Nous faire confiance", href: "/confiance" },
 ];

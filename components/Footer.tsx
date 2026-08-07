@@ -6,7 +6,7 @@ const columns = [
     links: [
       { label: "Créer un événement", href: "/creer" },
       { label: "Explorer les prestataires", href: "/prestataires" },
-      { label: "Comment ça marche", href: "/#comment-ca-marche" },
+      { label: "Comment ça marche", href: "/comment-ca-marche" },
       { label: "FAQ", href: "/#faq" },
     ],
   },
