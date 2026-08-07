@@ -149,21 +149,28 @@ export default function ExplorerClient({
   return (
     <div>
       {/* ── HERO ── */}
+      {/* Photo + spirale en plein cadre, avec un voile blanc en dégradé :
+          le texte peut chevaucher la photo/décor sans jamais devenir
+          illisible, grâce à la transparence du voile. */}
       <section
         className="relative overflow-hidden bg-cream sm:bg-[url('/prestataire_client_degrade.png')] sm:bg-contain sm:bg-right sm:bg-no-repeat"
       >
-        {/* Photo en carte au-dessus du texte sur mobile (le fond plein cadre
-            n'a pas la hauteur nécessaire pour l'accueillir sans chevaucher
-            le texte à cette largeur). */}
         <div className="mx-5 mt-5 h-48 overflow-hidden rounded-3xl sm:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/prestataire_client_degrade.png"
+            src="/prestataire_client_photo.png"
             alt="Une famille et une prestataire Misstice échangent autour d'un projet d'événement"
             className="h-full w-full object-cover"
-            style={{ objectPosition: "75% 35%" }}
+            style={{ objectPosition: "70% 30%" }}
           />
         </div>
+        <div
+          className="pointer-events-none absolute inset-0 hidden sm:block"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(250,250,249,1) 0%, rgba(250,250,249,0.97) 40%, rgba(250,250,249,0.75) 55%, rgba(250,250,249,0) 72%)",
+          }}
+        />
         <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
