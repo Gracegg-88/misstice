@@ -149,46 +149,22 @@ export default function ExplorerClient({
   return (
     <div>
       {/* ── HERO ── */}
-      <section className="relative overflow-hidden bg-cream sm:min-h-[460px] lg:min-h-[520px]">
-        {/* Photo : carte au-dessus du texte sur mobile, fond plein cadre à partir de sm */}
-        <div className="mx-5 mt-5 h-48 overflow-hidden rounded-3xl sm:hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/prestataire_client_degrade.png"
-            alt="Une famille et une prestataire Misstice échangent autour d'un projet d'événement"
-            className="h-full w-full object-cover"
-            style={{ objectPosition: "30% 35%" }}
-          />
-        </div>
-        <div
-          className="hidden sm:absolute sm:inset-0 sm:block"
-          style={{
-            backgroundImage: "url('/prestataire_client_degrade.png')",
-            backgroundSize: "150% auto",
-            backgroundPosition: "left center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        {/* Voile blanc en dégradé : garantit la lisibilité du texte quel que
-            soit le contour exact de la forme blanche de la photo. */}
-        <div
-          className="hidden sm:absolute sm:inset-y-0 sm:left-0 sm:block sm:w-[55%]"
-          style={{
-            background:
-              "linear-gradient(to right, white 0%, white 55%, rgba(255,255,255,0.85) 70%, rgba(255,255,255,0) 100%)",
-          }}
-        />
-        <div className="relative px-5 py-8 sm:px-8 sm:py-16 lg:py-20">
-          <div className="max-w-xs sm:max-w-sm lg:max-w-md">
-            <h1 className="font-display text-3xl font-semibold leading-[1.1] tracking-tight text-plum sm:text-4xl lg:text-5xl">
+      <section
+        className="relative overflow-hidden bg-cream bg-cover bg-center"
+        style={{ backgroundImage: "url('/prestataire_client_degrade.png')" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/75 to-white/20" />
+        <div className="relative mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
+          <div className="max-w-xl">
+            <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
               <span className="text-festif">qui vous ressemble</span>
             </h1>
-            <p className="mt-4 text-base leading-relaxed text-slate">
+            <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate">
               Photographes, traiteurs, DJ, salles… Comparez en toute
               transparence et gardez vos favoris.
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-plum/70 sm:text-base">
+            <p className="mt-2 max-w-lg text-base leading-relaxed text-plum/70">
               Laissez Misstice identifier ce qui vous inspire : filtrez par
               <span className="font-semibold text-violet"> ambiance, énergie et style</span>,
               et trouvez le prestataire qui vous ressemble vraiment.
