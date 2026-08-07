@@ -50,7 +50,7 @@ export default async function AdminDevisPage() {
           </p>
           <p className="mt-1 text-sm text-slate">
             Le client a signalé un litige dans les 48h suivant l&apos;événement
-            (art. 6.3 des CGU). Misstice agit en médiateur — contacter les deux
+            (art. 6.3 des CGU). Misstice agit en médiateur : contacter les deux
             parties par email.
           </p>
           <ul className="mt-4 divide-y divide-black/5">

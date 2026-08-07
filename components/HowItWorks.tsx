@@ -70,7 +70,7 @@ export default function HowItWorks() {
         </div>
 
         <p className="mt-8 text-center text-sm text-slate">
-          Tous les prestataires sont vérifiés avant publication —{" "}
+          Tous les prestataires sont vérifiés avant publication :{" "}
           <Link
             href="/confiance"
             className="font-semibold text-violet hover:text-violet-dark"

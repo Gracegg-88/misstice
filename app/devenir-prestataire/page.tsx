@@ -27,7 +27,7 @@ const perks = [
   {
     icon: Rocket,
     title: "Une visibilité maximale, dès maintenant",
-    text: "Vous faites partie des tout premiers prestataires référencés — une visibilité maximale pendant la phase de lancement.",
+    text: "Vous faites partie des tout premiers prestataires référencés, une visibilité maximale pendant la phase de lancement.",
   },
   {
     icon: BadgeCheck,
@@ -37,7 +37,7 @@ const perks = [
   {
     icon: Percent,
     title: "Une commission claire",
-    text: "Une commission claire uniquement sur les prestations réalisées via la plateforme — pas d'abonnement mensuel, pas de frais cachés.",
+    text: "Une commission claire uniquement sur les prestations réalisées via la plateforme, pas d'abonnement mensuel, pas de frais cachés.",
   },
 ];
 
@@ -46,7 +46,7 @@ const steps = [
     icon: UserPlus,
     label: "Étape 1",
     title: "Créez votre profil",
-    text: "Indiquez les types d'événements que vous couvrez — 5 minutes, gratuit.",
+    text: "Indiquez les types d'événements que vous couvrez : 5 minutes, gratuit.",
   },
   {
     icon: Inbox,
@@ -85,7 +85,7 @@ const differentiators = [
   },
   {
     icon: Lock,
-    text: "Vos coordonnées restent protégées tant que le client n'a pas accepté votre devis — zéro spam, zéro faux lead.",
+    text: "Vos coordonnées restent protégées tant que le client n'a pas accepté votre devis, zéro spam, zéro faux lead.",
   },
   {
     icon: LayoutDashboard,
@@ -100,7 +100,7 @@ const faqs = [
   },
   {
     q: "Comment fonctionne la commission ?",
-    a: "Une commission est prélevée uniquement sur les prestations effectivement réservées via Misstice. Aucun abonnement mensuel, aucun frais caché — vous ne payez que lorsque vous décrochez une mission.",
+    a: "Une commission est prélevée uniquement sur les prestations effectivement réservées via Misstice. Aucun abonnement mensuel, aucun frais caché : vous ne payez que lorsque vous décrochez une mission.",
   },
   {
     q: "Puis-je m'inscrire pour plusieurs types d'événements à la fois ?",
@@ -149,7 +149,7 @@ export default function DevenirPrestatairePage() {
             fleuriste, Misstice vous connecte à des particuliers qui
             organisent mariages, anniversaires, baptêmes, galas ou baby
             showers. Votre activité n&apos;est pas limitée à un seul type
-            d&apos;événement — votre visibilité non plus.
+            d&apos;événement, votre visibilité non plus.
           </p>
         </section>
 
