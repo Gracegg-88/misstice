@@ -78,8 +78,8 @@ const faqItems: FaqItem[] = [
 export default function OrganiserUneBabyShowerPage() {
   return (
     <GuideLayout
-      heroImage="/babyshower.png"
-      heroAlt="Petits chaussons roses pour une baby shower"
+      heroImage="/babyshower-photo.png"
+      heroAlt="Famille et amis célébrant une baby shower autour de la future maman"
       title="Comment organiser une baby shower"
       subtitle="Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires."
       toc={toc}
