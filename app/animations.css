@@ -66,6 +66,36 @@
   transform: translateY(0);
 }
 
+/* ---------- Reveal en zoom (CTA) ----------
+   Même mécanique que .reveal, mais fondu + léger zoom (0.95 → 1)
+   plutôt qu'un décalage vertical — pour les boutons d'action. */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- Cascade au scroll (lignes de tableau, items de liste) ----------
+   Piloté par un unique IntersectionObserver sur le conteneur parent ; chaque
+   enfant reçoit .reveal-row/.reveal-item + un délai inline via --i. */
+.reveal-row,
+.reveal-item {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-row.is-visible,
+.reveal-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ---------- Zoom au survol (cartes prestataires) ---------- */
 .ev-zoom-hover { overflow: hidden; }
 .ev-zoom-target { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -103,7 +133,10 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal { opacity: 1; transform: none; }
+  .reveal,
+  .reveal-scale,
+  .reveal-row,
+  .reveal-item { opacity: 1; transform: none; }
   .ev-flip:hover .ev-flip-inner { transform: none; }
   .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
 }

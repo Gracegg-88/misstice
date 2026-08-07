@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
 import GuideSection from "@/components/guide/GuideSection";
 import GuideBudgetTable, {
@@ -84,7 +85,7 @@ const checklist: ChecklistPeriod[] = [
 const petitBudgetTips = [
   "Choisissez une date hors saison (novembre à mars) ou un jour de semaine, cela peut réduire le coût de la salle et du traiteur de 20 à 30 pour cent.",
   "Privilégiez un lieu qui n'impose pas son propre traiteur, vous gagnez en liberté de négociation.",
-  "Contactez directement les prestataires plutôt que de passer par un intermédiaire qui prend une commission sur chaque poste.",
+  "Contactez directement les prestataires plutôt que de passer par un intermédiaire (type wedding planner, souvent facturé entre 2 000 et 5 000 euros rien que pour la coordination) qui prend une commission sur chaque poste.",
 ];
 
 const faqItems: FaqItem[] = [
@@ -111,6 +112,16 @@ export default function OrganiserUnMariagePage() {
       subtitle="Checklist mois par mois, budget moyen par poste, et comment trouver des prestataires vérifiés sans passer par un wedding planner."
       toc={toc}
     >
+      <Reveal>
+        <p className="text-sm leading-relaxed text-slate sm:text-base">
+          Organiser un mariage en 2026 peut vite devenir un tourbillon de
+          décisions, de budgets à équilibrer et de prestataires à choisir.
+          Pourtant, avec une bonne vision d&apos;ensemble et les bons
+          outils, cette aventure peut rester douce, fluide et pleine
+          d&apos;excitation.
+        </p>
+      </Reveal>
+
       <GuideSection
         id="budget"
         title="Combien coûte un mariage en France en 2026"
@@ -130,17 +141,37 @@ export default function OrganiserUnMariagePage() {
           peut diviser votre budget global par deux sans réduire la qualité
           de la journée.
         </p>
+        <p className="mt-5 text-sm leading-relaxed text-slate sm:text-base">
+          Ces chiffres peuvent sembler abstraits au premier regard, et
+          c&apos;est normal, personne ne planifie un budget mariage tous
+          les jours. L&apos;essentiel n&apos;est pas de tout connaître
+          d&apos;avance, mais de savoir où concentrer votre attention en
+          premier : le lieu et le traiteur, puisque ce sont eux qui
+          déterminent la majorité des autres postes.
+        </p>
       </GuideSection>
 
       <GuideSection id="checklist" title="La checklist mariage, mois par mois">
-        <GuideChecklist periods={checklist} />
+        <p className="text-sm leading-relaxed text-slate sm:text-base">
+          Planifier un mariage implique de gérer de nombreuses étapes,
+          coordonner les prestataires et prendre les bonnes décisions au bon
+          moment, parfois sous la pression des attentes familiales. Une
+          checklist claire, mois par mois, permet d&apos;avancer sereinement
+          et d&apos;éviter les oublis de dernière minute.
+        </p>
+        <div className="mt-5">
+          <GuideChecklist periods={checklist} />
+        </div>
         <div className="mt-6">
           <ScreenshotDashboard type="checklist" />
         </div>
         <p className="mt-5 text-sm leading-relaxed text-slate sm:text-base">
-          Sur Misstice, cette checklist se construit automatiquement dès la
-          création de votre événement, avec des rappels et un suivi partagé
-          entre tous ceux qui organisent avec vous.
+          Une checklist, même complète, ne suffit pas toujours à gérer la
+          réalité d&apos;un mariage. C&apos;est là que Misstice devient
+          utile : la plateforme ne se contente pas de lister les étapes,
+          elle centralise vos informations, suit votre budget en temps
+          réel, et vous aide à coordonner vos prestataires sans avoir à
+          jongler entre dix outils différents.
         </p>
         <div className="mt-6">
           <GuideCta href="/creer" label="Créer mon événement gratuitement" />
@@ -152,12 +183,12 @@ export default function OrganiserUnMariagePage() {
         title="Organiser un mariage avec un petit budget ou en comité restreint"
       >
         <p className="text-sm leading-relaxed text-slate sm:text-base">
-          C&apos;est là que beaucoup de couples abandonnent l&apos;idée
-          d&apos;un wedding planner, souvent facturé entre 2 000 et 5 000
-          euros rien que pour la coordination. Un mariage en petit comité,
-          entre 20 et 40 invités, ou un budget serré ne veut pas dire
-          renoncer à un beau mariage. Voici comment réduire les coûts sans
-          réduire l&apos;émotion.
+          Un mariage en comité restreint ou avec un budget serré demande de
+          faire des choix réfléchis et de savoir où concentrer ses efforts,
+          sans pour autant sacrifier l&apos;émotion du jour J.
+        </p>
+        <p className="mt-4 text-sm leading-relaxed text-slate sm:text-base">
+          Voici comment réduire les coûts sans réduire l&apos;émotion.
         </p>
         <ul className="mt-4 space-y-2.5">
           {petitBudgetTips.map((tip, i) => (
@@ -171,13 +202,14 @@ export default function OrganiserUnMariagePage() {
           ))}
         </ul>
         <p className="mt-5 text-sm leading-relaxed text-slate sm:text-base">
-          C&apos;est exactement ce que permet Misstice. Contrairement à un
-          wedding planner qui facture son temps, vous gardez la main sur
-          l&apos;organisation tout en accédant aux mêmes outils
-          professionnels : budget centralisé, checklist, gestion des
-          invités, et des prestataires vérifiés que vous contactez
-          vous-même, sans frais de coordination.
+          Un mariage intime ou à petit budget n&apos;a rien d&apos;un
+          compromis. C&apos;est souvent l&apos;occasion de faire des choix
+          plus personnels, et de garder une vision claire de chaque poste
+          de dépense du début à la fin.
         </p>
+        <div className="mt-6">
+          <GuideCta href="/prestataires" label="Trouvez vos prestataires de mariage" />
+        </div>
       </GuideSection>
 
       <GuideSection id="prestataires" title="Trouver vos prestataires de mariage">

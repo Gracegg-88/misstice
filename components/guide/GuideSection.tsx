@@ -1,3 +1,5 @@
+import Reveal from "@/components/Reveal";
+
 export default function GuideSection({
   id,
   title,
@@ -9,10 +11,12 @@ export default function GuideSection({
 }) {
   return (
     <section id={id} className="scroll-mt-28">
-      <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-        {title}
-      </h2>
-      <div className="mt-4">{children}</div>
+      <Reveal>
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+          {title}
+        </h2>
+        <div className="mt-4">{children}</div>
+      </Reveal>
     </section>
   );
 }

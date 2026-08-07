@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
 import GuideSection from "@/components/guide/GuideSection";
 import GuideSimpleTable, {
@@ -89,7 +90,7 @@ export default function OrganiserUnEvenementProfessionnelPage() {
       subtitle="Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés."
       toc={toc}
     >
-      <div className="space-y-4">
+      <Reveal className="space-y-4">
         <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
           Pas besoin d&apos;être une multinationale pour organiser un bel
           événement professionnel
@@ -110,7 +111,7 @@ export default function OrganiserUnEvenementProfessionnelPage() {
           d&apos;un service événementiel dédié en interne, juste des bons
           prestataires et une organisation centralisée.
         </p>
-      </div>
+      </Reveal>
 
       <GuideSection id="budget" title="Combien coûte un événement professionnel">
         <p className="text-sm leading-relaxed text-slate sm:text-base">

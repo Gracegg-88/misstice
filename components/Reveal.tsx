@@ -11,10 +11,13 @@ import { useEffect, useRef, useState } from "react";
 export default function Reveal({
   children,
   delay = 0,
+  variant = "up",
   className = "",
 }: {
   children: React.ReactNode;
   delay?: number;
+  /** "up" : fondu + léger translateY (défaut). "scale" : fondu + zoom 0.95→1, pour les CTA. */
+  variant?: "up" | "scale";
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -36,10 +39,12 @@ export default function Reveal({
     return () => observer.disconnect();
   }, []);
 
+  const base = variant === "scale" ? "reveal-scale" : "reveal";
+
   return (
     <div
       ref={ref}
-      className={`reveal ${visible ? "is-visible" : ""} ${className}`}
+      className={`${base} ${visible ? "is-visible" : ""} ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
