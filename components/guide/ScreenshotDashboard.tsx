@@ -4,7 +4,7 @@ import { LayoutDashboard } from "lucide-react";
 // plus tard (voir le type passé en prop pour savoir laquelle).
 export default function ScreenshotDashboard({ type }: { type: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-white/60 px-6 py-14 text-center">
+    <div className="mx-auto flex w-full max-w-[90%] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-white/60 px-6 py-10 text-center sm:max-w-[560px]">
       <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-soft text-violet">
         <LayoutDashboard size={20} strokeWidth={1.75} />
       </span>

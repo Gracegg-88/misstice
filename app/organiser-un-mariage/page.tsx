@@ -169,7 +169,7 @@ export default function OrganiserUnMariagePage() {
           réel, et vous aide à coordonner vos prestataires sans avoir à
           jongler entre dix outils différents.
         </p>
-        <div className="mt-6 overflow-hidden rounded-2xl border border-black/5 shadow-sm">
+        <div className="mx-auto mt-6 w-full max-w-[90%] overflow-hidden rounded-2xl border border-black/5 shadow-sm sm:max-w-[560px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/dashboard_budget.png"
