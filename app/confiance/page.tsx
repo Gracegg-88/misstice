@@ -24,7 +24,7 @@ const points = [
   {
     icon: Star,
     title: "Des avis qu'on ne peut pas trafiquer",
-    text: "Tous les avis publiés, positifs comme négatifs, restent visibles — jamais supprimés en cas de désaccord avec un prestataire.",
+    text: "Tous les avis publiés, positifs comme négatifs, restent visibles, jamais supprimés en cas de désaccord avec un prestataire.",
   },
   {
     icon: Lock,
@@ -68,7 +68,7 @@ export default function ConfiancePage() {
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-slate">
                   Je suis Grâce, fondatrice de Misstice. Pas une grosse
-                  boîte, pas un call center — juste moi, qui construis ce
+                  boîte, pas un call center, juste moi, qui construis ce
                   que j&apos;aurais voulu avoir en organisant mes propres
                   événements. C&apos;est pour ça que la vérification des
                   prestataires, la transparence des avis et la protection
