@@ -42,19 +42,27 @@ export default function GuidePlaceholderPage({
   heroImage,
   heroAlt,
   title,
+  subtitle,
   eventLabel,
   eventLabelGenitive,
 }: {
   heroImage: string;
   heroAlt: string;
   title: string;
+  subtitle?: string;
   /** Ex. "un anniversaire", "une baby shower" (avec article). */
   eventLabel: string;
   /** Ex. "d'un anniversaire", "d'une baby shower". */
   eventLabelGenitive: string;
 }) {
   return (
-    <GuideLayout heroImage={heroImage} heroAlt={heroAlt} title={title} toc={toc}>
+    <GuideLayout
+      heroImage={heroImage}
+      heroAlt={heroAlt}
+      title={title}
+      subtitle={subtitle}
+      toc={toc}
+    >
       <GuideSection
         id="budget"
         title={`Combien coûte ${eventLabel} en France en 2026`}

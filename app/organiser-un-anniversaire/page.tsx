@@ -11,8 +11,9 @@ export default function OrganiserUnAnniversairePage() {
   return (
     <GuidePlaceholderPage
       heroImage="/birthday-party.jpg"
-      heroAlt="Ballons et décoration pour une fête d'anniversaire"
+      heroAlt="Amis célébrant un anniversaire autour d'un gâteau"
       title="Comment organiser un anniversaire en 2026"
+      subtitle="Guide pour organiser un anniversaire réussi, petit comité ou grande fête : budget moyen, checklist et prestataires vérifiés."
       eventLabel="un anniversaire"
       eventLabelGenitive="d'un anniversaire"
     />

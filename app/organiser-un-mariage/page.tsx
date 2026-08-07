@@ -108,6 +108,7 @@ export default function OrganiserUnMariagePage() {
       heroImage="/wedding-crowd.jpg"
       heroAlt="Invités souriants célébrant un mariage"
       title="Comment organiser un mariage en 2026"
+      subtitle="Checklist mois par mois, budget moyen par poste, et comment trouver des prestataires vérifiés sans passer par un wedding planner."
       toc={toc}
     >
       <GuideSection

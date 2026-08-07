@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 export default function OrganiserUnBaptemePage() {
   return (
     <GuidePlaceholderPage
-      heroImage="/bapteme.png"
-      heroAlt="Décoration douce pour une cérémonie de baptême"
+      heroImage="/family-santa.jpg"
+      heroAlt="Famille réunie pour célébrer un baptême"
       title="Comment organiser un baptême en 2026"
+      subtitle="Guide pour organiser un baptême serein : cérémonie, réception, budget et prestataires vérifiés."
       eventLabel="un baptême"
       eventLabelGenitive="d'un baptême"
     />
