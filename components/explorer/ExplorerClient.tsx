@@ -150,11 +150,21 @@ export default function ExplorerClient({
     <div>
       {/* ── HERO ── */}
       <section
-        className="relative overflow-hidden bg-cream bg-cover bg-center"
-        style={{ backgroundImage: "url('/prestataire_client_degrade.png')" }}
+        className="relative overflow-hidden bg-cream sm:bg-[url('/prestataire_client_degrade.png')] sm:bg-contain sm:bg-right sm:bg-no-repeat"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/75 to-white/20" />
-        <div className="relative mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
+        {/* Photo en carte au-dessus du texte sur mobile (le fond plein cadre
+            n'a pas la hauteur nécessaire pour l'accueillir sans chevaucher
+            le texte à cette largeur). */}
+        <div className="mx-5 mt-5 h-48 overflow-hidden rounded-3xl sm:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/prestataire_client_degrade.png"
+            alt="Une famille et une prestataire Misstice échangent autour d'un projet d'événement"
+            className="h-full w-full object-cover"
+            style={{ objectPosition: "75% 35%" }}
+          />
+        </div>
+        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
