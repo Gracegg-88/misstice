@@ -87,7 +87,7 @@ export default function GuidePlaceholderPage({
           [À COMPLÉTER]
         </p>
         <div className="mt-6">
-          <GuideCta href="/creer" label="Créer mon événement gratuitement" />
+          <GuideCta href="/creer" label="Créer mon événement gratuitement" accent />
         </div>
       </GuideSection>
 

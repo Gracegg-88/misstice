@@ -32,7 +32,7 @@ export default async function FeaturedVendors() {
             </p>
             <Link
               href="/devenir-prestataire"
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-7 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25 transition-all hover:brightness-110"
+              className="ev-cta mt-6 inline-flex items-center gap-2 rounded-2xl px-7 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
             >
               Devenir prestataire
               <ArrowRight size={16} />

@@ -130,7 +130,7 @@ export default function DevenirPrestatairePage() {
             <div className="mt-7">
               <Link
                 href={CTA_HREF}
-                className="inline-flex items-center justify-center rounded-2xl bg-gradient-primary px-8 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25 transition-all hover:brightness-110 hover:shadow-xl"
+                className="ev-cta ev-cta-pulse inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25"
               >
                 Devenir prestataire pilote
               </Link>
