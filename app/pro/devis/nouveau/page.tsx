@@ -28,6 +28,17 @@ export default async function NouveauDevisPage({
     .limit(1)
     .maybeSingle();
 
+  // SIRET (mention légale du devis) — uniquement si vérifié, jamais une
+  // saisie non contrôlée par le prestataire.
+  const { data: siretRow } = await supabase
+    .from("vendor_profiles")
+    .select("siret, siret_verified_at, siret_company_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  const siret = siretRow as
+    | { siret: string | null; siret_verified_at: string | null; siret_company_name: string | null }
+    | null;
+
   const common = {
     prestataireId: user.id,
     prestaName: vendor?.company ?? "Prestataire",
@@ -36,6 +47,8 @@ export default async function NouveauDevisPage({
     prestaPhone: (lastQuote as { presta_phone: string | null } | null)?.presta_phone ?? "",
     prestaAddress:
       (lastQuote as { presta_address: string | null } | null)?.presta_address ?? "",
+    prestaSiret: siret?.siret_verified_at ? siret.siret : null,
+    prestaCompanyName: siret?.siret_verified_at ? siret.siret_company_name : null,
   };
 
   // Mode ciblé : devis lié à une conversation précise (depuis « Rédiger » d'une

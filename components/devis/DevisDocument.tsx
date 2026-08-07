@@ -192,6 +192,20 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
           />
         </div>
 
+        {/* SIRET : mention légale, toujours visible (pas une coordonnée de
+            contact personnelle — pas de raison de la masquer avant acceptation). */}
+        {quote.presta_siret && (
+          <p className="mt-3 text-xs text-slate">
+            {quote.presta_company_name && (
+              <span className="font-medium text-plum">
+                {quote.presta_company_name}
+              </span>
+            )}
+            {quote.presta_company_name && " · "}
+            SIRET {quote.presta_siret}
+          </p>
+        )}
+
         {/* Message d'intro */}
         {quote.intro_message?.trim() && (
           <div className="mt-6 flex gap-4 rounded-2xl bg-festif-soft/50 px-6 py-5">
@@ -274,6 +288,7 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
                 "La réservation est confirmée après validation du devis et accord du prestataire.",
                 "Les détails peuvent être ajustés selon vos besoins spécifiques.",
                 "Le paiement s'effectue selon les modalités convenues avec le prestataire.",
+                "Annulation : voir la politique d'annulation dans les CGU Misstice (misstice.com/cgu#annulation).",
               ].map((c) => (
                 <li key={c} className="flex items-start gap-2">
                   <CheckCircle2
@@ -288,6 +303,33 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
               <Info size={15} />
               Devis gratuit et sans engagement.
             </p>
+
+            {/* Droit de rétractation — obligatoire pour tout contrat conclu à
+                distance (Art. L221-18 Code de la consommation). La prestation
+                étant généralement fixée à une date proche, l'acceptation du
+                devis vaut demande expresse d'exécution avant la fin du délai
+                et renoncement au droit de rétractation une fois la prestation
+                pleinement exécutée (Art. L221-28 1°). */}
+            <p className="mt-4 text-xs leading-relaxed text-slate">
+              <span className="font-semibold text-plum">
+                Droit de rétractation :
+              </span>{" "}
+              vous disposez d&apos;un délai de 14 jours pour exercer votre
+              droit de rétractation. En acceptant ce devis pour une
+              prestation dont la date d&apos;exécution est antérieure à la
+              fin de ce délai, vous demandez expressément le commencement de
+              la prestation et reconnaissez perdre votre droit de
+              rétractation une fois celle-ci pleinement exécutée.
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-slate">
+              <span className="font-semibold text-plum">
+                Médiation de la consommation :
+              </span>{" "}
+              conformément à l&apos;article L616-1 du Code de la
+              consommation, [nom et coordonnées du médiateur à compléter]
+              peut être saisi en cas de litige non résolu directement avec
+              le prestataire.
+            </p>
           </div>
 
           <div className="rounded-2xl bg-violet-soft/50 px-6 py-5">
@@ -297,10 +339,14 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
             <dl className="mt-4 space-y-2.5 text-sm">
               <Row label="Sous-total" value={euro(t.subtotal)} />
               <Row label="Frais de service" value={euro(t.fee)} />
-              <Row
-                label={`TVA (${quote.tax_rate || 0}%)`}
-                value={euro(t.tax)}
-              />
+              {quote.tax_rate ? (
+                <Row label={`TVA (${quote.tax_rate}%)`} value={euro(t.tax)} />
+              ) : (
+                <Row
+                  label="TVA non applicable, art. 293 B du CGI"
+                  value="—"
+                />
+              )}
             </dl>
             <div className="mt-4 border-t border-violet/20 pt-4">
               <div className="flex items-end justify-between">

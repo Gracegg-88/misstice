@@ -57,6 +57,8 @@ export type Quote = {
   presta_email: string | null;
   presta_phone: string | null;
   presta_address: string | null;
+  presta_siret: string | null;
+  presta_company_name: string | null;
 };
 
 export type VendorPackage = {

@@ -22,6 +22,9 @@ type Props = {
   // Coordonnées du prestataire (pré-remplies depuis son dernier devis).
   prestaPhone?: string;
   prestaAddress?: string;
+  // Mention légale (SIRET vérifié) — null si non vérifié.
+  prestaSiret?: string | null;
+  prestaCompanyName?: string | null;
   demande: DemandeDetails | null;
   // Conversations du prestataire (pour choisir le destinataire en brouillon).
   conversations?: { id: string; clientName: string }[];
@@ -47,6 +50,8 @@ export default function DevisForm({
   prestaEmail,
   prestaPhone: prestaPhoneDefault = "",
   prestaAddress: prestaAddressDefault = "",
+  prestaSiret = null,
+  prestaCompanyName = null,
   demande,
   conversations = [],
 }: Props) {
@@ -149,6 +154,8 @@ export default function DevisForm({
       presta_email: prestaEmail || null,
       presta_phone: prestaPhone.trim() || null,
       presta_address: prestaAddress.trim() || null,
+      presta_siret: prestaSiret,
+      presta_company_name: prestaCompanyName,
     };
 
     // Numéro de devis unique via séquence Postgres. En cas de collision

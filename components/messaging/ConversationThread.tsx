@@ -18,7 +18,8 @@ import { createClient } from "@/lib/supabase/client";
 import { cloudinaryConfigured, uploadToCloudinary } from "@/lib/cloudinary";
 import { safeMediaUrl } from "@/lib/safe-url";
 import { dayLabel, hourMinute } from "@/lib/date-format";
-import type { Message } from "@/lib/messaging-types";
+import type { Message, ProjectContext } from "@/lib/messaging-types";
+import ProjectContextCard from "./ProjectContextCard";
 
 // Marqueurs techniques dans le corps d'un message.
 const DEVIS_RE = /^\[\[devis:([0-9a-f-]+)\]\]\s*([\s\S]*)$/i;
@@ -36,6 +37,7 @@ export default function ConversationThread({
   initial,
   basePath,
   otherLastReadAt = null,
+  projectContext = null,
 }: {
   conversationId: string;
   userId: string;
@@ -50,6 +52,8 @@ export default function ConversationThread({
   basePath?: string;
   // Dernière lecture de l'autre partie → accusé « Vu » sur mes messages.
   otherLastReadAt?: string | null;
+  // Aperçu du projet client — côté prestataire uniquement (null sinon).
+  projectContext?: ProjectContext | null;
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initial);
@@ -302,6 +306,8 @@ export default function ConversationThread({
           );
         })()}
       </div>
+
+      {projectContext && <ProjectContextCard context={projectContext} />}
 
       <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
         {messages.length === 0 && (

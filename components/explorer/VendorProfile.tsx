@@ -876,6 +876,7 @@ function QuoteForm({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventType || !date || !location.trim() || sending) return;
+    if (!email.trim() || !phone.trim()) return;
     if (message.trim().length < 50) return;
     setSending(true);
     setError("");
@@ -900,7 +901,10 @@ function QuoteForm({
       date && `Date : ${date}`,
       location.trim() && `Lieu : ${location.trim()}`,
       ...extra.map((e) => `${e.label} : ${e.value}`),
-      phone.trim() && `Téléphone : ${phone.trim()}`,
+      // Jamais le téléphone/email en clair dans le message : ils restent
+      // dans `demande` (structuré) et sont révélés uniquement à
+      // l'acceptation du devis (cf. DevisDocument `revealed`).
+      "Coordonnées de contact protégées jusqu'à acceptation du devis.",
     ]
       .filter(Boolean)
       .join("\n");
@@ -1112,6 +1116,7 @@ function QuoteForm({
         <p className="text-sm font-semibold text-plum">Vos coordonnées</p>
         <div className="mt-2 grid gap-4 sm:grid-cols-3">
           <input
+            required
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -1119,6 +1124,7 @@ function QuoteForm({
             className={inputCls}
           />
           <input
+            required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Téléphone"

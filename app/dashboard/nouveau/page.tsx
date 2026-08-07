@@ -40,7 +40,8 @@ export default function NouvelEvenementPage() {
     if (t && EVENT_TYPES.some((e) => e.label === t)) setType(t);
   }, []);
 
-  const canSubmit = type !== "" && name.trim() !== "";
+  const canSubmit =
+    type !== "" && name.trim() !== "" && budget !== "" && Number(budget) > 0;
 
   const create = async () => {
     setError("");
@@ -180,8 +181,9 @@ export default function NouvelEvenementPage() {
               Budget prévisionnel (€)
             </label>
             <input
+              required
               type="number"
-              min={0}
+              min={1}
               placeholder="ex. 15000"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}

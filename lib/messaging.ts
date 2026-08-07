@@ -3,12 +3,14 @@ import type {
   Conversation,
   ConversationListItem,
   Message,
+  ProjectContext,
 } from "@/lib/messaging-types";
 
 export type {
   Conversation,
   ConversationListItem,
   Message,
+  ProjectContext,
 } from "@/lib/messaging-types";
 
 const CONV_COLS =
@@ -134,6 +136,46 @@ export async function getConversation(
     },
     userId: user.id,
     otherLastReadAt: (readRow as { last_read_at: string } | null)?.last_read_at ?? null,
+  };
+}
+
+/**
+ * Contexte du projet client, côté prestataire uniquement (RPC SECURITY
+ * DEFINER : `events` n'est pas lisible directement par un prestataire).
+ * Lieu / invités / prestataires déjà réservés ne sont renvoyés qu'une fois
+ * un devis accepté sur la conversation — voir project-context.sql.
+ */
+export async function getProjectContext(
+  conversationId: string
+): Promise<ProjectContext | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .rpc("get_conversation_project_context", {
+      p_conversation_id: conversationId,
+    })
+    .maybeSingle();
+  if (error) {
+    console.error("messaging:", error.message);
+    return null;
+  }
+  if (!data) return null;
+  const row = data as {
+    event_name: string | null;
+    event_date: string | null;
+    budget_total: number;
+    accepted: boolean;
+    location: string | null;
+    guest_count: number | null;
+    booked_vendors_count: number;
+  };
+  return {
+    eventName: row.event_name,
+    eventDate: row.event_date,
+    budgetTotal: Number(row.budget_total) || 0,
+    accepted: row.accepted,
+    location: row.location,
+    guestCount: row.guest_count,
+    bookedVendorsCount: row.booked_vendors_count,
   };
 }
 
