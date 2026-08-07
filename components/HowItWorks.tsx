@@ -38,7 +38,9 @@ export default function HowItWorks() {
             En 3 étapes
           </p>
           <h2 className="mt-2 text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-            Comment ça marche&nbsp;?
+            <Link href="/comment-ca-marche" className="transition-colors hover:text-violet">
+              Comment ça marche&nbsp;?
+            </Link>
           </h2>
         </Reveal>
 
@@ -70,6 +72,15 @@ export default function HowItWorks() {
         </div>
 
         <p className="mt-8 text-center text-sm text-slate">
+          <Link
+            href="/comment-ca-marche"
+            className="font-semibold text-violet hover:text-violet-dark"
+          >
+            Voir tous les guides d&apos;organisation par type d&apos;événement
+          </Link>
+        </p>
+
+        <p className="mt-2 text-center text-sm text-slate">
           Tous les prestataires sont vérifiés avant publication :{" "}
           <Link
             href="/confiance"
