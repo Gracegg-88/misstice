@@ -103,8 +103,9 @@ export default function OrganiserUnBaptemePage() {
 
       <GuideSection id="budget" title="Combien coûte un baptême">
         <p className="text-sm leading-relaxed text-slate sm:text-base">
-          Pour une réception d&apos;une quarantaine d&apos;invités, comptez
-          entre 1 500 et 4 000 euros.
+          Pour une réception d&apos;une cinquantaine d&apos;invités,
+          plusieurs guides spécialisés convergent vers une fourchette de
+          1 500 à 5 000 euros. Voici une répartition indicative par poste.
         </p>
         <div className="mt-5">
           <GuideSimpleTable rows={budgetRows} />

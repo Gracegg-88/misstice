@@ -108,6 +108,12 @@ export default function OrganiserUnAnniversairePage() {
           euros selon le niveau de prestation choisi. Voici une répartition
           indicative.
         </p>
+        <p className="mt-4 text-sm leading-relaxed text-slate sm:text-base">
+          Il n&apos;existe pas d&apos;étude officielle sur le budget moyen
+          d&apos;un anniversaire en France. Les chiffres ci-dessous sont
+          une estimation à titre indicatif, à ajuster selon vos choix et
+          votre région.
+        </p>
         <div className="mt-5">
           <GuideSimpleTable rows={budgetRows} />
         </div>

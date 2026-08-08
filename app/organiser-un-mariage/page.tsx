@@ -126,14 +126,26 @@ export default function OrganiserUnMariagePage() {
         title="Combien coûte un mariage en France en 2026"
       >
         <p className="text-sm leading-relaxed text-slate sm:text-base">
-          Le budget moyen d&apos;un mariage en France se situe entre 12 000
-          et 18 000 euros pour environ 80 invités, avec de fortes variations
-          selon la région et le nombre de convives. Voici une répartition
+          Le budget moyen d&apos;un mariage en France s&apos;élève à
+          19 293 € pour environ 90 invités, soit 215 € par convive, selon
+          le Rapport 2026 sur le Secteur Nuptial de Mariages.net, réalisé
+          auprès de 1 304 couples mariés en 2025. Voici une répartition
           indicative par poste, à ajuster selon vos priorités.
         </p>
         <div className="mt-5">
           <GuideBudgetTable rows={budgetRows} />
         </div>
+        <p className="mt-2.5 text-xs text-slate/80">
+          Source :{" "}
+          <a
+            href="https://www.mariages.net/articles/quel-budget-pour-mon-mariage--c6243"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-violet"
+          >
+            Rapport 2026 sur le Secteur Nuptial, Mariages.net
+          </a>
+        </p>
         <p className="mt-5 text-sm leading-relaxed text-slate sm:text-base">
           Ces chiffres restent indicatifs. Le poste le plus flexible reste
           souvent le nombre d&apos;invités : réduire de 100 à 50 convives
