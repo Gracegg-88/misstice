@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Conditions Générales d'Utilisation · Misstice",
   description:
     "Conditions Générales d'Utilisation de la plateforme événementielle Misstice.",
+  alternates: { canonical: "/cgu" },
 };
 
 const sections = [

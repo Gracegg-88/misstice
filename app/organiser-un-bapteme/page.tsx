@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Comment organiser un baptême : étapes, budget et checklist",
   description:
     "Guide complet pour organiser un baptême civil ou religieux : budget moyen, checklist mois par mois, et comment trouver vos prestataires en toute confiance.",
+  alternates: { canonical: "/organiser-un-bapteme" },
 };
 
 const toc = [

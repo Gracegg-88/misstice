@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     "Comment organiser un mariage en 2026 : budget, étapes et checklist complète",
   description:
     "Guide complet pour organiser votre mariage, petit budget ou grand jour : checklist mois par mois, budget moyen par poste, et comment trouver des prestataires vérifiés sans passer par un wedding planner.",
+  alternates: { canonical: "/organiser-un-mariage" },
 };
 
 const toc = [

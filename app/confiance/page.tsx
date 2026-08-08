@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Prestataires vérifiés et avis authentiques | Confiance Misstice",
   description:
     "Découvrez comment Misstice vérifie chaque prestataire (SIRET), garantit des avis authentiques et ne biaise jamais son classement par un système payant. La confiance, expliquée simplement.",
+  alternates: { canonical: "/confiance" },
 };
 
 const points = [

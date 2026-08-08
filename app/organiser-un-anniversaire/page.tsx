@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Comment organiser un anniversaire réussi : budget et checklist",
   description:
     "Guide complet pour organiser un anniversaire, entre amis ou en famille : budget moyen, checklist étape par étape, et comment trouver vos prestataires sans y passer des heures.",
+  alternates: { canonical: "/organiser-un-anniversaire" },
 };
 
 const toc = [

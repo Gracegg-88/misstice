@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Comment organiser une baby shower réussie : idées et budget",
   description:
     "Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires.",
+  alternates: { canonical: "/organiser-une-baby-shower" },
 };
 
 const toc = [

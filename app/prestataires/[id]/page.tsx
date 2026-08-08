@@ -24,6 +24,7 @@ export async function generateMetadata({
   return {
     title: `${vendor.name} · ${vendor.category} à ${vendor.city} · Misstice`,
     description: vendor.tagline,
+    alternates: { canonical: `/prestataires/${vendor.id}` },
   };
 }
 

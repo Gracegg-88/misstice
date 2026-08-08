@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "Comment organiser un événement professionnel ou un gala",
   description:
     "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
+  alternates: { canonical: "/organiser-un-evenement-professionnel" },
 };
 
 const toc = [
