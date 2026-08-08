@@ -11,7 +11,6 @@ import GuideChecklist, {
 } from "@/components/guide/GuideChecklist";
 import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
-import ScreenshotDashboard from "@/components/guide/ScreenshotDashboard";
 
 export const metadata: Metadata = {
   title: "Comment organiser un événement professionnel ou un gala",
@@ -127,9 +126,21 @@ export default function OrganiserUnEvenementProfessionnelPage() {
 
       <GuideSection id="checklist" title="La checklist événement professionnel">
         <GuideChecklist periods={checklist} />
-        <div className="mt-6">
-          <ScreenshotDashboard type="checklist" />
+        <div className="mx-auto mt-6 w-full max-w-[90%] overflow-hidden rounded-2xl border border-black/5 shadow-sm sm:max-w-[560px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/dashboard_checklist.png"
+            alt="Aperçu de la checklist partagée sur le dashboard Misstice"
+            className="w-full"
+          />
         </div>
+        <p className="mt-6 text-sm leading-relaxed text-slate sm:text-base">
+          Coordonner un événement professionnel implique souvent plusieurs
+          prestataires en parallèle, chacun avec ses propres délais.
+          Misstice centralise le budget, le planning et les échanges avec
+          chaque prestataire au même endroit, pour éviter de tout suivre
+          dans des emails séparés.
+        </p>
         <div className="mt-6">
           <GuideCta href="/creer" label="Créer mon événement gratuitement" accent />
         </div>
