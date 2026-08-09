@@ -1,5 +1,6 @@
 import { Heart, CalendarDays, Users, Gift, Lock, Headphones } from "lucide-react";
 import Reveal from "./Reveal";
+import CalendlyButton from "./CalendlyButton";
 
 const features = [
   { icon: Gift, title: "100% gratuit", sub: "sans engagement", tint: "bg-violet-soft text-violet" },
@@ -54,6 +55,11 @@ export default function FinalCTA() {
                 Devenir prestataire
               </a>
             </div>
+
+            <CalendlyButton
+              label="Ou réservez un appel pour en discuter"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-plum/70 underline decoration-plum/30 underline-offset-2 hover:text-plum"
+            />
 
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 sm:flex-nowrap">
               {features.map((f) => (

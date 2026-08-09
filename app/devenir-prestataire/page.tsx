@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CalendlyButton from "@/components/CalendlyButton";
 
 export const metadata: Metadata = {
   title: "Devenir prestataire mariage et événementiel sur Misstice | Inscription gratuite",
@@ -128,14 +129,21 @@ export default function DevenirPrestatairePage() {
               Développez votre activité de prestataire mariage et
               événementiel avec Misstice
             </h1>
-            <div className="mt-7">
+            <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href={CTA_HREF}
                 className="ev-cta ev-cta-pulse inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25"
               >
                 Devenir prestataire pilote
               </Link>
+              <CalendlyButton
+                label="Réserver un appel plutôt"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/20 bg-white/70 px-6 py-4 text-base font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
+              />
             </div>
+            <p className="mt-3 text-xs text-slate">
+              30 minutes pour répondre à vos questions, sans engagement.
+            </p>
           </div>
         </section>
 

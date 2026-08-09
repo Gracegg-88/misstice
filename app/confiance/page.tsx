@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Scale, ShieldCheck, Star, Lock, CircleUserRound } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CalendlyButton from "@/components/CalendlyButton";
 
 export const metadata: Metadata = {
   title: "Prestataires vérifiés et avis authentiques | Confiance Misstice",
@@ -77,6 +78,10 @@ export default function ConfiancePage() {
                   pour moi : c&apos;est la base de ce que je veux que
                   Misstice soit, dès le premier jour.
                 </p>
+                <CalendlyButton
+                  label="Discutez-en directement avec moi"
+                  className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-violet px-5 py-2.5 text-sm font-semibold text-cream shadow-md shadow-violet/20 transition-colors hover:bg-violet-dark"
+                />
               </div>
             </div>
           </div>

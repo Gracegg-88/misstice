@@ -4,12 +4,13 @@
 // origines réellement utilisées (Supabase, Cloudinary, tuiles OSM).
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.iubenda.com",
-  "style-src 'self' 'unsafe-inline' https://cdn.iubenda.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.iubenda.com https://assets.calendly.com",
+  "style-src 'self' 'unsafe-inline' https://cdn.iubenda.com https://assets.calendly.com",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.iubenda.com https://www.iubenda.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.iubenda.com https://www.iubenda.com https://calendly.com https://*.calendly.com",
+  "frame-src 'self' https://calendly.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
