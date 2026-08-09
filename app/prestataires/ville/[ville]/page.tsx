@@ -1,0 +1,104 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import FeaturedVendorsGrid from "@/components/FeaturedVendorsGrid";
+import ComingSoon from "@/components/geo/ComingSoon";
+import Breadcrumb from "@/components/geo/Breadcrumb";
+import { getHeaderAccount } from "@/lib/header-account";
+import {
+  getCities,
+  getCityBySlug,
+  getCitySlugsWithVendors,
+  getIndexableCityCategoryCombos,
+  getVendorsForCity,
+} from "@/lib/geo";
+
+// Régénère la page au plus une fois par jour : le nombre de prestataires
+// évolue progressivement, pas besoin de temps réel.
+export const revalidate = 86400;
+
+export async function generateStaticParams() {
+  const [cities, citySlugsWithVendors] = await Promise.all([
+    getCities(),
+    getCitySlugsWithVendors(),
+  ]);
+  const withVendors = new Set(citySlugsWithVendors);
+  return cities.filter((c) => withVendors.has(c.slug)).map((c) => ({ ville: c.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { ville: string };
+}): Promise<Metadata> {
+  const city = await getCityBySlug(params.ville);
+  if (!city) return { title: "Prestataires — Misstice" };
+  return {
+    title: `Prestataires événementiels à ${city.name} — Misstice`,
+    description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
+  };
+}
+
+export default async function VillePage({ params }: { params: { ville: string } }) {
+  const city = await getCityBySlug(params.ville);
+  if (!city) notFound();
+
+  const [vendors, combos, account] = await Promise.all([
+    getVendorsForCity(city.slug),
+    getIndexableCityCategoryCombos(),
+    getHeaderAccount(),
+  ]);
+  const categoriesHere = combos.filter((c) => c.citySlug === city.slug);
+  const verifiedCount = vendors.filter((v) => v.verified).length;
+
+  return (
+    <>
+      <Header initialAccount={account} />
+      <main className="min-h-screen bg-cream">
+        <section className="mx-auto max-w-content px-5 py-12 sm:px-8">
+          <Breadcrumb
+            items={[
+              { label: "Accueil", href: "/" },
+              { label: "Prestataires", href: "/prestataires" },
+              { label: city.name },
+            ]}
+          />
+
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">{city.region}</p>
+          <h1 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
+            Prestataires événementiels à {city.name}
+          </h1>
+          <p className="mt-3 max-w-2xl leading-relaxed text-slate">
+            {vendors.length > 0
+              ? `${verifiedCount} prestataire${verifiedCount > 1 ? "s" : ""} vérifié${verifiedCount > 1 ? "s" : ""} à ${city.name}, pour organiser mariage, anniversaire, baptême, gala ou baby shower sans quitter Misstice.`
+              : `Misstice élargit son réseau de prestataires vérifiés à ${city.name}.`}
+          </p>
+
+          {categoriesHere.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {categoriesHere.map((c) => (
+                <a
+                  key={c.categorySlug}
+                  href={`/prestataires/ville/${city.slug}/${c.categorySlug}`}
+                  className="rounded-full border border-violet/20 bg-violet-soft px-4 py-2 text-sm font-medium text-violet transition-colors hover:bg-violet/10"
+                >
+                  {c.category}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {vendors.length > 0 ? (
+            <FeaturedVendorsGrid vendors={vendors} />
+          ) : (
+            <div className="mt-10">
+              <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} />
+            </div>
+          )}
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}
