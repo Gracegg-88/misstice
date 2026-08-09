@@ -31,7 +31,7 @@ const steps: {
 
 export default function HowItWorks() {
   return (
-    <section id="comment-ca-marche" className="pt-6 pb-6 sm:pt-8 sm:pb-8">
+    <section id="comment-ca-marche" className="pt-4 pb-4 sm:pt-6 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
@@ -44,7 +44,7 @@ export default function HowItWorks() {
           </h2>
         </Reveal>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
           {steps.map((step, i) => (
             <Reveal key={step.n} delay={i * 120} className="h-full">
               <div className="group flex h-full items-start gap-4 rounded-3xl border border-black/5 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-violet/20 hover:shadow-xl hover:shadow-violet/5">
@@ -71,7 +71,7 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-slate">
+        <p className="mt-6 text-center text-sm text-slate">
           <Link
             href="/comment-ca-marche"
             className="font-semibold text-violet hover:text-violet-dark"

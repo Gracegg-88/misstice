@@ -10,7 +10,7 @@ const features = [
 
 export default function FinalCTA() {
   return (
-    <section className="mx-auto max-w-content px-5 py-10 sm:px-8">
+    <section className="mx-auto max-w-content px-5 py-6 sm:px-8 sm:py-8">
       <Reveal>
         <div
           className="relative overflow-hidden rounded-[32px] border border-black/5 bg-cream bg-cover bg-center shadow-sm"

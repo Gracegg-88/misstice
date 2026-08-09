@@ -21,7 +21,7 @@ const faqs = [
 
 export default function FAQ() {
   return (
-    <section id="faq" className="py-14 sm:py-16">
+    <section id="faq" className="py-8 sm:py-10">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="mx-auto max-w-2xl">
           <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">

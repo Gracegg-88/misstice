@@ -17,7 +17,7 @@ const types: {
 
 export default function EventTypes() {
   return (
-    <section id="fonctionnalites" className="pt-14 pb-6 sm:pt-16 sm:pb-8">
+    <section id="fonctionnalites" className="pt-10 pb-4 sm:pt-12 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
@@ -28,21 +28,21 @@ export default function EventTypes() {
           </h2>
         </Reveal>
 
-        <Reveal delay={60} className="mt-8 overflow-hidden rounded-3xl">
+        <Reveal delay={60} className="mt-6 overflow-hidden rounded-3xl">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-santa.jpg"
             alt="Famille réunie et complice pour une fête de famille"
-            className="h-56 w-full object-cover sm:h-72"
+            className="h-48 w-full object-cover sm:h-64"
           />
         </Reveal>
 
-        <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           {types.map((t, i) => (
             <Reveal key={t.label} delay={i * 70}>
               <a
                 href="/creer"
-                className="flex h-full items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5"
+                className="flex h-full min-h-[44px] flex-col items-start gap-2 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5 sm:flex-row sm:items-center sm:gap-3"
               >
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
                   <t.icon size={22} strokeWidth={1.75} />
@@ -58,7 +58,7 @@ export default function EventTypes() {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-slate">
+        <p className="mt-6 text-center text-sm text-slate">
           Une question avant de vous lancer ?{" "}
           <Link
             href="/#faq"
