@@ -1,18 +1,22 @@
-import { Heart } from "lucide-react";
+import { Heart, Users } from "lucide-react";
 import Reveal from "./Reveal";
 import CalendlyButton from "./CalendlyButton";
 
-// Bloc CTA "Devenir prestataire" répété à plusieurs endroits de la home.
-// Copy volontairement orientée communauté / petite échelle plutôt
-// qu'expertise événementielle professionnelle — Misstice cible les
-// prestataires qui accompagnent des familles, pas des agences.
+// Bloc CTA "Devenir prestataire" de la home. Copy volontairement orientée
+// communauté / petite échelle plutôt qu'expertise événementielle
+// professionnelle — Misstice cible les prestataires qui accompagnent des
+// familles, pas des agences.
 export default function BecomeVendorCallout({
   headline,
   body,
+  signupHref,
+  signupLabel = "Devenir prestataire",
   ctaLabel = "Réserver un appel",
 }: {
   headline: string;
   body: string;
+  signupHref?: string;
+  signupLabel?: string;
   ctaLabel?: string;
 }) {
   return (
@@ -28,10 +32,25 @@ export default function BecomeVendorCallout({
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate">
             {body}
           </p>
-          <CalendlyButton
-            label={ctaLabel}
-            className="ev-cta mt-5 inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
-          />
+          <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            {signupHref && (
+              <a
+                href={signupHref}
+                className="ev-cta inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
+              >
+                <Users size={17} />
+                {signupLabel}
+              </a>
+            )}
+            <CalendlyButton
+              label={ctaLabel}
+              className={
+                signupHref
+                  ? "inline-flex items-center justify-center gap-2 rounded-2xl border border-violet/25 bg-white/80 px-6 py-3.5 text-sm font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
+                  : "ev-cta inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
+              }
+            />
+          </div>
         </div>
       </Reveal>
     </section>

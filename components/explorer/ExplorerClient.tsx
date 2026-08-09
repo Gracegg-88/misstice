@@ -149,13 +149,12 @@ export default function ExplorerClient({
   return (
     <div>
       {/* ── HERO ── */}
-      {/* Photo + spirale en plein cadre, avec un voile blanc en dégradé :
-          le texte peut chevaucher la photo/décor sans jamais devenir
-          illisible, grâce à la transparence du voile. */}
-      <section
-        className="relative overflow-hidden bg-cream sm:bg-[url('/prestataire_client_degrade.png')] sm:bg-contain sm:bg-right sm:bg-no-repeat"
-      >
-        <div className="mx-5 mt-5 h-48 overflow-hidden rounded-3xl sm:hidden">
+      {/* Grille texte / photo explicite (au lieu d'une image de fond en
+          "contain") : la photo garde une taille et un cadrage prévisibles,
+          quelle que soit la hauteur du bloc de texte, sans jamais déborder
+          ni se retrouver mal alignée. */}
+      <section className="relative overflow-hidden bg-cream">
+        <div className="mx-5 mt-5 h-48 overflow-hidden rounded-3xl lg:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/prestataire_client_photo.png"
@@ -164,14 +163,7 @@ export default function ExplorerClient({
             style={{ objectPosition: "70% 30%" }}
           />
         </div>
-        <div
-          className="pointer-events-none absolute inset-0 hidden sm:block"
-          style={{
-            background:
-              "linear-gradient(to right, rgba(250,250,249,1) 0%, rgba(250,250,249,0.97) 40%, rgba(250,250,249,0.75) 55%, rgba(250,250,249,0) 72%)",
-          }}
-        />
-        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:py-20">
+        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
@@ -186,6 +178,15 @@ export default function ExplorerClient({
               <span className="font-semibold text-violet"> ambiance, énergie et style</span>,
               et trouvez le prestataire qui vous ressemble vraiment.
             </p>
+          </div>
+          <div className="hidden overflow-hidden rounded-[32px] lg:block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/prestataire_client_photo.png"
+              alt="Une famille et une prestataire Misstice échangent autour d'un projet d'événement"
+              className="aspect-[4/3] w-full object-cover"
+              style={{ objectPosition: "70% 30%" }}
+            />
           </div>
         </div>
       </section>
