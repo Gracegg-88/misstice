@@ -11,7 +11,7 @@ import {
   slugify,
 } from "@/lib/geo";
 
-const BASE_URL = "https://misstice.com";
+const BASE_URL = "https://www.misstice.com";
 
 // Pages publiques statiques. À compléter à chaque nouvelle page publique
 // créée (le reste — dashboard, pro, admin, auth, liens à token… — est
