@@ -3,6 +3,7 @@ import ProfilClient from "@/components/pro/ProfilClient";
 import ProfileForm from "@/components/admin/ProfileForm";
 import DeleteAccountButton from "@/components/dashboard/DeleteAccountButton";
 import SiretVerification from "@/components/pro/SiretVerification";
+import StripeConnectStatus from "@/components/pro/StripeConnectStatus";
 import { getMyVendor, getMyPackages, getMyPhotos } from "@/lib/pro";
 import { getProfile } from "@/lib/queries";
 import { getCategories } from "@/lib/vendors";
@@ -75,20 +76,23 @@ export default async function ProProfilPage() {
     );
   }
 
-  const [packages, photos, { data: siretRow }] = await Promise.all([
+  const [packages, photos, { data: vendorProfileRow }] = await Promise.all([
     getMyPackages(),
     getMyPhotos(),
     supabase
       .from("vendor_profiles")
-      .select("siret, siret_verified_at, siret_company_name")
+      .select("siret, siret_verified_at, siret_company_name, stripe_onboarding_status")
       .eq("id", user.id)
       .maybeSingle(),
   ]);
-  const siretInfo = siretRow as {
+  const siretInfo = vendorProfileRow as {
     siret: string | null;
     siret_verified_at: string | null;
     siret_company_name: string | null;
   } | null;
+  const stripeStatus =
+    (vendorProfileRow as { stripe_onboarding_status?: "non_demarre" | "en_attente" | "actif" } | null)
+      ?.stripe_onboarding_status ?? "non_demarre";
 
   return (
     <div>
@@ -104,6 +108,7 @@ export default async function ProProfilPage() {
           verifiedAt={siretInfo?.siret_verified_at ?? null}
           companyName={siretInfo?.siret_company_name ?? null}
         />
+        <StripeConnectStatus status={stripeStatus} />
       </div>
       {accountSection}
     </div>
