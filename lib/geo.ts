@@ -145,17 +145,20 @@ export async function getIndexableCitySlugs(
 }
 
 /**
- * Tous les slugs de catégorie réellement utilisés par au moins un
- * prestataire, toutes villes confondues — sert à distinguer un slug de
- * catégorie bidon (404) d'une catégorie réelle juste absente de cette ville
- * pour l'instant (page "bientôt disponible").
+ * Tous les slugs de catégorie de la vraie taxonomie (public.vendor_categories,
+ * gérée en admin) — sert à distinguer un slug de catégorie bidon (404) d'une
+ * catégorie réelle juste sans prestataire pour l'instant ("bientôt
+ * disponible"). Volontairement PAS dérivé des prestataires déjà en base :
+ * sinon, tant que l'annuaire est vide (ex. juste après un nettoyage des
+ * fiches de démo), plus aucune catégorie n'est "connue" et toutes les pages
+ * ville×catégorie renvoient un 404 au lieu du message d'attente.
  */
 export async function getKnownCategorySlugs(): Promise<Map<string, string>> {
-  const vendors = await getVendors(db());
+  const supabase = db();
+  const { data } = await supabase.from("vendor_categories").select("name");
   const map = new Map<string, string>();
-  for (const v of vendors) {
-    if (!v.category) continue;
-    map.set(slugify(v.category), v.category);
+  for (const c of (data as { name: string }[] | null) ?? []) {
+    map.set(slugify(c.name), c.name);
   }
   return map;
 }
