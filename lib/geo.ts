@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getVendors } from "@/lib/vendors";
 import type { Vendor } from "@/components/explorer/vendors";
@@ -9,6 +10,56 @@ import type { Vendor } from "@/components/explorer/vendors";
 function db() {
   return createStaticClient();
 }
+
+// Chaque page géo appelle generateMetadata() PUIS le composant de page, et
+// les deux redemandent les mêmes données (ville, prestataires, contenu...).
+// Sans cache(), c'était 2x plus de requêtes Supabase que nécessaire par
+// page — jusqu'à une centaine d'appels quasi simultanés observés en prod
+// lors d'une régénération ISR. cache() déduplique tous les appels
+// identiques au sein d'un même rendu (une seule requête réseau, peu
+// importe combien de fonctions en aval la redemandent).
+const fetchVendorsCached = cache(() => getVendors(db()));
+const fetchCitiesCached = cache(async (): Promise<City[]> => {
+  const supabase = db();
+  const { data } = await supabase.from("cities").select("slug, name, region").order("name");
+  return (data as City[]) ?? [];
+});
+const fetchEventTypesCached = cache(async (): Promise<EventType[]> => {
+  const supabase = db();
+  const { data } = await supabase.from("event_types").select("slug, name").order("position");
+  return (data as EventType[]) ?? [];
+});
+const fetchCityEventContentCached = cache(
+  async (): Promise<{ citySlug: string; eventTypeSlug: string; introText: string }[]> => {
+    const supabase = db();
+    const { data } = await supabase
+      .from("city_event_content")
+      .select("city_slug, event_type_slug, intro_text");
+    return (
+      (data as { city_slug: string; event_type_slug: string; intro_text: string }[] | null) ?? []
+    ).map((r) => ({ citySlug: r.city_slug, eventTypeSlug: r.event_type_slug, introText: r.intro_text }));
+  }
+);
+const fetchCityCategoryContentCached = cache(
+  async (): Promise<{ citySlug: string; category: string; introText: string }[]> => {
+    const supabase = db();
+    const { data } = await supabase
+      .from("city_category_content")
+      .select("city_slug, category, intro_text");
+    return (
+      (data as { city_slug: string; category: string; intro_text: string }[] | null) ?? []
+    ).map((r) => ({ citySlug: r.city_slug, category: r.category, introText: r.intro_text }));
+  }
+);
+const fetchKnownCategorySlugsCached = cache(async (): Promise<Map<string, string>> => {
+  const supabase = db();
+  const { data } = await supabase.from("vendor_categories").select("name");
+  const map = new Map<string, string>();
+  for (const c of (data as { name: string }[] | null) ?? []) {
+    map.set(slugify(c.name), c.name);
+  }
+  return map;
+});
 
 export type City = {
   slug: string;
@@ -44,9 +95,7 @@ export function slugify(input: string): string {
 }
 
 export async function getCities(): Promise<City[]> {
-  const supabase = db();
-  const { data } = await supabase.from("cities").select("slug, name, region").order("name");
-  return (data as City[]) ?? [];
+  return fetchCitiesCached();
 }
 
 export async function getCityBySlug(slug: string): Promise<City | null> {
@@ -55,12 +104,7 @@ export async function getCityBySlug(slug: string): Promise<City | null> {
 }
 
 export async function getEventTypes(): Promise<EventType[]> {
-  const supabase = db();
-  const { data } = await supabase
-    .from("event_types")
-    .select("slug, name")
-    .order("position");
-  return (data as EventType[]) ?? [];
+  return fetchEventTypesCached();
 }
 
 export async function getEventTypeBySlug(slug: string): Promise<EventType | null> {
@@ -70,7 +114,7 @@ export async function getEventTypeBySlug(slug: string): Promise<EventType | null
 
 /** Prestataires d'une ville (tous, vérifiés ou non — comme l'annuaire /prestataires). */
 export async function getVendorsForCity(citySlug: string): Promise<Vendor[]> {
-  const vendors = await getVendors(db());
+  const vendors = await fetchVendorsCached();
   return vendors.filter((v) => v.city && slugify(v.city) === citySlug);
 }
 
@@ -84,7 +128,7 @@ export async function getVendorsForCityCategory(
 
 /** Slugs de toutes les villes ayant au moins un prestataire (pour generateStaticParams). */
 export async function getCitySlugsWithVendors(): Promise<string[]> {
-  const vendors = await getVendors(db());
+  const vendors = await fetchVendorsCached();
   const set = new Set<string>();
   for (const v of vendors) if (v.city) set.add(slugify(v.city));
   return Array.from(set);
@@ -98,7 +142,7 @@ export async function getCitySlugsWithVendors(): Promise<string[]> {
 export async function getIndexableCityCategoryCombos(
   minVerified: number = MIN_VERIFIED_VENDORS
 ): Promise<CityCategoryCombo[]> {
-  const vendors = await getVendors(db());
+  const vendors = await fetchVendorsCached();
   const map = new Map<string, CityCategoryCombo>();
   for (const v of vendors) {
     if (!v.city || !v.category) continue;
@@ -126,7 +170,7 @@ export async function getIndexableCityCategoryCombos(
 export async function getIndexableCitySlugs(
   minVerified: number = MIN_VERIFIED_VENDORS
 ): Promise<string[]> {
-  const vendors = await getVendors(db());
+  const vendors = await fetchVendorsCached();
   const counts = new Map<string, number>();
   for (const v of vendors) {
     if (!v.city || !v.verified) continue;
@@ -149,13 +193,7 @@ export async function getIndexableCitySlugs(
 export async function getCityEventContent(): Promise<
   { citySlug: string; eventTypeSlug: string; introText: string }[]
 > {
-  const supabase = db();
-  const { data } = await supabase
-    .from("city_event_content")
-    .select("city_slug, event_type_slug, intro_text");
-  return (
-    (data as { city_slug: string; event_type_slug: string; intro_text: string }[] | null) ?? []
-  ).map((r) => ({ citySlug: r.city_slug, eventTypeSlug: r.event_type_slug, introText: r.intro_text }));
+  return fetchCityEventContentCached();
 }
 
 export async function getCityEventIntro(
@@ -179,13 +217,7 @@ export async function getCityEventIntro(
 export async function getCityCategoryContent(): Promise<
   { citySlug: string; category: string; introText: string }[]
 > {
-  const supabase = db();
-  const { data } = await supabase
-    .from("city_category_content")
-    .select("city_slug, category, intro_text");
-  return (
-    (data as { city_slug: string; category: string; intro_text: string }[] | null) ?? []
-  ).map((r) => ({ citySlug: r.city_slug, category: r.category, introText: r.intro_text }));
+  return fetchCityCategoryContentCached();
 }
 
 export async function getCityCategoryIntro(
@@ -209,11 +241,5 @@ export async function getCityCategoryIntro(
  * ville×catégorie renvoient un 404 au lieu du message d'attente.
  */
 export async function getKnownCategorySlugs(): Promise<Map<string, string>> {
-  const supabase = db();
-  const { data } = await supabase.from("vendor_categories").select("name");
-  const map = new Map<string, string>();
-  for (const c of (data as { name: string }[] | null) ?? []) {
-    map.set(slugify(c.name), c.name);
-  }
-  return map;
+  return fetchKnownCategorySlugsCached();
 }

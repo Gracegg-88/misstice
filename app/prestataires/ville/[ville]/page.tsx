@@ -9,9 +9,13 @@ import { getHeaderAccount } from "@/lib/header-account";
 import {
   getCities,
   getCityBySlug,
+  getCityCategoryContent,
+  getCityEventContent,
   getCitySlugsWithVendors,
+  getEventTypes,
   getIndexableCityCategoryCombos,
   getVendorsForCity,
+  slugify,
 } from "@/lib/geo";
 
 // Régénère la page au plus une fois par jour : le nombre de prestataires
@@ -44,13 +48,30 @@ export default async function VillePage({ params }: { params: { ville: string } 
   const city = await getCityBySlug(params.ville);
   if (!city) notFound();
 
-  const [vendors, combos, account] = await Promise.all([
+  const [vendors, combos, categoryContent, eventContent, eventTypes, account] = await Promise.all([
     getVendorsForCity(city.slug),
     getIndexableCityCategoryCombos(),
+    getCityCategoryContent(),
+    getCityEventContent(),
+    getEventTypes(),
     getHeaderAccount(),
   ]);
-  const categoriesHere = combos.filter((c) => c.citySlug === city.slug);
   const verifiedCount = vendors.filter((v) => v.verified).length;
+
+  // Une pastille "catégorie" apparaît soit parce que le seuil de
+  // prestataires vérifiés est atteint, soit parce qu'un texte a été rédigé
+  // à la main — sinon la page existe mais personne ne peut jamais y arriver
+  // en cliquant depuis ce hub (c'est le bug qu'on vient de découvrir).
+  const categoriesHere = new Map<string, string>();
+  for (const c of combos) if (c.citySlug === city.slug) categoriesHere.set(c.categorySlug, c.category);
+  for (const c of categoryContent) {
+    if (c.citySlug === city.slug) categoriesHere.set(slugify(c.category), c.category);
+  }
+
+  const eventTypeName = new Map(eventTypes.map((et) => [et.slug, et.name]));
+  const eventTypesHere = eventContent
+    .filter((c) => c.citySlug === city.slug)
+    .map((c) => ({ slug: c.eventTypeSlug, name: eventTypeName.get(c.eventTypeSlug) ?? c.eventTypeSlug }));
 
   return (
     <>
@@ -75,15 +96,29 @@ export default async function VillePage({ params }: { params: { ville: string } 
               : `Misstice élargit son réseau de prestataires vérifiés à ${city.name}.`}
           </p>
 
-          {categoriesHere.length > 0 && (
+          {categoriesHere.size > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">
-              {categoriesHere.map((c) => (
+              {Array.from(categoriesHere.entries()).map(([categorySlug, category]) => (
                 <a
-                  key={c.categorySlug}
-                  href={`/prestataires/ville/${city.slug}/${c.categorySlug}`}
+                  key={categorySlug}
+                  href={`/prestataires/ville/${city.slug}/${categorySlug}`}
                   className="rounded-full border border-violet/20 bg-violet-soft px-4 py-2 text-sm font-medium text-violet transition-colors hover:bg-violet/10"
                 >
-                  {c.category}
+                  {category}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {eventTypesHere.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {eventTypesHere.map((et) => (
+                <a
+                  key={et.slug}
+                  href={`/${et.slug}/${city.slug}`}
+                  className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-plum transition-colors hover:border-violet/30 hover:text-violet"
+                >
+                  Organiser un {et.name.toLowerCase()} à {city.name}
                 </a>
               ))}
             </div>
