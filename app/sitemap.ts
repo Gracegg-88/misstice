@@ -2,10 +2,13 @@ import type { MetadataRoute } from "next";
 import { getVendors } from "@/lib/vendors";
 import {
   getCities,
+  getCityCategoryContent,
+  getCityEventContent,
   getCitySlugsWithVendors,
   getEventTypes,
   getIndexableCityCategoryCombos,
   getIndexableCitySlugs,
+  slugify,
 } from "@/lib/geo";
 
 const BASE_URL = "https://misstice.com";
@@ -52,14 +55,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Pages géolocalisées : uniquement celles qui ont réellement du contenu
   // (jamais une page "bientôt disponible" dans le sitemap — ça signale à
   // Google une page à faible valeur, voir lib/geo.ts).
-  const [citySlugsWithVendors, cities, cityCategoryCombos, indexableCitySlugs, eventTypes] =
-    await Promise.all([
-      getCitySlugsWithVendors(),
-      getCities(),
-      getIndexableCityCategoryCombos(),
-      getIndexableCitySlugs(),
-      getEventTypes(),
-    ]);
+  const [
+    citySlugsWithVendors,
+    cities,
+    cityCategoryCombos,
+    indexableCitySlugs,
+    eventTypes,
+    editorialEventContent,
+    editorialCategoryContent,
+  ] = await Promise.all([
+    getCitySlugsWithVendors(),
+    getCities(),
+    getIndexableCityCategoryCombos(),
+    getIndexableCitySlugs(),
+    getEventTypes(),
+    getCityEventContent(),
+    getCityCategoryContent(),
+  ]);
   const activeCitySlugs = new Set(citySlugsWithVendors);
   const cityBySlug = new Map(cities.map((c) => [c.slug, c]));
 
@@ -72,25 +84,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  const cityCategoryEntries: MetadataRoute.Sitemap = cityCategoryCombos
-    .filter((c) => cityBySlug.has(c.citySlug))
-    .map((c) => ({
-      url: `${BASE_URL}/prestataires/ville/${c.citySlug}/${c.categorySlug}`,
+  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
+  // la main pour cette combinaison (voir generateStaticParams de la page).
+  const cityCategorySlugs = new Set([
+    ...cityCategoryCombos.map((c) => `${c.citySlug}::${c.categorySlug}`),
+    ...editorialCategoryContent.map((c) => `${c.citySlug}::${slugify(c.category)}`),
+  ]);
+  const cityCategoryEntries: MetadataRoute.Sitemap = Array.from(cityCategorySlugs)
+    .map((key) => {
+      const [ville, categorie] = key.split("::");
+      return { ville, categorie };
+    })
+    .filter((p) => cityBySlug.has(p.ville))
+    .map((p) => ({
+      url: `${BASE_URL}/prestataires/ville/${p.ville}/${p.categorie}`,
       lastModified: new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "weekly" as const,
       priority: 0.6,
     }));
 
-  const eventCityEntries: MetadataRoute.Sitemap = indexableCitySlugs
-    .filter((slug) => cityBySlug.has(slug))
-    .flatMap((slug) =>
-      eventTypes.map((et) => ({
-        url: `${BASE_URL}/${et.slug}/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.65,
-      }))
-    );
+  const eventCitySlugs = new Set([
+    ...indexableCitySlugs.flatMap((ville) => eventTypes.map((et) => `${et.slug}::${ville}`)),
+    ...editorialEventContent.map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
+  ]);
+  const eventCityEntries: MetadataRoute.Sitemap = Array.from(eventCitySlugs)
+    .map((key) => {
+      const [evenement, ville] = key.split("::");
+      return { evenement, ville };
+    })
+    .filter((p) => cityBySlug.has(p.ville))
+    .map((p) => ({
+      url: `${BASE_URL}/${p.evenement}/${p.ville}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.65,
+    }));
 
   return [...staticEntries, ...vendorEntries, ...cityHubEntries, ...cityCategoryEntries, ...eventCityEntries];
 }

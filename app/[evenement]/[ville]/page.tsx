@@ -9,6 +9,8 @@ import { getHeaderAccount } from "@/lib/header-account";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
+  getCityEventContent,
+  getCityEventIntro,
   getEventTypeBySlug,
   getEventTypes,
   getIndexableCitySlugs,
@@ -18,8 +20,22 @@ import {
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
-  const [eventTypes, citySlugs] = await Promise.all([getEventTypes(), getIndexableCitySlugs()]);
-  return eventTypes.flatMap((et) => citySlugs.map((ville) => ({ evenement: et.slug, ville })));
+  const [eventTypes, indexableCitySlugs, editorialContent] = await Promise.all([
+    getEventTypes(),
+    getIndexableCitySlugs(),
+    getCityEventContent(),
+  ]);
+  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
+  // la main pour cette combinaison — les deux justifient la page séparément.
+  const byVendors = eventTypes.flatMap((et) => indexableCitySlugs.map((ville) => ({ evenement: et.slug, ville })));
+  const byContent = editorialContent.map((c) => ({ evenement: c.eventTypeSlug, ville: c.citySlug }));
+  const seen = new Set<string>();
+  return [...byVendors, ...byContent].filter((p) => {
+    const key = `${p.evenement}::${p.ville}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export async function generateMetadata({
@@ -50,7 +66,11 @@ export default async function EvenementVillePage({
   ]);
   if (!eventType || !city) notFound();
 
-  const [vendors, account] = await Promise.all([getVendorsForCity(city.slug), getHeaderAccount()]);
+  const [vendors, introText, account] = await Promise.all([
+    getVendorsForCity(city.slug),
+    getCityEventIntro(city.slug, eventType.slug),
+    getHeaderAccount(),
+  ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
   const belowThreshold = verifiedCount < MIN_VERIFIED_VENDORS;
   const otherEventTypes = eventTypes.filter((et) => et.slug !== eventType.slug);
@@ -73,7 +93,7 @@ export default async function EvenementVillePage({
             Organiser un {eventType.name.toLowerCase()} à {city.name}
           </h1>
           <p className="mt-3 max-w-2xl leading-relaxed text-slate">
-            {city.introText ??
+            {introText ??
               `Trouvez des prestataires vérifiés à ${city.name} et centralisez budget, invités, checklist et devis pour votre ${eventType.name.toLowerCase()}, du premier au dernier détail.`}
           </p>
 

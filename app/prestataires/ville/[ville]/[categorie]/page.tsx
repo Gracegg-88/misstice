@@ -9,16 +9,32 @@ import { getHeaderAccount } from "@/lib/header-account";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
+  getCityCategoryContent,
+  getCityCategoryIntro,
   getIndexableCityCategoryCombos,
   getKnownCategorySlugs,
   getVendorsForCityCategory,
+  slugify,
 } from "@/lib/geo";
 
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
-  const combos = await getIndexableCityCategoryCombos();
-  return combos.map((c) => ({ ville: c.citySlug, categorie: c.categorySlug }));
+  const [combos, editorialContent] = await Promise.all([
+    getIndexableCityCategoryCombos(),
+    getCityCategoryContent(),
+  ]);
+  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
+  // la main pour cette combinaison (même logique que /[evenement]/[ville]).
+  const byVendors = combos.map((c) => ({ ville: c.citySlug, categorie: c.categorySlug }));
+  const byContent = editorialContent.map((c) => ({ ville: c.citySlug, categorie: slugify(c.category) }));
+  const seen = new Set<string>();
+  return [...byVendors, ...byContent].filter((p) => {
+    const key = `${p.ville}::${p.categorie}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export async function generateMetadata({
@@ -51,8 +67,9 @@ export default async function VilleCategoriePage({
   // (Différent d'une catégorie réelle juste absente de cette ville, cf. plus bas.)
   if (!categoryLabel) notFound();
 
-  const [vendors, account] = await Promise.all([
+  const [vendors, introText, account] = await Promise.all([
     getVendorsForCityCategory(city.slug, params.categorie),
+    getCityCategoryIntro(city.slug, params.categorie),
     getHeaderAccount(),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
@@ -77,9 +94,10 @@ export default async function VilleCategoriePage({
             {categoryLabel} à {city.name}
           </h1>
           <p className="mt-3 max-w-2xl leading-relaxed text-slate">
-            {belowThreshold
-              ? `Comparez bientôt les ${categoryLabel.toLowerCase()} vérifiés à ${city.name} : devis gratuits, avis vérifiés, échanges centralisés sur Misstice.`
-              : `${verifiedCount} ${categoryLabel.toLowerCase()} vérifié${verifiedCount > 1 ? "s" : ""} à ${city.name}. Comparez les devis et réservez sans quitter Misstice.`}
+            {introText ??
+              (belowThreshold
+                ? `Comparez bientôt les ${categoryLabel.toLowerCase()} vérifiés à ${city.name} : devis gratuits, avis vérifiés, échanges centralisés sur Misstice.`
+                : `${verifiedCount} ${categoryLabel.toLowerCase()} vérifié${verifiedCount > 1 ? "s" : ""} à ${city.name}. Comparez les devis et réservez sans quitter Misstice.`)}
           </p>
 
           {belowThreshold ? (
