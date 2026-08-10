@@ -22,7 +22,7 @@ const dmSans = DM_Sans({
 
 // SEO dès le jour 1 (principe 5)
 export const metadata: Metadata = {
-  metadataBase: new URL("https://misstice.com"),
+  metadataBase: new URL("https://www.misstice.com"),
   title: "Misstice | Organisez votre événement et trouvez vos prestataires",
   description:
     "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",

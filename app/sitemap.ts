@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getVendors } from "@/lib/vendors";
 
-const BASE_URL = "https://misstice.com";
+const BASE_URL = "https://www.misstice.com";
 
 // Pages publiques statiques. À compléter à chaque nouvelle page publique
 // créée (le reste — dashboard, pro, admin, auth, liens à token… — est
