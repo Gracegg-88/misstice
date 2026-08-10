@@ -14,11 +14,17 @@ export default function ComingSoon({
   cityName,
   cityLabel,
   categoryLabel,
+  eventTypeLabel,
 }: {
   cityName: string;
   /** Ex. "à Lyon" — déjà accordé, prêt à insérer dans une phrase. */
   cityLabel: string;
+  /** Métier de prestataire (ex. "Traiteur") — pages /prestataires/ville/[ville]/[categorie]. */
   categoryLabel?: string;
+  /** Type d'événement (ex. "Mariage") — pages /[evenement]/[ville]. Ne pas
+   * confondre avec categoryLabel : "Pas encore de mariage vérifié" n'a pas
+   * de sens, contrairement à "Pas encore de traiteur vérifié". */
+  eventTypeLabel?: string;
 }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -32,6 +38,7 @@ export default function ComingSoon({
       email: email.trim(),
       city_slug: cityName,
       category: categoryLabel ?? null,
+      event_type: eventTypeLabel ?? null,
     });
     setStatus(error ? "error" : "done");
   }
@@ -44,7 +51,9 @@ export default function ComingSoon({
       <h2 className="mt-5 font-display text-xl font-semibold text-plum">
         {categoryLabel
           ? `Pas encore de ${categoryLabel.toLowerCase()} vérifié ${cityLabel}`
-          : `Bientôt disponible ${cityLabel}`}
+          : eventTypeLabel
+            ? `Pas encore de prestataire vérifié pour un ${eventTypeLabel.toLowerCase()} ${cityLabel}`
+            : `Bientôt disponible ${cityLabel}`}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-slate">
         Nos équipes ajoutent régulièrement de nouveaux prestataires vérifiés.

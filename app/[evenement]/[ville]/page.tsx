@@ -122,7 +122,7 @@ export default async function EvenementVillePage({
 
           {belowThreshold ? (
             <div className="mt-8">
-              <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} categoryLabel={eventType.name} />
+              <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} eventTypeLabel={eventType.name} />
             </div>
           ) : (
             <FeaturedVendorsGrid vendors={vendors} />
