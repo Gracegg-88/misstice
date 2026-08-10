@@ -170,6 +170,36 @@ export async function getCityEventIntro(
 }
 
 /**
+ * Même principe que getCityEventContent, pour les pages ville×catégorie
+ * (public.city_category_content). La catégorie y est stockée en toutes
+ * lettres (comme public.vendors.category, pas de colonne slug dédiée) —
+ * on la fait correspondre au slug de l'URL via slugify(), comme partout
+ * ailleurs dans ce fichier.
+ */
+export async function getCityCategoryContent(): Promise<
+  { citySlug: string; category: string; introText: string }[]
+> {
+  const supabase = db();
+  const { data } = await supabase
+    .from("city_category_content")
+    .select("city_slug, category, intro_text");
+  return (
+    (data as { city_slug: string; category: string; intro_text: string }[] | null) ?? []
+  ).map((r) => ({ citySlug: r.city_slug, category: r.category, introText: r.intro_text }));
+}
+
+export async function getCityCategoryIntro(
+  citySlug: string,
+  categorySlug: string
+): Promise<string | null> {
+  const content = await getCityCategoryContent();
+  return (
+    content.find((c) => c.citySlug === citySlug && slugify(c.category) === categorySlug)
+      ?.introText ?? null
+  );
+}
+
+/**
  * Tous les slugs de catégorie de la vraie taxonomie (public.vendor_categories,
  * gérée en admin) — sert à distinguer un slug de catégorie bidon (404) d'une
  * catégorie réelle juste sans prestataire pour l'instant ("bientôt
