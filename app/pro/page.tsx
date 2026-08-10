@@ -44,26 +44,36 @@ export default async function ProOverviewPage() {
   since.setDate(todayMid.getDate() - 6);
   const sinceISO = since.toISOString();
 
-  const [{ data: convRows }, { data: quoteRows }, viewRes] = await Promise.all([
-    supabase
-      .from("conversations")
-      .select("created_at")
-      .eq("prestataire_id", uid)
-      .not("demande", "is", null)
-      .gte("created_at", sinceISO),
-    supabase
-      .from("quotes")
-      .select("created_at, status, amount")
-      .eq("prestataire_id", uid)
-      .gte("created_at", sinceISO),
-    vendor?.vendorId
-      ? supabase
-          .from("profile_views")
-          .select("viewed_at")
-          .eq("vendor_id", vendor.vendorId)
-          .gte("viewed_at", sinceISO)
-      : Promise.resolve({ data: [] as { viewed_at: string }[] }),
-  ]);
+  const [{ data: convRows }, { data: quoteRows }, viewRes, { data: stripeRow }] =
+    await Promise.all([
+      supabase
+        .from("conversations")
+        .select("created_at")
+        .eq("prestataire_id", uid)
+        .not("demande", "is", null)
+        .gte("created_at", sinceISO),
+      supabase
+        .from("quotes")
+        .select("created_at, status, amount")
+        .eq("prestataire_id", uid)
+        .gte("created_at", sinceISO),
+      vendor?.vendorId
+        ? supabase
+            .from("profile_views")
+            .select("viewed_at")
+            .eq("vendor_id", vendor.vendorId)
+            .gte("viewed_at", sinceISO)
+        : Promise.resolve({ data: [] as { viewed_at: string }[] }),
+      supabase
+        .from("vendor_profiles")
+        .select("stripe_onboarding_status")
+        .eq("id", uid)
+        .maybeSingle(),
+    ]);
+  const stripeStatus =
+    (stripeRow as { stripe_onboarding_status?: "non_demarre" | "en_attente" | "actif" } | null)
+      ?.stripe_onboarding_status ?? "non_demarre";
+  const isPubliclyVisible = Boolean(vendor?.verified) && stripeStatus === "actif";
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(todayMid);
@@ -203,6 +213,36 @@ export default async function ProOverviewPage() {
         <img src="/icon.svg" alt="" aria-hidden="true" className="h-4 w-4 shrink-0" />
         {tip}
       </p>
+
+      {/* Bandeau de visibilité — tant que SIRET + Stripe ne sont pas tous les deux
+          actifs, la fiche n'apparaît pas dans l'annuaire public (voir
+          lib/vendors.ts). On explique où en est le prestataire et l'action
+          suivante, sans jamais afficher les deux étapes comme optionnelles. */}
+      {vendor && !isPubliclyVisible && (
+        <div className="mt-5 rounded-3xl border border-festif/20 bg-festif-soft/50 p-5">
+          <div className="flex items-center gap-2">
+            <Eye size={18} className="text-festif" />
+            <p className="font-display text-lg font-semibold text-plum">
+              Votre profil n&apos;est pas encore visible par les familles
+            </p>
+          </div>
+          <p className="mt-2 text-sm text-slate">
+            {!vendor.verified
+              ? "Étape en cours : vérification de votre SIRET. Il vous restera ensuite à configurer vos informations de paiement via Stripe."
+              : stripeStatus === "en_attente"
+                ? "Vérification SIRET validée. Étape en cours : votre dossier Stripe est en cours de vérification — rien à faire de votre côté pour l'instant."
+                : "Vérification SIRET validée. Dernière étape : configurez vos informations de paiement via Stripe pour devenir visible."}
+          </p>
+          {(!vendor.verified || stripeStatus === "non_demarre") && (
+            <Link
+              href="/pro/profil"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+            >
+              {!vendor.verified ? "Vérifier mon SIRET" : "Configurer mes informations de paiement"}
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* Bandeau de complétion — persiste tant que le profil n'est pas complet. */}
       {completion < 100 && (

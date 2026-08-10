@@ -64,15 +64,23 @@ function map(r: Row): Vendor {
 }
 
 /**
- * Tous les prestataires de l'annuaire (triés par position).
- * `client` optionnel : passer un client sans cookies (lib/supabase/static)
- * quand l'appel vient de generateStaticParams (build time, sans requête).
+ * Annuaire PUBLIC (triés par position). `client` optionnel : passer un
+ * client sans cookies (lib/supabase/static) quand l'appel vient de
+ * generateStaticParams (build time, sans requête).
+ *
+ * Une fiche n'apparaît que si le prestataire est à la fois vérifié (SIRET)
+ * et actif côté paiement (Stripe Connect Express), pour ne jamais exposer
+ * un profil qui ne peut pas encore être payé en cas de réservation. Statut
+ * "en cours" affiché uniquement dans son propre tableau de bord (voir
+ * app/pro/page.tsx), jamais dans l'annuaire.
  */
 export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
   const supabase = client ?? createClient();
   const { data } = await supabase
     .from("vendors")
     .select("*")
+    .eq("verified", true)
+    .eq("payouts_enabled", true)
     .order("position", { ascending: true });
   return ((data as Row[]) ?? []).map(map);
 }
