@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import PublicInvitationClient from "@/components/PublicInvitationClient";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 type Invitation = {
   event_id: string;

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { getProfile, getUserEvents, getCurrentEvent } from "@/lib/queries";
 import { getUnreadTotal } from "@/lib/messaging";
 import { getTeamUnreadTotal } from "@/lib/team-chat";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardLayout({
   children,

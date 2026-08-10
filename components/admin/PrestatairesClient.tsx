@@ -21,6 +21,7 @@ type Vendor = {
   city: string | null;
   verified: boolean;
   reviewed_at: string | null;
+  isDemo: boolean;
 };
 
 export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
@@ -128,6 +129,11 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                   <td className="px-5 py-3 text-slate">{v.city ?? "—"}</td>
                   <td className="px-5 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
+                      {v.isDemo && (
+                        <span className="rounded-full bg-navy-soft px-2 py-0.5 text-xs font-semibold text-navy">
+                          Démo
+                        </span>
+                      )}
                       {v.verified ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2 py-0.5 text-xs font-semibold text-emerald">
                           <BadgeCheck size={12} />

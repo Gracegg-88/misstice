@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import DevisDocument from "@/components/devis/DevisDocument";
@@ -6,6 +7,10 @@ import { getQuote } from "@/lib/pro";
 import { getConversation } from "@/lib/messaging";
 import { getCurrentEvent } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DevisPage({
   params,

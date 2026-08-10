@@ -1,21 +1,23 @@
+import Link from "next/link";
+import { Gem, Cake, Church, Sparkles, Baby } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Reveal from "./Reveal";
 
 const types: {
-  img: string;
+  icon: LucideIcon;
   label: string;
   text: string;
-  tint: string;
 }[] = [
-  { img: "/mariage.png", label: "Mariage", text: "Gérez chaque détail de votre grand jour", tint: "bg-violet-soft" },
-  { img: "/anniversaire.png", label: "Anniversaire", text: "Planifiez en toute sérénité", tint: "bg-festif-soft" },
-  { img: "/bapteme.png", label: "Baptême", text: "Organisez chaque instant avec soin", tint: "bg-violet-soft" },
-  { img: "/gala.png", label: "Gala", text: "Un événement professionnel et mémorable", tint: "bg-festif-soft" },
-  { img: "/babyshower.png", label: "Baby Shower", text: "Préparez l'arrivée de bébé sereinement", tint: "bg-violet-soft" },
+  { icon: Gem, label: "Mariage", text: "Gérez chaque détail de votre grand jour" },
+  { icon: Cake, label: "Anniversaire", text: "Planifiez en toute sérénité" },
+  { icon: Church, label: "Baptême", text: "Organisez chaque instant avec soin" },
+  { icon: Sparkles, label: "Gala", text: "Un événement professionnel et mémorable" },
+  { icon: Baby, label: "Baby Shower", text: "Préparez l'arrivée de bébé sereinement" },
 ];
 
 export default function EventTypes() {
   return (
-    <section id="fonctionnalites" className="pt-14 pb-6 sm:pt-16 sm:pb-8">
+    <section id="fonctionnalites" className="pt-10 pb-4 sm:pt-12 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
@@ -26,25 +28,28 @@ export default function EventTypes() {
           </h2>
         </Reveal>
 
-        <div className="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <Reveal delay={60} className="mt-6 overflow-hidden rounded-3xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/family-santa.jpg"
+            alt="Famille réunie et complice pour une fête de famille"
+            className="h-48 w-full object-cover sm:h-64"
+          />
+        </Reveal>
+
+        <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           {types.map((t, i) => (
             <Reveal key={t.label} delay={i * 70}>
               <a
                 href="/creer"
-                className="ev-zoom-hover flex h-full flex-col items-center gap-3 rounded-2xl border border-black/5 bg-white p-5 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5"
+                className="flex h-full min-h-[44px] flex-col items-start gap-2 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5 sm:flex-row sm:items-center sm:gap-3"
               >
-                <span className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl ${t.tint}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={t.img}
-                    alt=""
-                    aria-hidden="true"
-                    className="ev-zoom-target h-11 w-11 object-contain"
-                  />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
+                  <t.icon size={22} strokeWidth={1.75} />
                 </span>
                 <span className="min-w-0">
                   <span className="block font-semibold text-plum">{t.label}</span>
-                  <span className="mt-0.5 block text-sm leading-snug text-slate">
+                  <span className="block text-sm leading-snug text-slate">
                     {t.text}
                   </span>
                 </span>
@@ -52,6 +57,17 @@ export default function EventTypes() {
             </Reveal>
           ))}
         </div>
+
+        <p className="mt-6 text-center text-sm text-slate">
+          Une question avant de vous lancer ?{" "}
+          <Link
+            href="/#faq"
+            className="font-semibold text-violet hover:text-violet-dark"
+          >
+            Consultez notre foire aux questions
+          </Link>
+          .
+        </p>
       </div>
     </section>
   );

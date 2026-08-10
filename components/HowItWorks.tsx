@@ -1,26 +1,29 @@
+import Link from "next/link";
+import { CalendarPlus, Users, Store } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Reveal from "./Reveal";
 
 const steps: {
   n: number;
-  img: string;
+  icon: LucideIcon;
   title: string;
   text: string;
 }[] = [
   {
     n: 1,
-    img: "/cree.png",
+    icon: CalendarPlus,
     title: "Créez votre événement",
     text: "Indiquez les informations essentielles et donnez vie à votre projet en quelques minutes.",
   },
   {
     n: 2,
-    img: "/organiser.png",
+    icon: Users,
     title: "Organisez budget, invités et tâches",
     text: "Gérez votre budget, suivez votre checklist et centralisez toutes les informations.",
   },
   {
     n: 3,
-    img: "/reserve.png",
+    icon: Store,
     title: "Réservez vos prestataires",
     text: "Trouvez les meilleurs prestataires, comparez et réservez en toute sérénité.",
   },
@@ -28,26 +31,27 @@ const steps: {
 
 export default function HowItWorks() {
   return (
-    <section id="comment-ca-marche" className="pt-6 pb-6 sm:pt-8 sm:pb-8">
+    <section id="comment-ca-marche" className="pt-4 pb-4 sm:pt-6 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
             En 3 étapes
           </p>
           <h2 className="mt-2 text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-            Comment ça marche&nbsp;?
+            <Link href="/comment-ca-marche" className="transition-colors hover:text-violet">
+              Comment ça marche&nbsp;?
+            </Link>
           </h2>
         </Reveal>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
           {steps.map((step, i) => (
             <Reveal key={step.n} delay={i * 120} className="h-full">
               <div className="group flex h-full items-start gap-4 rounded-3xl border border-black/5 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-violet/20 hover:shadow-xl hover:shadow-violet/5">
-                {/* Illustration + pastille numérotée */}
+                {/* Icône + pastille numérotée */}
                 <div className="relative shrink-0">
-                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-soft">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={step.img} alt="" aria-hidden="true" className="h-11 w-11 object-contain" />
+                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+                    <step.icon size={26} strokeWidth={1.75} />
                   </span>
                   <span className="absolute -left-1.5 -top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-violet font-display text-sm font-bold text-white shadow-md shadow-violet/30">
                     {step.n}
@@ -66,6 +70,26 @@ export default function HowItWorks() {
             </Reveal>
           ))}
         </div>
+
+        <p className="mt-6 text-center text-sm text-slate">
+          <Link
+            href="/comment-ca-marche"
+            className="font-semibold text-violet hover:text-violet-dark"
+          >
+            Voir tous les guides d&apos;organisation par type d&apos;événement
+          </Link>
+        </p>
+
+        <p className="mt-2 text-center text-sm text-slate">
+          Tous les prestataires sont vérifiés avant publication :{" "}
+          <Link
+            href="/confiance"
+            className="font-semibold text-violet hover:text-violet-dark"
+          >
+            découvrez comment nous vérifions chaque profil
+          </Link>
+          .
+        </p>
       </div>
     </section>
   );

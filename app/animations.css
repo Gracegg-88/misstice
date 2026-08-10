@@ -30,6 +30,14 @@
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+@keyframes ev-cta-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes ev-cta-pulse-ring {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
 
 /* ---------- Apparition au montage ---------- */
 .ev-fade-in   { animation: ev-fade-in 0.6s ease both; }
@@ -43,6 +51,64 @@
   background: linear-gradient(120deg, #6C3CE1, #FFA3C7, #FF8C42, #6C3CE1);
   background-size: 300% 300%;
   animation: ev-aurora 14s ease-in-out infinite;
+}
+
+/* ---------- CTA principaux : dégradé animé ----------
+   Respiration lente (12s) entre violet, violet-dark et navy — une
+   variation de la technique .ev-aurora, avec la palette CTA plutôt que
+   festif. Le survol accentue le dégradé + léger zoom + ombre portée. */
+.ev-cta {
+  background-image: linear-gradient(
+    120deg,
+    #6c3ce1,
+    #5a2fc4,
+    #2b4c7e,
+    #5a2fc4,
+    #6c3ce1
+  );
+  background-size: 300% 300%;
+  animation: ev-cta-shift 12s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-size 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ev-cta:hover {
+  background-size: 340% 340%;
+  transform: scale(1.03);
+  box-shadow: 0 10px 28px rgba(108, 60, 225, 0.35);
+}
+
+/* ---------- CTA principal : liseré festif animé (touche ponctuelle) ----------
+   Réservé à UN SEUL bouton par page (le CTA de conversion principal) —
+   jamais un aplat, juste un léger appel visuel. Le liseré est un anneau en
+   dégradé qui se déplace (comme .ev-aurora), pas un simple pulse d'opacité :
+   technique "gradient border" via un pseudo-élément masqué (padding = épaisseur
+   du trait, mask pour ne garder que l'anneau, pas le centre). */
+.ev-cta-pulse {
+  position: relative;
+}
+.ev-cta-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  padding: 2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    120deg,
+    #ff8c42,
+    #ffd9a8,
+    #ff8c42,
+    #ffb27a,
+    #ff8c42
+  );
+  background-size: 300% 300%;
+  animation: ev-cta-pulse-ring 6s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /* ---------- Stagger (cascade) ----------
@@ -62,6 +128,36 @@
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Reveal en zoom (CTA) ----------
+   Même mécanique que .reveal, mais fondu + léger zoom (0.95 → 1)
+   plutôt qu'un décalage vertical — pour les boutons d'action. */
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ---------- Cascade au scroll (lignes de tableau, items de liste) ----------
+   Piloté par un unique IntersectionObserver sur le conteneur parent ; chaque
+   enfant reçoit .reveal-row/.reveal-item + un délai inline via --i. */
+.reveal-row,
+.reveal-item {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-row.is-visible,
+.reveal-item.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -103,7 +199,24 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .reveal { opacity: 1; transform: none; }
+  .reveal,
+  .reveal-scale,
+  .reveal-row,
+  .reveal-item { opacity: 1; transform: none; }
   .ev-flip:hover .ev-flip-inner { transform: none; }
   .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
+
+  /* Dégradé CTA statique et élégant, sans mouvement ; pas de zoom au
+     survol (juste l'ombre) ; liseré festif visible mais fixe (pas de
+     pulsation). */
+  .ev-cta {
+    background-position: 35% 50%;
+  }
+  .ev-cta:hover {
+    background-size: 300% 300%;
+    transform: none;
+  }
+  .ev-cta-pulse::after {
+    background-position: 35% 50%;
+  }
 }

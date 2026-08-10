@@ -61,7 +61,7 @@ export default function SiretVerification({
         <div className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-soft px-4 py-3 text-sm text-emerald">
           <BadgeCheck size={18} />
           <span>
-            SIRET vérifié{companyName ? ` — ${companyName}` : ""} (le{" "}
+            SIRET vérifié{companyName ? ` · ${companyName}` : ""} (le{" "}
             {new Date(verifiedAt).toLocaleDateString("fr-FR")})
           </span>
         </div>

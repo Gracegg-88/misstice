@@ -5,8 +5,40 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Header from "@/components/Header";
 import CategorySelect from "@/components/pro/CategorySelect";
+import TypeModal, { type TypeOption } from "@/components/creer/TypeModal";
 import { safeNext } from "@/lib/safe-next";
 import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
+
+// Clé sessionStorage : le type d'événement choisi dans la modale doit
+// survivre jusqu'à /dashboard/nouveau (après inscription + vérification
+// email), qui la lit pour préremplir son propre sélecteur de type.
+const PENDING_EVENT_TYPE_KEY = "misstice_pending_event_type";
+
+// Libellés alignés sur les catégories réelles (vendor_categories) pour que
+// la présélection corresponde à une vraie option du menu déroulant.
+const PRESTA_TYPES: TypeOption[] = [
+  { value: "Traiteur", label: "Traiteur", emoji: "🍽️", tint: "bg-festif-soft" },
+  { value: "Photographe", label: "Photographe", emoji: "📸", tint: "bg-violet-soft" },
+  { value: "DJ & Sono", label: "DJ / Animation musicale", emoji: "🎧", tint: "bg-emerald-soft" },
+  { value: "Décoration", label: "Décoration", emoji: "🎈", tint: "bg-navy-soft" },
+  { value: "Salle de réception", label: "Salle de réception", emoji: "🏛️", tint: "bg-festif-soft" },
+  { value: "Fleuriste", label: "Fleuriste", emoji: "💐", tint: "bg-violet-soft" },
+  { value: "Wedding planner", label: "Wedding / Event planner", emoji: "📋", tint: "bg-emerald-soft" },
+  // "Autre" reste une catégorie littérale (modifiable ensuite depuis le
+  // profil) : laisser le champ vide bloquerait l'étape suivante, qui exige
+  // une catégorie non vide.
+  { value: "Autre", label: "Autre", emoji: "✨", tint: "bg-navy-soft" },
+];
+
+// Libellés alignés sur EVENT_TYPES de /dashboard/nouveau.
+const EVENT_TYPES: TypeOption[] = [
+  { value: "Mariage", label: "Mariage", emoji: "💍", tint: "bg-violet-soft" },
+  { value: "Anniversaire", label: "Anniversaire", emoji: "🎂", tint: "bg-festif-soft" },
+  { value: "Baptême", label: "Baptême", emoji: "👶", tint: "bg-emerald-soft" },
+  { value: "Gala", label: "Gala", emoji: "🥂", tint: "bg-navy-soft" },
+  { value: "Baby Shower", label: "Baby Shower", emoji: "🍼", tint: "bg-festif-soft" },
+  { value: "Autre", label: "Autre", emoji: "✨", tint: "bg-violet-soft" },
+];
 
 function GoogleIcon() {
   return (
@@ -32,6 +64,11 @@ export default function CreerPage() {
   const [showPwd, setShowPwd] = useState(false);
   // Destination après inscription (ex. /invitation/<id> pour rejoindre une équipe).
   const [nextParam, setNextParam] = useState<string | null>(null);
+  // Modale « façon Airbnb » demandant le type (prestation ou événement)
+  // avant d'entrer dans le formulaire. Pas affichée en cas d'invitation
+  // (next) : on ne doit pas interrompre ce parcours-là avec une question
+  // hors sujet.
+  const [showTypeModal, setShowTypeModal] = useState(false);
 
   // Présélection du parcours prestataire via ?type=pro (depuis « Je suis
   // prestataire » / « Devenir prestataire »). Lu au montage pour éviter tout
@@ -41,7 +78,11 @@ export default function CreerPage() {
     const t = sp.get("type");
     if (t === "pro" || t === "professionnel") setType("professionnel");
     const n = safeNext(sp.get("next"), "");
-    if (n) setNextParam(n);
+    if (n) {
+      setNextParam(n);
+    } else {
+      setShowTypeModal(true);
+    }
   }, []);
 
   // données
@@ -141,10 +182,24 @@ export default function CreerPage() {
     setError("");
     const supabase = createClient();
     // L'OAuth Google ne transmet aucune métadonnée custom (contrairement à
-    // signUp) : on signale l'intention "prestataire" via l'URL de retour,
-    // consommée uniquement côté serveur dans /auth/callback.
+    // signUp) : on signale l'intention "prestataire" (ou le type
+    // d'événement en attente) via l'URL de retour, consommée uniquement
+    // côté serveur dans /auth/callback — sessionStorage ne survivrait pas
+    // l'aller-retour vers Google.
+    let pendingEventType: string | null = null;
+    if (type === "particulier") {
+      try {
+        pendingEventType = sessionStorage.getItem(PENDING_EVENT_TYPE_KEY);
+      } catch {
+        pendingEventType = null;
+      }
+    }
     const redirectTo = `${window.location.origin}/auth/callback${
-      type === "professionnel" ? "?intent=pro" : ""
+      type === "professionnel"
+        ? "?intent=pro"
+        : pendingEventType
+        ? `?eventType=${encodeURIComponent(pendingEventType)}`
+        : ""
     }`;
     const { error: oauthErr } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -170,9 +225,20 @@ export default function CreerPage() {
         router.push("/pro");
         return;
       }
-      // Particulier : on l'emmène sur son dashboard, où il pourra créer
-      // un ou plusieurs événements.
-      router.push("/dashboard");
+      // Particulier : direction /dashboard/nouveau (prérempli avec le type
+      // choisi dans la modale) si un type est en attente, sinon le dashboard.
+      let dest = "/dashboard";
+      try {
+        const pending = sessionStorage.getItem(PENDING_EVENT_TYPE_KEY);
+        if (pending) {
+          dest = `/dashboard/nouveau?type=${encodeURIComponent(pending)}`;
+          sessionStorage.removeItem(PENDING_EVENT_TYPE_KEY);
+        }
+      } catch {
+        // sessionStorage indisponible (navigation privée stricte, etc.) : on
+        // se replie simplement sur le dashboard, sans préremplissage.
+      }
+      router.push(dest);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Une erreur est survenue pendant la création."
@@ -303,6 +369,34 @@ export default function CreerPage() {
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-cream bg-cover bg-center bg-no-repeat bg-[url('/background_signup_mobile.png')] sm:bg-[url('/background_login.png')]">
       <Header />
+
+      {showTypeModal &&
+        (type === "professionnel" ? (
+          <TypeModal
+            title="Quel type de prestation proposez-vous ?"
+            options={PRESTA_TYPES}
+            onClose={() => router.push("/")}
+            onSelect={(v) => {
+              setPro((p) => ({ ...p, category: v }));
+              setShowTypeModal(false);
+            }}
+          />
+        ) : (
+          <TypeModal
+            title="Quel type d'événement souhaitez-vous organiser ?"
+            options={EVENT_TYPES}
+            onClose={() => router.push("/")}
+            onSelect={(v) => {
+              try {
+                sessionStorage.setItem(PENDING_EVENT_TYPE_KEY, v);
+              } catch {
+                // sessionStorage indisponible : le préremplissage sera
+                // simplement ignoré plus tard, rien de bloquant.
+              }
+              setShowTypeModal(false);
+            }}
+          />
+        ))}
 
       <div className="flex flex-1 items-center justify-center overflow-hidden px-5 py-2">
         <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-sm">

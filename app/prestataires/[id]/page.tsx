@@ -20,10 +20,11 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const vendor = await getVendor(params.id);
-  if (!vendor) return { title: "Prestataire — Misstice" };
+  if (!vendor) return { title: "Prestataire · Misstice" };
   return {
-    title: `${vendor.name} — ${vendor.category} à ${vendor.city} · Misstice`,
+    title: `${vendor.name} · ${vendor.category} à ${vendor.city} · Misstice`,
     description: vendor.tagline,
+    alternates: { canonical: `/prestataires/${vendor.id}` },
   };
 }
 

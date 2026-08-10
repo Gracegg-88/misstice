@@ -22,13 +22,17 @@ const dmSans = DM_Sans({
 
 // SEO dès le jour 1 (principe 5)
 export const metadata: Metadata = {
-  title: "Misstice Organisez vos plus beaux événements",
+  metadataBase: new URL("https://misstice.com"),
+  title: "Misstice | Organisez votre événement et trouvez vos prestataires",
   description:
-    "Planifiez mariages, anniversaires, baptêmes et galas en un seul endroit : budget, checklist, invités et les meilleurs prestataires. Pour les familles, pensé pour la fête.",
+    "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Misstice Organisez vos plus beaux événements",
+    title: "Misstice | Organisez votre événement et trouvez vos prestataires",
     description:
-      "Budget, checklist, invités et prestataires vérifiés, réunis sur une seule plateforme.",
+      "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",
     locale: "fr_FR",
     type: "website",
   },

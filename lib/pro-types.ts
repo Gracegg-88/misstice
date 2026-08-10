@@ -36,7 +36,7 @@ export type Quote = {
   client_name: string | null;
   event_label: string | null;
   amount: number;
-  status: "envoyé" | "accepté" | "refusé" | "expiré";
+  status: "envoyé" | "accepté" | "refusé" | "expiré" | "annulé" | "en litige";
   created_at: string;
   // Document de devis
   quote_number: string | null;
@@ -57,6 +57,8 @@ export type Quote = {
   presta_email: string | null;
   presta_phone: string | null;
   presta_address: string | null;
+  presta_siret: string | null;
+  presta_company_name: string | null;
 };
 
 export type VendorPackage = {

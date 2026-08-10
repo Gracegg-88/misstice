@@ -211,7 +211,7 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                 {confirmed
                   ? "Votre présence est confirmée. Nous sommes ravis de vous compter parmi nous pour ce moment spécial."
                   : declined
-                    ? "Vous avez décliné l'invitation. Vous nous manquerez — mais merci de nous avoir prévenus !"
+                    ? "Vous avez décliné l'invitation. Vous nous manquerez, mais merci de nous avoir prévenus !"
                     : "Nous serions honorés de votre présence. Merci de nous indiquer si vous serez des nôtres."}
               </p>
 

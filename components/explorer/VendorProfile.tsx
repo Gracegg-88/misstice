@@ -24,6 +24,7 @@ import { GALLERY_GRADS } from "./profileData";
 import { quoteFields, demandeItems, wantedPlaceholder } from "@/lib/quote-fields";
 import { useFavorites } from "@/lib/useFavorites";
 import { vibesVisible } from "@/lib/vibes";
+import { formatPriceFrom } from "@/lib/price";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -237,7 +238,7 @@ export default function VendorProfile({
           }`}
         >
           {[
-            { icon: Euro, label: "À partir de", value: vendor.priceFrom.replace("dès ", ""), tint: "bg-festif-soft text-festif" },
+            { icon: Euro, label: "À partir de", value: formatPriceFrom(vendor.priceFrom), tint: "bg-festif-soft text-festif" },
             { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-festif-soft text-festif" },
             ...(availabilityLabel
               ? [
@@ -529,30 +530,10 @@ export default function VendorProfile({
           <aside className="lg:col-span-1">
             <div className="space-y-4 lg:sticky lg:top-24">
               <div className="rounded-3xl border border-black/5 bg-white p-6">
-                <p className="flex items-baseline gap-1">
-                  <span className="font-display text-2xl font-semibold text-plum">
-                    {vendor.priceFrom}
-                  </span>
-                </p>
-                <div className="mt-4 space-y-2.5 text-sm">
-                  <p className="flex items-center justify-between">
-                    <span className="text-slate">Note</span>
-                    <span className="inline-flex items-center gap-1 font-semibold text-plum">
-                      {vendor.reviews > 0 ? (
-                        <>
-                          <Star size={14} className="fill-festif text-festif" />
-                          {vendor.rating.toFixed(1).replace(".", ",")} ({vendor.reviews})
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </span>
-                  </p>
-                </div>
                 <button
                   type="button"
                   onClick={() => setQuoteOpen(true)}
-                  className="mt-5 w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark"
+                  className="w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark"
                 >
                   Demander un devis
                 </button>
@@ -606,7 +587,7 @@ export default function VendorProfile({
 
       {/* ── Modale devis ── */}
       {quoteOpen && (
-        <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis — ${vendor.name}`}>
+        <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis · ${vendor.name}`}>
           <QuoteForm
             vendor={vendor}
             prefill={prefill}
@@ -618,7 +599,7 @@ export default function VendorProfile({
 
       {/* ── Modale message simple (sans demande de devis) ── */}
       {msgOpen && (
-        <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message — ${vendor.name}`}>
+        <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message · ${vendor.name}`}>
           <MessageForm vendor={vendor} onDone={() => setMsgOpen(false)} />
         </Modal>
       )}
@@ -895,6 +876,7 @@ function QuoteForm({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventType || !date || !location.trim() || sending) return;
+    if (!email.trim() || !phone.trim()) return;
     if (message.trim().length < 50) return;
     setSending(true);
     setError("");
@@ -919,7 +901,10 @@ function QuoteForm({
       date && `Date : ${date}`,
       location.trim() && `Lieu : ${location.trim()}`,
       ...extra.map((e) => `${e.label} : ${e.value}`),
-      phone.trim() && `Téléphone : ${phone.trim()}`,
+      // Jamais le téléphone/email en clair dans le message : ils restent
+      // dans `demande` (structuré) et sont révélés uniquement à
+      // l'acceptation du devis (cf. DevisDocument `revealed`).
+      "Coordonnées de contact protégées jusqu'à acceptation du devis.",
     ]
       .filter(Boolean)
       .join("\n");
@@ -990,7 +975,7 @@ function QuoteForm({
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
           demande,
-          subject: `Demande de devis — ${vendor.name}`,
+          subject: `Demande de devis · ${vendor.name}`,
         })
         .select("id")
         .single();
@@ -1131,6 +1116,7 @@ function QuoteForm({
         <p className="text-sm font-semibold text-plum">Vos coordonnées</p>
         <div className="mt-2 grid gap-4 sm:grid-cols-3">
           <input
+            required
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -1138,6 +1124,7 @@ function QuoteForm({
             className={inputCls}
           />
           <input
+            required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Téléphone"
@@ -1285,7 +1272,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
           vendor_name: vendor.name,
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
-          subject: `Message — ${vendor.name}`,
+          subject: `Message · ${vendor.name}`,
         })
         .select("id")
         .single();
@@ -1313,7 +1300,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
   return (
     <form onSubmit={submit} className="space-y-4">
       <p className="text-sm text-slate">
-        Une question avant de demander un devis ? Écrivez à {vendor.name} —
+        Une question avant de demander un devis ? Écrivez à {vendor.name},
         l&apos;échange se poursuivra dans votre messagerie.
       </p>
       <textarea

@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Logo from "@/components/Logo";
 import AdminNav from "@/components/admin/AdminNav";
 import AdminUserMenu from "@/components/admin/AdminUserMenu";
 import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
 import { getProfile } from "@/lib/queries";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({
   children,

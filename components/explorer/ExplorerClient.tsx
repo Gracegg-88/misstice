@@ -47,7 +47,7 @@ const SORTS = [
 
 // Cartes de confiance (réponses aux reproches du secteur).
 const PROMISES = [
-  { icon: Eye, title: "Tous les avis publiés", text: "Positifs comme négatifs, jamais supprimés contre paiement — vous lisez de vrais retours." },
+  { icon: Eye, title: "Tous les avis publiés", text: "Positifs comme négatifs, jamais supprimés contre paiement. Vous lisez de vrais retours." },
   { icon: ShieldCheck, title: "Prestataires vérifiés", text: "Le badge « Vérifié » atteste d'une identité contrôlée, de coordonnées professionnelles valides et de réalisations authentifiées par notre équipe." },
   { icon: MailX, title: "Zéro spam, zéro faux lead", text: "Vous contactez qui vous voulez. Les pros reçoivent de vraies demandes, pas du bruit." },
 ];
@@ -149,11 +149,21 @@ export default function ExplorerClient({
   return (
     <div>
       {/* ── HERO ── */}
-      <section
-        className="relative overflow-hidden bg-cream bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero_prestataire.png')" }}
-      >
-        <div className="mx-auto max-w-content px-5 py-14 sm:px-8 lg:py-20">
+      {/* Grille texte / photo explicite (au lieu d'une image de fond en
+          "contain") : la photo garde une taille et un cadrage prévisibles,
+          quelle que soit la hauteur du bloc de texte, sans jamais déborder
+          ni se retrouver mal alignée. */}
+      <section className="relative overflow-hidden bg-cream">
+        <div className="mx-5 mt-5 h-48 overflow-hidden rounded-3xl lg:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/prestataire_client_photo.png"
+            alt="Une famille et une prestataire Misstice échangent autour d'un projet d'événement"
+            className="h-full w-full object-cover"
+            style={{ objectPosition: "70% 30%" }}
+          />
+        </div>
+        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
@@ -168,6 +178,15 @@ export default function ExplorerClient({
               <span className="font-semibold text-violet"> ambiance, énergie et style</span>,
               et trouvez le prestataire qui vous ressemble vraiment.
             </p>
+          </div>
+          <div className="hidden overflow-hidden rounded-[32px] lg:block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/prestataire_client_photo.png"
+              alt="Une famille et une prestataire Misstice échangent autour d'un projet d'événement"
+              className="aspect-[4/3] w-full object-cover"
+              style={{ objectPosition: "70% 30%" }}
+            />
           </div>
         </div>
       </section>
@@ -315,6 +334,22 @@ export default function ExplorerClient({
 
             {view === "carte" ? (
               <VendorsMap vendors={results} />
+            ) : results.length === 0 && vendors.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-black/10 bg-white py-20 text-center">
+                <p className="font-display text-xl font-semibold text-plum">
+                  Les premiers prestataires arrivent bientôt
+                </p>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-slate">
+                  Nous sélectionnons et vérifions actuellement les premiers
+                  profils. Revenez très vite !
+                </p>
+                <a
+                  href="/devenir-prestataire"
+                  className="mt-5 inline-block rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Devenir prestataire
+                </a>
+              </div>
             ) : results.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-black/10 bg-white py-20 text-center">
                 <p className="font-display text-xl font-semibold text-plum">

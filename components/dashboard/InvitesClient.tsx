@@ -423,7 +423,7 @@ export default function InvitesClient({
             </a>
             <a
               href={`mailto:?subject=${encodeURIComponent(
-                `Invitation — ${eventName}`
+                `Invitation · ${eventName}`
               )}&body=${encodeURIComponent(shareText)}`}
               className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum hover:border-violet/40"
             >

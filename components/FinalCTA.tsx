@@ -1,5 +1,6 @@
 import { Heart, CalendarDays, Users, Gift, Lock, Headphones } from "lucide-react";
 import Reveal from "./Reveal";
+import CalendlyButton from "./CalendlyButton";
 
 const features = [
   { icon: Gift, title: "100% gratuit", sub: "sans engagement", tint: "bg-violet-soft text-violet" },
@@ -9,20 +10,21 @@ const features = [
 
 export default function FinalCTA() {
   return (
-    <section className="mx-auto max-w-content px-5 py-10 sm:px-8">
+    <section className="mx-auto max-w-content px-5 py-6 sm:px-8 sm:py-8">
       <Reveal>
         <div
           className="relative overflow-hidden rounded-[32px] border border-black/5 bg-cream bg-cover bg-center shadow-sm"
-          style={{ backgroundImage: "url('/bacground_session.png')" }}
+          style={{ backgroundImage: "url('/discoball-flatlay.jpg')" }}
         >
-          {/* Voile clair pour la lisibilité du texte à gauche */}
+          {/* Voile dégradé doré, assorti au velours de la photo — texte foncé
+              (plum) car ce ton est trop clair pour du texte cream lisible. */}
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/40 to-transparent lg:from-white/60"
+            className="absolute inset-0 bg-gradient-to-r from-[#D9B88C]/90 via-[#D9B88C]/60 to-cream/20"
           />
 
           <div className="relative max-w-2xl p-6 sm:p-8">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-violet backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-cream/90 px-3 py-1 text-xs font-semibold text-violet backdrop-blur-sm">
               <Heart size={13} className="text-festif" />
               Gratuit pour commencer
             </span>
@@ -32,7 +34,7 @@ export default function FinalCTA() {
               <span className="text-festif">sans stress</span> ?
             </h2>
 
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-slate">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-plum/80">
               Créez votre événement gratuitement, centralisez vos invités, votre
               budget et vos prestataires, puis profitez pleinement du moment.
             </p>
@@ -40,19 +42,24 @@ export default function FinalCTA() {
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/creer"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet/25 transition-all hover:bg-violet-dark hover:shadow-xl"
+                className="ev-cta ev-cta-pulse inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
               >
                 <CalendarDays size={17} />
                 Créer mon événement
               </a>
               <a
                 href="/creer?type=pro"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-violet/30 bg-white/70 px-6 py-3 text-sm font-semibold text-violet backdrop-blur-sm transition-colors hover:bg-white"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/20 bg-cream/80 px-6 py-3 text-sm font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-cream"
               >
                 <Users size={17} />
                 Devenir prestataire
               </a>
             </div>
+
+            <CalendlyButton
+              label="Ou réservez un appel pour en discuter"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-plum/70 underline decoration-plum/30 underline-offset-2 hover:text-plum"
+            />
 
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 sm:flex-nowrap">
               {features.map((f) => (
@@ -62,7 +69,7 @@ export default function FinalCTA() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-plum">{f.title}</p>
-                    <p className="text-xs text-slate">{f.sub}</p>
+                    <p className="text-xs text-plum/70">{f.sub}</p>
                   </div>
                 </div>
               ))}

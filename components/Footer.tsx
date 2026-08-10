@@ -6,7 +6,7 @@ const columns = [
     links: [
       { label: "Créer un événement", href: "/creer" },
       { label: "Explorer les prestataires", href: "/prestataires" },
-      { label: "Comment ça marche", href: "/#comment-ca-marche" },
+      { label: "Comment ça marche", href: "/comment-ca-marche" },
       { label: "FAQ", href: "/#faq" },
     ],
   },
@@ -27,7 +27,16 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Marque */}
           <div className="lg:col-span-2">
-            <Logo />
+            <div className="flex items-center gap-2.5">
+              <Logo />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/sparkler.jpg"
+                alt=""
+                aria-hidden="true"
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate">
               On transforme le stress de l&apos;organisation en plaisir. Pour
               les familles francophones, ici et ailleurs.

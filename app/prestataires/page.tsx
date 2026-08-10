@@ -7,9 +7,10 @@ import { getHeaderAccount } from "@/lib/header-account";
 import { getCities } from "@/lib/geo";
 
 export const metadata: Metadata = {
-  title: "Explorer les prestataires — Misstice",
+  title: "Explorer les prestataires · Misstice",
   description:
     "Comparez photographes, traiteurs, DJ, salles et wedding planners. Classement au mérite, avis vérifiés, prix affichés. Filtrez par ville, budget et note.",
+  alternates: { canonical: "/prestataires" },
 };
 
 export default async function PrestatairesPage() {

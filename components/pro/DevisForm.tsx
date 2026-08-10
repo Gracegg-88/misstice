@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Send, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, Send, ArrowLeft, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { QuoteItem } from "@/lib/pro-types";
 import type { DemandeDetails } from "@/lib/messaging-types";
@@ -22,6 +22,9 @@ type Props = {
   // Coordonnées du prestataire (pré-remplies depuis son dernier devis).
   prestaPhone?: string;
   prestaAddress?: string;
+  // Mention légale (SIRET vérifié) — null si non vérifié.
+  prestaSiret?: string | null;
+  prestaCompanyName?: string | null;
   demande: DemandeDetails | null;
   // Conversations du prestataire (pour choisir le destinataire en brouillon).
   conversations?: { id: string; clientName: string }[];
@@ -47,6 +50,8 @@ export default function DevisForm({
   prestaEmail,
   prestaPhone: prestaPhoneDefault = "",
   prestaAddress: prestaAddressDefault = "",
+  prestaSiret = null,
+  prestaCompanyName = null,
   demande,
   conversations = [],
 }: Props) {
@@ -149,6 +154,8 @@ export default function DevisForm({
       presta_email: prestaEmail || null,
       presta_phone: prestaPhone.trim() || null,
       presta_address: prestaAddress.trim() || null,
+      presta_siret: prestaSiret,
+      presta_company_name: prestaCompanyName,
     };
 
     // Numéro de devis unique via séquence Postgres. En cas de collision
@@ -184,7 +191,7 @@ export default function DevisForm({
     const { error: msgErr } = await supabase.from("messages").insert({
       conversation_id: targetConvId,
       sender_id: prestataireId,
-      body: `[[devis:${data.id}]] Devis ${quoteNumber} — ${euro(totals.total)}`,
+      body: `[[devis:${data.id}]] Devis ${quoteNumber} · ${euro(totals.total)}`,
     });
     if (msgErr) {
       console.error("devis message insert:", msgErr);
@@ -211,7 +218,7 @@ export default function DevisForm({
           <>Rédigez votre devis, puis choisissez le client destinataire à l&apos;envoi.</>
         ) : (
           <>
-            Pour <span className="font-semibold text-plum">{clientName}</span> —
+            Pour <span className="font-semibold text-plum">{clientName}</span> :
             cette fiche sera envoyée au client, qui pourra la télécharger.
           </>
         )}
@@ -229,14 +236,27 @@ export default function DevisForm({
         </div>
       </Section>
 
-      {/* Coordonnées client */}
-      <Section title="Coordonnées du client">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Input label="Email" value={clientEmail} onChange={setClientEmail} placeholder="email@exemple.com" />
-          <Input label="Téléphone" value={clientPhone} onChange={setClientPhone} placeholder="06 XX XX XX XX" />
-          <Input label="Adresse" value={clientAddress} onChange={setClientAddress} placeholder="Adresse du client" />
-        </div>
-      </Section>
+      {/* Coordonnées client — masquées côté prestataire tant que le client n'a
+          pas accepté le devis (anti-contournement de la plateforme). Les
+          valeurs restent en état (pré-remplies depuis la demande) et sont
+          bien envoyées avec le devis : elles ne sont juste pas affichées ici. */}
+      {draft ? (
+        <Section title="Coordonnées du client">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Input label="Email" value={clientEmail} onChange={setClientEmail} placeholder="email@exemple.com" />
+            <Input label="Téléphone" value={clientPhone} onChange={setClientPhone} placeholder="06 XX XX XX XX" />
+            <Input label="Adresse" value={clientAddress} onChange={setClientAddress} placeholder="Adresse du client" />
+          </div>
+        </Section>
+      ) : (
+        <Section title="Coordonnées du client">
+          <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-4 py-3 text-sm text-violet">
+            <Lock size={15} className="shrink-0" />
+            Masquées pour vous tant que le client n&apos;a pas accepté le devis,
+            elles seront automatiquement jointes au document envoyé.
+          </p>
+        </Section>
+      )}
 
       {/* Mes coordonnées */}
       <Section title="Mes coordonnées (affichées sur le devis)">

@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Heart, Cake, Baby, GlassWater, Gift, PartyPopper } from "lucide-react";
 
+// Libellés alignés sur la modale de sélection affichée avant l'inscription
+// (app/creer/page.tsx) : une valeur choisie là-bas doit correspondre
+// exactement à l'une de ces options pour être préremplie ici.
 const EVENT_TYPES = [
   { label: "Mariage", icon: Heart },
   { label: "Anniversaire", icon: Cake },
   { label: "Baptême", icon: Baby },
-  { label: "Gala / soirée", icon: GlassWater },
+  { label: "Gala", icon: GlassWater },
+  { label: "Baby Shower", icon: Baby },
   { label: "Autre", icon: Gift },
 ];
 
@@ -29,7 +33,15 @@ export default function NouvelEvenementPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = type !== "" && name.trim() !== "";
+  // Préremplit le type si choisi dans la modale affichée avant l'inscription
+  // (?type=... ajouté par app/creer/page.tsx à la redirection post-signup).
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("type");
+    if (t && EVENT_TYPES.some((e) => e.label === t)) setType(t);
+  }, []);
+
+  const canSubmit =
+    type !== "" && name.trim() !== "" && budget !== "" && Number(budget) > 0;
 
   const create = async () => {
     setError("");
@@ -169,8 +181,9 @@ export default function NouvelEvenementPage() {
               Budget prévisionnel (€)
             </label>
             <input
+              required
               type="number"
-              min={0}
+              min={1}
               placeholder="ex. 15000"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}

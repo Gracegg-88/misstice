@@ -3,8 +3,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Mentions Légales — Misstice",
+  title: "Mentions Légales · Misstice",
   description: "Mentions légales de la plateforme événementielle Misstice.",
+  alternates: { canonical: "/mentions-legales" },
 };
 
 const sections = [

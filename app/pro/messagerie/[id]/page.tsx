@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import ConversationThread from "@/components/messaging/ConversationThread";
-import { getConversation, getMessages } from "@/lib/messaging";
+import { getConversation, getMessages, getProjectContext } from "@/lib/messaging";
 
 export default async function ProMessageThreadPage({
   params,
@@ -10,7 +10,10 @@ export default async function ProMessageThreadPage({
   const res = await getConversation(params.id);
   if (!res) redirect("/pro/messagerie");
 
-  const messages = await getMessages(params.id);
+  const [messages, projectContext] = await Promise.all([
+    getMessages(params.id),
+    res.conv.event_id ? getProjectContext(params.id) : Promise.resolve(null),
+  ]);
 
   return (
     <ConversationThread
@@ -25,6 +28,7 @@ export default async function ProMessageThreadPage({
       initial={messages}
       basePath="/pro/messagerie"
       otherLastReadAt={res.otherLastReadAt}
+      projectContext={projectContext}
     />
   );
 }

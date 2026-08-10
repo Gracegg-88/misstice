@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import ProTopbar from "@/components/pro/ProTopbar";
 import ProSidebar from "@/components/pro/ProSidebar";
 import { getProfile } from "@/lib/queries";
 import { getMyVendor } from "@/lib/pro";
 import { getUnreadTotal } from "@/lib/messaging";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function ProLayout({
   children,

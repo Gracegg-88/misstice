@@ -124,7 +124,7 @@ export default async function DashboardOverview() {
       level: daysToEvent <= 2 ? "warning" : "info",
       text:
         `Plus que ${daysToEvent} jour${daysToEvent > 1 ? "s" : ""} avant « ${event.name} »` +
-        (progress < 100 ? ` — il reste ${tasks.length - doneTasks} tâche${tasks.length - doneTasks > 1 ? "s" : ""}.` : " 🎉"),
+        (progress < 100 ? `. Il reste ${tasks.length - doneTasks} tâche${tasks.length - doneTasks > 1 ? "s" : ""}.` : " 🎉"),
       href: "/dashboard/checklist",
     });
   } else if (
@@ -172,7 +172,7 @@ export default async function DashboardOverview() {
     <div className="mx-auto max-w-6xl">
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-slate">
-          {event.name} — {dateLabel}
+          {event.name} · {dateLabel}
         </p>
         <Link
           href="/dashboard/nouveau"

@@ -47,3 +47,16 @@ export type Message = {
   body: string;
   created_at: string;
 };
+
+// Aperçu du projet client, côté prestataire (RPC SECURITY DEFINER, voir
+// lib/messaging.ts → getProjectContext). Lieu/invités/prestataires réservés
+// ne sont renseignés qu'après acceptation d'un devis sur la conversation.
+export type ProjectContext = {
+  eventName: string | null;
+  eventDate: string | null;
+  budgetTotal: number;
+  accepted: boolean;
+  location: string | null;
+  guestCount: number | null;
+  bookedVendorsCount: number;
+};
