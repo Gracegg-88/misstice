@@ -1,5 +1,12 @@
 import type { MetadataRoute } from "next";
 import { getVendors } from "@/lib/vendors";
+import {
+  getCities,
+  getCitySlugsWithVendors,
+  getEventTypes,
+  getIndexableCityCategoryCombos,
+  getIndexableCitySlugs,
+} from "@/lib/geo";
 
 const BASE_URL = "https://misstice.com";
 
@@ -42,5 +49,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  return [...staticEntries, ...vendorEntries];
+  // Pages géolocalisées : uniquement celles qui ont réellement du contenu
+  // (jamais une page "bientôt disponible" dans le sitemap — ça signale à
+  // Google une page à faible valeur, voir lib/geo.ts).
+  const [citySlugsWithVendors, cities, cityCategoryCombos, indexableCitySlugs, eventTypes] =
+    await Promise.all([
+      getCitySlugsWithVendors(),
+      getCities(),
+      getIndexableCityCategoryCombos(),
+      getIndexableCitySlugs(),
+      getEventTypes(),
+    ]);
+  const activeCitySlugs = new Set(citySlugsWithVendors);
+  const cityBySlug = new Map(cities.map((c) => [c.slug, c]));
+
+  const cityHubEntries: MetadataRoute.Sitemap = cities
+    .filter((c) => activeCitySlugs.has(c.slug))
+    .map((c) => ({
+      url: `${BASE_URL}/prestataires/ville/${c.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+  const cityCategoryEntries: MetadataRoute.Sitemap = cityCategoryCombos
+    .filter((c) => cityBySlug.has(c.citySlug))
+    .map((c) => ({
+      url: `${BASE_URL}/prestataires/ville/${c.citySlug}/${c.categorySlug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+  const eventCityEntries: MetadataRoute.Sitemap = indexableCitySlugs
+    .filter((slug) => cityBySlug.has(slug))
+    .flatMap((slug) =>
+      eventTypes.map((et) => ({
+        url: `${BASE_URL}/${et.slug}/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.65,
+      }))
+    );
+
+  return [...staticEntries, ...vendorEntries, ...cityHubEntries, ...cityCategoryEntries, ...eventCityEntries];
 }

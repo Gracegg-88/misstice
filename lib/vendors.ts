@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type { Vendor } from "@/components/explorer/vendors";
 import type { Pkg, Review } from "@/components/explorer/profileData";
@@ -62,9 +63,13 @@ function map(r: Row): Vendor {
   };
 }
 
-/** Tous les prestataires de l'annuaire (triés par position). */
-export async function getVendors(): Promise<Vendor[]> {
-  const supabase = createClient();
+/**
+ * Tous les prestataires de l'annuaire (triés par position).
+ * `client` optionnel : passer un client sans cookies (lib/supabase/static)
+ * quand l'appel vient de generateStaticParams (build time, sans requête).
+ */
+export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
+  const supabase = client ?? createClient();
   const { data } = await supabase
     .from("vendors")
     .select("*")
