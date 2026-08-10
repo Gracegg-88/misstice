@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getVendors } from "@/lib/vendors";
 import {
   getCities,
+  getCityEventContent,
   getCitySlugsWithVendors,
   getEventTypes,
   getIndexableCityCategoryCombos,
@@ -52,13 +53,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Pages géolocalisées : uniquement celles qui ont réellement du contenu
   // (jamais une page "bientôt disponible" dans le sitemap — ça signale à
   // Google une page à faible valeur, voir lib/geo.ts).
-  const [citySlugsWithVendors, cities, cityCategoryCombos, indexableCitySlugs, eventTypes] =
+  const [citySlugsWithVendors, cities, cityCategoryCombos, indexableCitySlugs, eventTypes, editorialContent] =
     await Promise.all([
       getCitySlugsWithVendors(),
       getCities(),
       getIndexableCityCategoryCombos(),
       getIndexableCitySlugs(),
       getEventTypes(),
+      getCityEventContent(),
     ]);
   const activeCitySlugs = new Set(citySlugsWithVendors);
   const cityBySlug = new Map(cities.map((c) => [c.slug, c]));
@@ -81,16 +83,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  const eventCityEntries: MetadataRoute.Sitemap = indexableCitySlugs
-    .filter((slug) => cityBySlug.has(slug))
-    .flatMap((slug) =>
-      eventTypes.map((et) => ({
-        url: `${BASE_URL}/${et.slug}/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.65,
-      }))
-    );
+  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
+  // la main pour cette combinaison (voir generateStaticParams de la page).
+  const eventCitySlugs = new Set([
+    ...indexableCitySlugs.flatMap((ville) => eventTypes.map((et) => `${et.slug}::${ville}`)),
+    ...editorialContent.map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
+  ]);
+  const eventCityEntries: MetadataRoute.Sitemap = Array.from(eventCitySlugs)
+    .map((key) => {
+      const [evenement, ville] = key.split("::");
+      return { evenement, ville };
+    })
+    .filter((p) => cityBySlug.has(p.ville))
+    .map((p) => ({
+      url: `${BASE_URL}/${p.evenement}/${p.ville}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.65,
+    }));
 
   return [...staticEntries, ...vendorEntries, ...cityHubEntries, ...cityCategoryEntries, ...eventCityEntries];
 }

@@ -14,7 +14,6 @@ export type City = {
   slug: string;
   name: string;
   region: string;
-  introText: string | null;
 };
 
 export type EventType = {
@@ -46,13 +45,8 @@ export function slugify(input: string): string {
 
 export async function getCities(): Promise<City[]> {
   const supabase = db();
-  const { data } = await supabase
-    .from("cities")
-    .select("slug, name, region, intro_text")
-    .order("name");
-  return (
-    (data as { slug: string; name: string; region: string; intro_text: string | null }[]) ?? []
-  ).map((c) => ({ slug: c.slug, name: c.name, region: c.region, introText: c.intro_text }));
+  const { data } = await supabase.from("cities").select("slug, name, region").order("name");
+  return (data as City[]) ?? [];
 }
 
 export async function getCityBySlug(slug: string): Promise<City | null> {
@@ -142,6 +136,37 @@ export async function getIndexableCitySlugs(
   return Array.from(counts.entries())
     .filter(([, count]) => count >= minVerified)
     .map(([citySlug]) => citySlug);
+}
+
+/**
+ * Contenu éditorial écrit à la main pour une page ville×événement
+ * (public.city_event_content). Contrairement au seuil de prestataires
+ * vérifiés, ce contenu ne dépend PAS de l'annuaire : un texte unique et
+ * substantiel justifie à lui seul de publier la page (voir échange sur le
+ * contenu "thin" — le problème est le gabarit vide répété, pas l'absence
+ * de prestataires sur une page par ailleurs réellement rédigée).
+ */
+export async function getCityEventContent(): Promise<
+  { citySlug: string; eventTypeSlug: string; introText: string }[]
+> {
+  const supabase = db();
+  const { data } = await supabase
+    .from("city_event_content")
+    .select("city_slug, event_type_slug, intro_text");
+  return (
+    (data as { city_slug: string; event_type_slug: string; intro_text: string }[] | null) ?? []
+  ).map((r) => ({ citySlug: r.city_slug, eventTypeSlug: r.event_type_slug, introText: r.intro_text }));
+}
+
+export async function getCityEventIntro(
+  citySlug: string,
+  eventTypeSlug: string
+): Promise<string | null> {
+  const content = await getCityEventContent();
+  return (
+    content.find((c) => c.citySlug === citySlug && c.eventTypeSlug === eventTypeSlug)
+      ?.introText ?? null
+  );
 }
 
 /**
