@@ -99,7 +99,10 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
   const showGuests = categoryUsesGuests(quote.presta_category);
   // Coordonnées (email, téléphone, adresse) masquées tant que le devis n'est
   // pas accepté par le client, pour éviter tout contact hors plateforme.
-  const revealed = quote.status === "accepté";
+  // "accepté" seul ne suffit plus depuis le paiement Stripe (Phase 2) : le
+  // devis passe directement par les statuts de paiement sans repasser par
+  // "accepté" au sens strict une fois payé.
+  const revealed = quote.status !== "envoyé" && quote.status !== "refusé" && quote.status !== "expiré";
 
   return (
     <div className="devis-sheet mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm">
