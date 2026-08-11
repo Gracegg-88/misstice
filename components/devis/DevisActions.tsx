@@ -211,6 +211,54 @@ export default function DevisActions({
     }
   };
 
+  // Après la rencontre/essai préalable (traiteur, robe/tenue, coiffure-
+  // maquillage), la famille confirme (le séquestre suit son cours normal)
+  // ou annule (remboursement des 85 % au client, commission conservée —
+  // fait côté Stripe avant d'enregistrer le résultat).
+  const decideTrial = async (confirmed: boolean) => {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/stripe/trial/decide", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ quoteId, confirmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Action impossible sur ce devis.");
+      }
+      if (!confirmed) {
+        const supabase = createClient();
+        // Contrairement à applySideEffects("refusé") — qui protège un
+        // prestataire déjà « confirmé » d'être redescendu par le refus d'un
+        // AUTRE devis — ici c'est ce même devis, déjà confirmé après
+        // paiement, qui est annulé : la rétrogradation doit être inconditionnelle.
+        if (conversationId) {
+          await supabase
+            .from("conversations")
+            .update({ status: "Refusée" })
+            .eq("id", conversationId);
+        }
+        if (autoAdd) {
+          await supabase
+            .from("event_vendors")
+            .update({ status: "refusé" })
+            .eq("event_id", autoAdd.eventId)
+            .eq("vendor_id", autoAdd.vendorId);
+        }
+        await supabase.from("budget_expenses").delete().eq("quote_id", quoteId);
+      }
+      setCurrent(data.status as QuoteStatus);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Le client ne peut répondre qu'à un devis encore en attente.
   const pending = canRespond && current === "envoyé";
 
@@ -272,11 +320,37 @@ export default function DevisActions({
             Reprendre le paiement
           </button>
         )}
-        {(current === "payé" || current === "en attente de confirmation") && (
+        {current === "payé" && (
           <span className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft px-6 py-3 text-sm font-semibold text-emerald">
             <CheckCircle2 size={16} />
             Paiement sécurisé reçu
           </span>
+        )}
+        {current === "en attente de confirmation" && (
+          <>
+            <button
+              type="button"
+              onClick={() => decideTrial(true)}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+            >
+              {saving ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <CheckCircle2 size={16} />
+              )}
+              Confirmer après rencontre
+            </button>
+            <button
+              type="button"
+              onClick={() => decideTrial(false)}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl border border-festif/40 bg-white px-5 py-3 text-sm font-semibold text-festif hover:bg-festif-soft disabled:opacity-60"
+            >
+              <XCircle size={16} />
+              Annuler après rencontre
+            </button>
+          </>
         )}
         {current === "en attente de réalisation" && (
           <span className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft px-6 py-3 text-sm font-semibold text-emerald">
