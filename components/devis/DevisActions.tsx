@@ -37,6 +37,7 @@ export default function DevisActions({
   quoteId,
   conversationId,
   contactHref,
+  contactLabel = "Contacter le prestataire",
   canRespond,
   status,
   autoAdd,
@@ -44,6 +45,10 @@ export default function DevisActions({
   quoteId: string;
   conversationId: string | null;
   contactHref: string | null;
+  // "Contacter le prestataire" n'a de sens que côté famille — le
+  // prestataire consultant son propre devis doit voir "Contacter le
+  // client" (calculé côté page, qui connaît le rôle du visiteur).
+  contactLabel?: string;
   canRespond: boolean;
   status: QuoteStatus;
   autoAdd?: AutoAdd;
@@ -239,7 +244,7 @@ export default function DevisActions({
   const canDispute = canRespond && current === "en attente de réalisation";
 
   return (
-    <div className="no-print">
+    <div className="no-print mx-auto max-w-3xl">
       {error && <p className="mb-3 text-center text-sm text-festif">{error}</p>}
       {notice && <p className="mb-3 text-center text-sm text-slate">{notice}</p>}
 
@@ -418,7 +423,7 @@ export default function DevisActions({
             className="inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-plum hover:bg-cream"
           >
             <MessageSquare size={16} />
-            Contacter le prestataire
+            {contactLabel}
           </Link>
         )}
       </div>

@@ -91,6 +91,7 @@ export default async function DevisPage({
           quoteId={quote.id}
           conversationId={quote.conversation_id}
           contactHref={contactHref}
+          contactLabel={isPrestataire ? "Contacter le client" : "Contacter le prestataire"}
           canRespond={!isPrestataire && !!quote.conversation_id}
           status={quote.status}
           autoAdd={autoAdd}
