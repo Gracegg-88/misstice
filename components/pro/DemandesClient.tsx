@@ -153,19 +153,29 @@ export default function DemandesClient({
                   <Calendar size={14} />
                   {formatDate(c.last_message_at)}
                 </span>
-                {quote && (
-                  <Link
-                    href={`/devis/${quote.id}`}
-                    className="inline-flex items-center gap-1.5 font-medium text-violet hover:text-violet-dark"
-                  >
-                    <FileText size={14} />
-                    {quote.quote_number ? `${quote.quote_number} · ` : "Devis : "}
-                    {quote.amount.toLocaleString("fr-FR")}€
-                  </Link>
-                )}
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              {/* Devis déjà envoyé : mis en avant comme action principale
+                  ("Voir le devis"), pour qu'il ne soit jamais confondu avec
+                  "Envoyer un nouveau devis" — reléguée en lien discret
+                  juste en dessous, pas un bouton de même poids visuel. */}
+              {quote && (
+                <Link
+                  href={`/devis/${quote.id}`}
+                  className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-violet/20 bg-violet-soft/50 px-4 py-3 hover:bg-violet-soft"
+                >
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-violet">
+                    <FileText size={16} />
+                    {quote.quote_number ? `${quote.quote_number} · ` : "Devis · "}
+                    {quote.amount.toLocaleString("fr-FR")}€
+                  </span>
+                  <span className="text-xs font-semibold text-violet">
+                    Voir le devis →
+                  </span>
+                </Link>
+              )}
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 <Link
                   href={`/pro/messagerie/${c.id}`}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream"
@@ -173,15 +183,7 @@ export default function DemandesClient({
                   <MessageSquare size={15} />
                   Répondre
                 </Link>
-                {quote ? (
-                  <Link
-                    href={`/pro/devis/nouveau?conv=${c.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream"
-                  >
-                    <Send size={15} />
-                    Nouveau devis
-                  </Link>
-                ) : (
+                {!quote && (
                   <Link
                     href={`/pro/devis/nouveau?conv=${c.id}`}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
@@ -191,6 +193,15 @@ export default function DemandesClient({
                   </Link>
                 )}
               </div>
+              {quote && (
+                <Link
+                  href={`/pro/devis/nouveau?conv=${c.id}`}
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-slate underline decoration-dotted hover:text-violet"
+                >
+                  <Send size={12} />
+                  Envoyer un nouveau devis à la place (si celui-ci ne convient plus)
+                </Link>
+              )}
             </div>
           );
         })}

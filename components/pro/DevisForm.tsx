@@ -27,7 +27,15 @@ type Props = {
   prestaCompanyName?: string | null;
   demande: DemandeDetails | null;
   // Conversations du prestataire (pour choisir le destinataire en brouillon).
-  conversations?: { id: string; clientName: string }[];
+  // subject/lastMessageAt : affichés à côté du nom pour éviter toute
+  // confusion entre deux clients au nom proche (ex. anciens tests) — un
+  // devis envoyé au mauvais destinataire est irréversible.
+  conversations?: {
+    id: string;
+    clientName: string;
+    subject: string | null;
+    lastMessageAt: string;
+  }[];
 };
 
 const emptyItem = (): QuoteItem => ({
@@ -36,6 +44,18 @@ const emptyItem = (): QuoteItem => ({
   qty: 1,
   unit_price: 0,
 });
+
+function formatOptionDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 const DEFAULT_INTRO =
   "Merci pour votre confiance. Vous trouverez ci-dessous notre proposition détaillée adaptée à votre besoin. N'hésitez pas à nous contacter pour toute question.";
@@ -447,6 +467,8 @@ export default function DevisForm({
                 {conversations.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.clientName}
+                    {c.subject ? ` — ${c.subject}` : ""} · dernier échange le{" "}
+                    {formatOptionDate(c.lastMessageAt)}
                   </option>
                 ))}
               </select>

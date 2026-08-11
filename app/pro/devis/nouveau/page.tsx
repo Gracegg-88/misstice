@@ -72,7 +72,12 @@ export default async function NouveauDevisPage({
   const all = await getMyConversations();
   const conversations = all
     .filter((c) => c.role === "prestataire")
-    .map((c) => ({ id: c.id, clientName: c.otherName }));
+    .map((c) => ({
+      id: c.id,
+      clientName: c.otherName,
+      subject: c.subject,
+      lastMessageAt: c.last_message_at,
+    }));
 
   return (
     <DevisForm
