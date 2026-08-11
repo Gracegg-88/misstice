@@ -36,7 +36,17 @@ export type Quote = {
   client_name: string | null;
   event_label: string | null;
   amount: number;
-  status: "envoyé" | "accepté" | "refusé" | "expiré" | "annulé" | "en litige";
+  status:
+    | "envoyé"
+    | "accepté"
+    | "refusé"
+    | "expiré"
+    | "annulé"
+    | "en litige"
+    | "payé"
+    | "en attente de confirmation"
+    | "en attente de réalisation"
+    | "fonds libérés";
   created_at: string;
   // Document de devis
   quote_number: string | null;

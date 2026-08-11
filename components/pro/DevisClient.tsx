@@ -23,6 +23,10 @@ const STYLE: Record<QuoteStatus, string> = {
   expiré: "bg-festif-soft text-festif",
   annulé: "bg-black/5 text-slate",
   "en litige": "bg-festif-soft text-festif",
+  payé: "bg-emerald-soft text-emerald",
+  "en attente de confirmation": "bg-emerald-soft text-emerald",
+  "en attente de réalisation": "bg-emerald-soft text-emerald",
+  "fonds libérés": "bg-emerald-soft text-emerald",
 };
 
 const FILTERS: ("tous" | QuoteStatus)[] = ["tous", ...STATUSES, "en litige"];
@@ -34,6 +38,10 @@ const FILTER_LABEL: Record<"tous" | QuoteStatus, string> = {
   expiré: "Expiré",
   annulé: "Annulé",
   "en litige": "En litige",
+  payé: "Payé",
+  "en attente de confirmation": "En attente de confirmation",
+  "en attente de réalisation": "Réservation confirmée",
+  "fonds libérés": "Fonds libérés",
 };
 
 function formatDate(iso: string) {

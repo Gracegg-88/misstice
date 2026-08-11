@@ -14,14 +14,14 @@ import {
   Pencil,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { Availability } from "@/lib/pro-types";
+import type { Availability, Quote } from "@/lib/pro-types";
 
 export type QuoteEvent = {
   id: string;
   date: string; // yyyy-mm-dd
   title: string;
   location: string | null;
-  status: "envoyé" | "accepté" | "refusé" | "expiré" | "annulé" | "en litige";
+  status: Quote["status"];
 };
 
 type Status = Availability["status"]; // available | booked | pending | blocked
@@ -86,10 +86,19 @@ export default function CalendrierClient({
   );
   const [error, setError] = useState("");
 
-  // Meilleur devis par date : accepté prioritaire, sinon envoyé.
+  // Meilleur devis par date : payé/confirmé prioritaire, puis accepté, sinon envoyé.
   const eventByDate = useMemo(() => {
     const rank = (s: QuoteEvent["status"]) =>
-      s === "accepté" ? 2 : s === "envoyé" ? 1 : 0;
+      s === "payé" ||
+      s === "en attente de confirmation" ||
+      s === "en attente de réalisation" ||
+      s === "fonds libérés"
+        ? 3
+        : s === "accepté"
+          ? 2
+          : s === "envoyé"
+            ? 1
+            : 0;
     const m: Record<string, QuoteEvent> = {};
     for (const e of events) {
       if (rank(e.status) === 0) continue;

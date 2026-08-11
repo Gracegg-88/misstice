@@ -18,7 +18,11 @@ type QuoteStatus =
   | "refusé"
   | "expiré"
   | "annulé"
-  | "en litige";
+  | "en litige"
+  | "payé"
+  | "en attente de confirmation"
+  | "en attente de réalisation"
+  | "fonds libérés";
 
 export type AutoAdd = {
   eventId: string;
@@ -48,22 +52,14 @@ export default function DevisActions({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const respond = async (next: "accepté" | "refusé") => {
-    if (saving) return;
-    setSaving(true);
-    setError("");
-    const supabase = createClient();
-    // La famille ne modifie pas la table quotes en direct (RLS) : elle passe par
-    // une RPC qui n'écrit QUE le statut (anti-falsification du montant — CRIT-1).
-    const { data: ok, error: upErr } = await supabase.rpc("set_quote_status", {
-      p_quote: quoteId,
-      p_status: next,
-    });
-    if (upErr || ok === false) {
-      setSaving(false);
-      setError(upErr?.message ?? "Action impossible sur ce devis.");
-      return;
-    }
+  // Effets de bord communs aux deux issues (accepté via paiement, refusé via
+  // RPC directe) : synchronise la demande côté prestataire et la fiche
+  // event_vendors/budget côté famille. Appelé une fois le nouveau statut
+  // confirmé côté serveur.
+  const applySideEffects = async (
+    supabase: ReturnType<typeof createClient>,
+    next: "accepté" | "refusé"
+  ) => {
     // Synchronise le statut de la demande (vue « Demandes » côté prestataire).
     if (conversationId) {
       await supabase
@@ -163,12 +159,56 @@ export default function DevisActions({
         }
       }
     }
+  };
 
+  const respond = async (next: "refusé") => {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    const supabase = createClient();
+    // La famille ne modifie pas la table quotes en direct (RLS) : elle passe par
+    // une RPC qui n'écrit QUE le statut (anti-falsification du montant — CRIT-1).
+    const { data: ok, error: upErr } = await supabase.rpc("set_quote_status", {
+      p_quote: quoteId,
+      p_status: next,
+    });
+    if (upErr || ok === false) {
+      setSaving(false);
+      setError(upErr?.message ?? "Action impossible sur ce devis.");
+      return;
+    }
+    await applySideEffects(supabase, next);
     setSaving(false);
     setCurrent(next);
     // Rafraîchit les composants serveur (badge du devis, listes) qui sinon
     // resteraient figés sur l'ancien statut.
     router.refresh();
+  };
+
+  // Accepter un devis déclenche immédiatement le paiement sécurisé (séquestre
+  // Misstice) : contrairement au refus, ça ne s'arrête pas à un changement de
+  // statut, direction Stripe pour finaliser.
+  const acceptAndPay = async () => {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/stripe/checkout/create", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ quoteId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Impossible d'accepter ce devis.");
+      }
+      const supabase = createClient();
+      await applySideEffects(supabase, "accepté");
+      window.location.href = data.url as string;
+    } catch (e) {
+      setSaving(false);
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    }
   };
 
   // Le client ne peut répondre qu'à un devis encore en attente.
@@ -192,7 +232,7 @@ export default function DevisActions({
           <>
             <button
               type="button"
-              onClick={() => respond("accepté")}
+              onClick={acceptAndPay}
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
             >
@@ -201,7 +241,7 @@ export default function DevisActions({
               ) : (
                 <CheckCircle2 size={16} />
               )}
-              Valider le devis
+              Accepter et payer
             </button>
             <button
               type="button"
@@ -215,10 +255,39 @@ export default function DevisActions({
           </>
         )}
 
+        {/* Accepté mais pas encore payé (paiement Stripe abandonné ou pas
+            encore terminé) : on propose de reprendre le paiement. */}
         {current === "accepté" && (
+          <button
+            type="button"
+            onClick={acceptAndPay}
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+          >
+            {saving ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <CheckCircle2 size={16} />
+            )}
+            Reprendre le paiement
+          </button>
+        )}
+        {(current === "payé" || current === "en attente de confirmation") && (
           <span className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft px-6 py-3 text-sm font-semibold text-emerald">
             <CheckCircle2 size={16} />
-            Devis validé
+            Paiement sécurisé reçu
+          </span>
+        )}
+        {current === "en attente de réalisation" && (
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft px-6 py-3 text-sm font-semibold text-emerald">
+            <CheckCircle2 size={16} />
+            Réservation confirmée, paiement sécurisé
+          </span>
+        )}
+        {current === "fonds libérés" && (
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft px-6 py-3 text-sm font-semibold text-emerald">
+            <CheckCircle2 size={16} />
+            Prestation terminée
           </span>
         )}
         {current === "refusé" && (

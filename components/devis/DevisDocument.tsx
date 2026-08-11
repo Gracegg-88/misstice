@@ -24,6 +24,10 @@ const STATUS_LABEL: Record<Quote["status"], string> = {
   expiré: "Expiré",
   annulé: "Annulé",
   "en litige": "En litige",
+  payé: "Payé",
+  "en attente de confirmation": "En attente de confirmation",
+  "en attente de réalisation": "Réservation confirmée",
+  "fonds libérés": "Prestation terminée",
 };
 
 const STATUS_STYLE: Record<Quote["status"], string> = {
@@ -33,6 +37,10 @@ const STATUS_STYLE: Record<Quote["status"], string> = {
   expiré: "bg-black/10 text-slate",
   annulé: "bg-black/10 text-slate",
   "en litige": "bg-festif-soft text-festif",
+  payé: "bg-emerald-soft text-emerald",
+  "en attente de confirmation": "bg-emerald-soft text-emerald",
+  "en attente de réalisation": "bg-emerald-soft text-emerald",
+  "fonds libérés": "bg-emerald-soft text-emerald",
 };
 
 function fmtDate(iso: string) {

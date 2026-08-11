@@ -10,6 +10,10 @@ const STATUS_STYLE: Record<Quote["status"], string> = {
   expiré: "bg-cream text-slate",
   annulé: "bg-black/5 text-slate",
   "en litige": "bg-festif-soft text-festif",
+  payé: "bg-emerald-soft text-emerald",
+  "en attente de confirmation": "bg-emerald-soft text-emerald",
+  "en attente de réalisation": "bg-emerald-soft text-emerald",
+  "fonds libérés": "bg-emerald-soft text-emerald",
 };
 
 function formatDate(iso: string) {
