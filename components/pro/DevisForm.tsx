@@ -252,8 +252,11 @@ export default function DevisForm({
         <Section title="Coordonnées du client">
           <p className="flex items-center gap-2 rounded-xl bg-violet-soft px-4 py-3 text-sm text-violet">
             <Lock size={15} className="shrink-0" />
-            Masquées pour vous tant que le client n&apos;a pas accepté le devis,
-            elles seront automatiquement jointes au document envoyé.
+            Pour des raisons de sécurité et de protection des données
+            personnelles (RGPD), les coordonnées du client restent masquées
+            tant qu&apos;il n&apos;a pas accepté votre devis. Elles vous
+            seront automatiquement transmises avec le document dès son
+            acceptation.
           </p>
         </Section>
       )}

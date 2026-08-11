@@ -295,7 +295,7 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
                 `Ce devis est valable ${quote.validity_days} jours à compter de sa date d'émission.`,
                 "La réservation est confirmée après validation du devis et accord du prestataire.",
                 "Les détails peuvent être ajustés selon vos besoins spécifiques.",
-                "Le paiement s'effectue selon les modalités convenues avec le prestataire.",
+                "Le paiement s'effectue en ligne, de façon sécurisée, via Misstice : les fonds sont conservés puis versés au prestataire après réalisation de la prestation.",
                 "Annulation : voir la politique d'annulation dans les CGU Misstice (misstice.com/cgu#annulation).",
               ].map((c) => (
                 <li key={c} className="flex items-start gap-2">

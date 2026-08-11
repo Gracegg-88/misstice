@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { quoteTotals } from "@/lib/quote-doc";
+import { getCurrentEvent } from "@/lib/queries";
+import type { QuoteItem } from "@/lib/pro-types";
 
 export const runtime = "nodejs";
 
@@ -26,7 +29,9 @@ export async function POST(request: Request) {
 
   const { data: quote } = await supabase
     .from("quotes")
-    .select("id, conversation_id, amount, status, presta_name")
+    .select(
+      "id, conversation_id, status, presta_name, items, service_fee, tax_rate"
+    )
     .eq("id", quoteId)
     .maybeSingle();
 
@@ -62,6 +67,15 @@ export async function POST(request: Request) {
       .maybeSingle();
     eventDate = event?.event_date ?? null;
   }
+  if (!eventDate) {
+    // conversations.event_id n'est pas toujours renseigné (conversation
+    // créée avant qu'on le lie, ou via un parcours qui ne le fait pas) :
+    // on retombe sur l'événement courant de la famille (même résolution
+    // que le reste du dashboard — cookie `current_event_id`, sinon le plus
+    // récent), pour ne jamais bloquer un paiement à tort.
+    const current = await getCurrentEvent();
+    eventDate = current?.event_date ?? null;
+  }
 
   if (!eventDate) {
     return NextResponse.json(
@@ -87,7 +101,25 @@ export async function POST(request: Request) {
   }
 
   const { origin } = new URL(request.url);
-  const amountCents = Math.round(Number(quote.amount) * 100);
+  // Recalculé depuis les lignes (comme le document affiché au client, cf.
+  // DevisDocument.tsx) plutôt que lu depuis quotes.amount : ce dernier n'est
+  // qu'une copie dénormalisée, écrite à chaque sauvegarde du devis mais pas
+  // garantie à 100 % synchrone — le montant facturé doit toujours être celui
+  // que le client voit sur le document, jamais une valeur qui pourrait diverger.
+  const totals = quoteTotals(
+    (quote.items as QuoteItem[]) ?? [],
+    Number(quote.service_fee) || 0,
+    Number(quote.tax_rate) || 0
+  );
+  const amountCents = Math.round(totals.total * 100);
+
+  // Minimum Stripe pour un paiement par carte en EUR.
+  if (amountCents < 50) {
+    return NextResponse.json(
+      { error: "Le montant de ce devis est trop faible pour être payé en ligne." },
+      { status: 400 }
+    );
+  }
 
   try {
     const stripe = getStripe();

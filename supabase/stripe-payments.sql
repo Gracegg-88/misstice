@@ -201,40 +201,93 @@ create trigger quotes_protect_payment
   for each row execute function public.protect_quote_payment_columns();
 
 -- ─────────────────────────────────────────────────────────────────────────
+-- 3bis. protect_quote_columns() (security.sql) gèle déjà `amount` pour
+--       quiconque n'est pas auth.uid() = prestataire_id — donc aussi pour le
+--       webhook Stripe (service_role, aucun auth.uid()). mark_quote_paid a
+--       besoin d'écrire `amount` (avec le montant réellement encaissé par
+--       Stripe) : on ajoute la même exception `misstice.stripe_check` que
+--       les autres colonnes protégées, uniquement pour cette colonne — le
+--       reste du devis (contenu contractuel) reste gelé comme avant.
+-- ─────────────────────────────────────────────────────────────────────────
+create or replace function public.protect_quote_columns()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if auth.uid() is distinct from new.prestataire_id then
+    -- Gèle tout sauf status (et id).
+    new.prestataire_id  := old.prestataire_id;
+    new.conversation_id := old.conversation_id;
+    new.client_name     := old.client_name;
+    new.event_label     := old.event_label;
+    if current_setting('misstice.stripe_check', true) is distinct from 'on' then
+      new.amount := old.amount;
+    end if;
+    new.created_at      := old.created_at;
+    new.quote_number    := old.quote_number;
+    new.validity_days   := old.validity_days;
+    new.intro_message   := old.intro_message;
+    new.event_need      := old.event_need;
+    new.event_date      := old.event_date;
+    new.event_location  := old.event_location;
+    new.guests_count    := old.guests_count;
+    new.client_email    := old.client_email;
+    new.client_phone    := old.client_phone;
+    new.client_address  := old.client_address;
+    new.service_fee     := old.service_fee;
+    new.tax_rate        := old.tax_rate;
+    new.items           := old.items;
+    new.presta_name     := old.presta_name;
+    new.presta_category := old.presta_category;
+    new.presta_email    := old.presta_email;
+    new.presta_phone    := old.presta_phone;
+    new.presta_address  := old.presta_address;
+  end if;
+  return new;
+end;
+$$;
+
+-- ─────────────────────────────────────────────────────────────────────────
 -- 4. mark_quote_paid — appelée par le webhook Stripe (checkout.session.
---    completed), service_role uniquement. Calcule le split 85/15, détermine
---    si la catégorie du prestataire nécessite une rencontre préalable.
+--    completed), service_role uniquement. Calcule le split 85/15 sur
+--    p_amount = le montant RÉELLEMENT encaissé par Stripe (session.
+--    amount_total), jamais recalculé depuis quotes.amount : cette colonne
+--    n'est qu'une copie dénormalisée écrite à chaque sauvegarde du devis
+--    (cf. DevisForm.tsx), pas garantie synchrone avec les lignes au moment
+--    du paiement. Détermine aussi si la catégorie du prestataire nécessite
+--    une rencontre préalable.
 -- ─────────────────────────────────────────────────────────────────────────
 create or replace function public.mark_quote_paid(
   p_quote uuid,
   p_session_id text,
-  p_payment_intent_id text
+  p_payment_intent_id text,
+  p_amount numeric
 )
 returns void
 language plpgsql security definer set search_path = public
 as $$
 declare
-  v_amount numeric;
   v_presta_category text;
   v_requires_trial boolean;
   v_commission numeric;
   v_vendor_amount numeric;
 begin
-  select amount, presta_category into v_amount, v_presta_category
+  select presta_category into v_presta_category
     from public.quotes where id = p_quote;
 
   select coalesce(vc.requires_trial, false) into v_requires_trial
     from public.vendor_categories vc
     where vc.name = v_presta_category;
 
-  v_commission    := round(v_amount * 0.15, 2);
-  v_vendor_amount := v_amount - v_commission;
+  v_commission    := round(p_amount * 0.15, 2);
+  v_vendor_amount := p_amount - v_commission;
 
   perform set_config('misstice.stripe_check', 'on', true);
 
   update public.quotes
     set stripe_checkout_session_id = p_session_id,
         stripe_payment_intent_id   = p_payment_intent_id,
+        amount                     = p_amount,
         commission_amount          = v_commission,
         vendor_amount              = v_vendor_amount,
         paid_at                    = now(),
@@ -248,7 +301,9 @@ end;
 $$;
 
 revoke all on function public.mark_quote_paid(uuid, text, text) from public;
-grant execute on function public.mark_quote_paid(uuid, text, text) to service_role;
+revoke all on function public.mark_quote_paid(uuid, text, text, numeric) from public;
+grant execute on function public.mark_quote_paid(uuid, text, text, numeric) to service_role;
+drop function if exists public.mark_quote_paid(uuid, text, text);
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 5. decide_quote_trial — le client confirme ou annule après la rencontre.

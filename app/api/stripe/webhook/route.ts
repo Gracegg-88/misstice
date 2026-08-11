@@ -76,17 +76,21 @@ export async function POST(request: Request) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const quoteId = session.metadata?.quote_id;
-      if (!quoteId || session.payment_status !== "paid") {
+      if (!quoteId || session.payment_status !== "paid" || session.amount_total == null) {
         break;
       }
       const paymentIntentId =
         typeof session.payment_intent === "string"
           ? session.payment_intent
           : session.payment_intent?.id ?? null;
+      // Le split 85/15 est calculé sur le montant RÉELLEMENT encaissé par
+      // Stripe (amount_total, en centimes) — jamais recalculé depuis
+      // quotes.amount, qui n'est qu'une copie dénormalisée pouvant diverger.
       const { error } = await admin.rpc("mark_quote_paid", {
         p_quote: quoteId,
         p_session_id: session.id,
         p_payment_intent_id: paymentIntentId,
+        p_amount: session.amount_total / 100,
       });
       if (error) console.error("stripe-webhook: mark_quote_paid échoué", error);
       break;
