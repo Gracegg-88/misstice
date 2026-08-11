@@ -102,7 +102,91 @@ export async function POST(request: Request) {
         p_amount: session.amount_total / 100,
         p_event_date: eventDate,
       });
-      if (error) console.error("stripe-webhook: mark_quote_paid échoué", error);
+      if (error) {
+        console.error("stripe-webhook: mark_quote_paid échoué", error);
+        break;
+      }
+
+      // Rattache le prestataire à l'événement (event_vendors) et ajoute la
+      // dépense au budget — UNIQUEMENT maintenant que le paiement est
+      // confirmé (jamais avant redirection vers Stripe : un client qui
+      // abandonne le paiement ne doit pas laisser un prestataire marqué
+      // "confirmé" ni une dépense budgétée pour rien).
+      const eventId = session.metadata?.event_id || null;
+      const vendorId = session.metadata?.vendor_id || null;
+      if (eventId && vendorId) {
+        const { data: quoteRow } = await admin
+          .from("quotes")
+          .select("conversation_id, presta_name, presta_category, amount")
+          .eq("id", quoteId)
+          .maybeSingle();
+
+        if (quoteRow?.conversation_id) {
+          await admin
+            .from("conversations")
+            .update({ status: "Acceptée" })
+            .eq("id", quoteRow.conversation_id);
+        }
+
+        const { data: existing } = await admin
+          .from("event_vendors")
+          .select("id")
+          .eq("event_id", eventId)
+          .eq("vendor_id", vendorId)
+          .maybeSingle();
+        if (existing) {
+          await admin
+            .from("event_vendors")
+            .update({ status: "confirmé", price: quoteRow?.amount ?? null })
+            .eq("id", existing.id);
+        } else {
+          await admin.from("event_vendors").insert({
+            event_id: eventId,
+            vendor_id: vendorId,
+            name: quoteRow?.presta_name ?? "Prestataire",
+            category: quoteRow?.presta_category ?? null,
+            status: "confirmé",
+            price: quoteRow?.amount ?? null,
+          });
+        }
+
+        // quote_id évite tout doublon si l'événement webhook est relivré.
+        const { data: alreadyAdded } = await admin
+          .from("budget_expenses")
+          .select("id")
+          .eq("quote_id", quoteId)
+          .maybeSingle();
+        if (!alreadyAdded) {
+          let categoryId: string | null = null;
+          if (quoteRow?.presta_category) {
+            const { data: catMatch } = await admin
+              .from("budget_categories")
+              .select("id")
+              .eq("event_id", eventId)
+              .ilike("name", quoteRow.presta_category)
+              .maybeSingle();
+            categoryId = catMatch?.id ?? null;
+          }
+          if (!categoryId) {
+            const { data: fallback } = await admin
+              .from("budget_categories")
+              .select("id")
+              .eq("event_id", eventId)
+              .ilike("name", "Divers")
+              .maybeSingle();
+            categoryId = fallback?.id ?? null;
+          }
+          if (categoryId) {
+            await admin.from("budget_expenses").insert({
+              category_id: categoryId,
+              event_id: eventId,
+              label: quoteRow?.presta_name ?? "Prestataire",
+              amount: quoteRow?.amount ?? 0,
+              quote_id: quoteId,
+            });
+          }
+        }
+      }
       break;
     }
 

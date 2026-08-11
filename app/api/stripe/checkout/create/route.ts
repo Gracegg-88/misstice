@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const { data: conversation } = await supabase
     .from("conversations")
-    .select("event_id, particulier_id")
+    .select("event_id, particulier_id, vendor_id")
     .eq("id", quote.conversation_id)
     .maybeSingle();
 
@@ -58,7 +58,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Action non autorisée." }, { status: 403 });
   }
 
+  // eventId et eventDate sont TOUJOURS résolus ensemble, depuis la même
+  // source : le webhook (checkout.session.completed) réutilise cet eventId
+  // pour rattacher le prestataire à l'événement une fois le paiement
+  // confirmé — il doit être exactement celui qui a justifié le paiement.
   let eventDate: string | null = null;
+  let eventId: string | null = conversation.event_id ?? null;
   if (conversation.event_id) {
     const { data: event } = await supabase
       .from("events")
@@ -75,6 +80,7 @@ export async function POST(request: Request) {
     // récent), pour ne jamais bloquer un paiement à tort.
     const current = await getCurrentEvent();
     eventDate = current?.event_date ?? null;
+    eventId = current?.id ?? null;
   }
 
   if (!eventDate) {
@@ -138,10 +144,16 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      // event_date figé ici : c'est lui qui sert de référence au séquestre
-      // (fenêtre de litige + cron de libération), pas une re-résolution
-      // ultérieure via conversations.event_id qui n'est pas toujours fiable.
-      metadata: { quote_id: quoteId, event_date: eventDate },
+      // Figés ici pour le webhook : event_date sert de référence au séquestre
+      // (fenêtre de litige + cron de libération) ; event_id + vendor_id lui
+      // permettent de rattacher le prestataire à l'événement UNE FOIS le
+      // paiement confirmé (jamais avant — voir DevisActions.tsx).
+      metadata: {
+        quote_id: quoteId,
+        event_date: eventDate,
+        event_id: eventId ?? "",
+        vendor_id: conversation.vendor_id ?? "",
+      },
       success_url: `${origin}/devis/${quoteId}?checkout=success`,
       cancel_url: `${origin}/devis/${quoteId}?checkout=cancelled`,
     });

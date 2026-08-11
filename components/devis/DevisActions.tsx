@@ -52,26 +52,24 @@ export default function DevisActions({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Effets de bord communs aux deux issues (accepté via paiement, refusé via
-  // RPC directe) : synchronise la demande côté prestataire et la fiche
-  // event_vendors/budget côté famille. Appelé une fois le nouveau statut
-  // confirmé côté serveur.
-  const applySideEffects = async (
-    supabase: ReturnType<typeof createClient>,
-    next: "accepté" | "refusé"
+  // Effet de bord du refus : synchronise la demande côté prestataire et la
+  // fiche event_vendors côté famille. (Le pendant "accepté" n'existe plus
+  // ici — il ne se déclenche qu'une fois le paiement confirmé, côté webhook
+  // Stripe : voir app/api/stripe/webhook/route.ts. Avant, ce composant le
+  // faisait AVANT la redirection vers Stripe, donc même si le client
+  // abandonnait le paiement le prestataire restait marqué "confirmé".)
+  const applyRefusedSideEffects = async (
+    supabase: ReturnType<typeof createClient>
   ) => {
-    // Synchronise le statut de la demande (vue « Demandes » côté prestataire).
     if (conversationId) {
       await supabase
         .from("conversations")
-        .update({ status: next === "accepté" ? "Acceptée" : "Refusée" })
+        .update({ status: "Refusée" })
         .eq("id", conversationId);
     }
 
-    // Le statut du prestataire sur l'événement suit ses devis (agrégat) :
-    //  • accepté  → « confirmé » (on fait toujours monter, jamais redescendre),
-    //  • refusé   → « refusé » UNIQUEMENT s'il n'est pas déjà « confirmé »
-    //    (un autre devis refusé ne dé-emploie pas un prestataire confirmé).
+    // « refusé » UNIQUEMENT si le prestataire n'est pas déjà « confirmé »
+    // (un autre devis refusé ne dé-emploie pas un prestataire confirmé).
     if (autoAdd) {
       const { data: existing } = await supabase
         .from("event_vendors")
@@ -81,82 +79,22 @@ export default function DevisActions({
         .maybeSingle();
       const ex = existing as { id: string; status: string } | null;
 
-      if (next === "accepté") {
-        if (ex) {
+      if (ex) {
+        if (ex.status !== "confirmé") {
           await supabase
             .from("event_vendors")
-            .update({ status: "confirmé", price: autoAdd.price })
+            .update({ status: "refusé" })
             .eq("id", ex.id);
-        } else {
-          await supabase.from("event_vendors").insert({
-            event_id: autoAdd.eventId,
-            vendor_id: autoAdd.vendorId,
-            name: autoAdd.name,
-            category: autoAdd.category,
-            status: "confirmé",
-            price: autoAdd.price,
-          });
-        }
-
-        // Budget : ajoute automatiquement une dépense correspondant à ce
-        // devis, dans la catégorie du prestataire (créée si besoin, ou
-        // catégorie générique de repli). quote_id évite tout doublon si
-        // cette action se déclenche deux fois pour le même devis.
-        const { data: alreadyAdded } = await supabase
-          .from("budget_expenses")
-          .select("id")
-          .eq("quote_id", quoteId)
-          .maybeSingle();
-
-        if (!alreadyAdded) {
-          let categoryId: string | null = null;
-          if (autoAdd.category) {
-            const { data: catMatch } = await supabase
-              .from("budget_categories")
-              .select("id")
-              .eq("event_id", autoAdd.eventId)
-              .ilike("name", autoAdd.category)
-              .maybeSingle();
-            categoryId = (catMatch as { id: string } | null)?.id ?? null;
-          }
-          if (!categoryId) {
-            const { data: fallback } = await supabase
-              .from("budget_categories")
-              .select("id")
-              .eq("event_id", autoAdd.eventId)
-              .ilike("name", "Divers")
-              .maybeSingle();
-            categoryId = (fallback as { id: string } | null)?.id ?? null;
-          }
-          if (categoryId) {
-            await supabase.from("budget_expenses").insert({
-              category_id: categoryId,
-              event_id: autoAdd.eventId,
-              label: autoAdd.name,
-              amount: autoAdd.price,
-              quote_id: quoteId,
-            });
-          }
         }
       } else {
-        // refusé
-        if (ex) {
-          if (ex.status !== "confirmé") {
-            await supabase
-              .from("event_vendors")
-              .update({ status: "refusé" })
-              .eq("id", ex.id);
-          }
-        } else {
-          await supabase.from("event_vendors").insert({
-            event_id: autoAdd.eventId,
-            vendor_id: autoAdd.vendorId,
-            name: autoAdd.name,
-            category: autoAdd.category,
-            status: "refusé",
-            price: autoAdd.price,
-          });
-        }
+        await supabase.from("event_vendors").insert({
+          event_id: autoAdd.eventId,
+          vendor_id: autoAdd.vendorId,
+          name: autoAdd.name,
+          category: autoAdd.category,
+          status: "refusé",
+          price: autoAdd.price,
+        });
       }
     }
   };
@@ -177,7 +115,7 @@ export default function DevisActions({
       setError(upErr?.message ?? "Action impossible sur ce devis.");
       return;
     }
-    await applySideEffects(supabase, next);
+    await applyRefusedSideEffects(supabase);
     setSaving(false);
     setCurrent(next);
     // Rafraîchit les composants serveur (badge du devis, listes) qui sinon
@@ -187,7 +125,10 @@ export default function DevisActions({
 
   // Accepter un devis déclenche immédiatement le paiement sécurisé (séquestre
   // Misstice) : contrairement au refus, ça ne s'arrête pas à un changement de
-  // statut, direction Stripe pour finaliser.
+  // statut, direction Stripe pour finaliser. Le rattachement à l'événement
+  // (event_vendors, budget) n'a lieu qu'une fois le paiement confirmé par
+  // Stripe (webhook), jamais ici — tant que le client n'a pas payé, rien ne
+  // doit être marqué "confirmé".
   const acceptAndPay = async () => {
     if (saving) return;
     setSaving(true);
@@ -202,8 +143,6 @@ export default function DevisActions({
       if (!res.ok) {
         throw new Error(data.error || "Impossible d'accepter ce devis.");
       }
-      const supabase = createClient();
-      await applySideEffects(supabase, "accepté");
       window.location.href = data.url as string;
     } catch (e) {
       setSaving(false);
@@ -231,7 +170,7 @@ export default function DevisActions({
       }
       if (!confirmed) {
         const supabase = createClient();
-        // Contrairement à applySideEffects("refusé") — qui protège un
+        // Contrairement à applyRefusedSideEffects — qui protège un
         // prestataire déjà « confirmé » d'être redescendu par le refus d'un
         // AUTRE devis — ici c'est ce même devis, déjà confirmé après
         // paiement, qui est annulé : la rétrogradation doit être inconditionnelle.
