@@ -9,6 +9,7 @@ import {
   XCircle,
   MessageSquare,
   Loader2,
+  TriangleAlert,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -51,6 +52,8 @@ export default function DevisActions({
   const [current, setCurrent] = useState<QuoteStatus>(status);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [showDispute, setShowDispute] = useState(false);
 
   // Effet de bord du refus : synchronise la demande côté prestataire et la
   // fiche event_vendors côté famille. (Le pendant "accepté" n'existe plus
@@ -198,12 +201,47 @@ export default function DevisActions({
     }
   };
 
+  // Signalement d'un problème pendant la fenêtre de séquestre (jusqu'à 72h
+  // après l'événement — vérifié côté serveur). "prestataire_absent" déclenche
+  // un remboursement automatique immédiat (règle prédéfinie, pas d'arbitrage
+  // humain) ; "insatisfaction_qualite" ouvre un litige laissé à la médiation
+  // Misstice (voir /api/stripe/dispute/file).
+  const fileDispute = async (reason: "prestataire_absent" | "insatisfaction_qualite") => {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/stripe/dispute/file", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ quoteId, reason }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Impossible de signaler ce problème.");
+      }
+      if (data.warning) setNotice(data.warning as string);
+      setCurrent(data.status as QuoteStatus);
+      setShowDispute(false);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Le client ne peut répondre qu'à un devis encore en attente.
   const pending = canRespond && current === "envoyé";
+  // Le client ne peut signaler un problème que sur SA réservation confirmée
+  // (canRespond encode déjà "famille + conversation existante").
+  const canDispute = canRespond && current === "en attente de réalisation";
 
   return (
     <div className="no-print">
       {error && <p className="mb-3 text-center text-sm text-festif">{error}</p>}
+      {notice && <p className="mb-3 text-center text-sm text-slate">{notice}</p>}
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         <button
@@ -296,6 +334,54 @@ export default function DevisActions({
             <CheckCircle2 size={16} />
             Réservation confirmée, paiement sécurisé
           </span>
+        )}
+        {canDispute && !showDispute && (
+          <button
+            type="button"
+            onClick={() => setShowDispute(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate underline decoration-dotted hover:text-festif"
+          >
+            <TriangleAlert size={13} />
+            Signaler un problème
+          </button>
+        )}
+        {canDispute && showDispute && (
+          <div className="w-full rounded-2xl border border-festif/30 bg-festif-soft/40 p-4 text-center">
+            <p className="text-sm font-semibold text-plum">
+              Quel est le problème ?
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileDispute("prestataire_absent")}
+                disabled={saving}
+                className="rounded-xl bg-festif px-4 py-2.5 text-sm font-semibold text-white hover:bg-festif/90 disabled:opacity-60"
+              >
+                Le prestataire n&apos;est pas venu
+              </button>
+              <button
+                type="button"
+                onClick={() => fileDispute("insatisfaction_qualite")}
+                disabled={saving}
+                className="rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm font-semibold text-plum hover:bg-cream disabled:opacity-60"
+              >
+                Je ne suis pas satisfait(e) de la prestation
+              </button>
+            </div>
+            <p className="mt-3 text-xs text-slate">
+              « Prestataire absent » déclenche un remboursement immédiat de sa
+              part (la commission Misstice n&apos;est jamais remboursée). Pour
+              une insatisfaction, l&apos;équipe Misstice vous recontacte pour
+              trancher au cas par cas.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDispute(false)}
+              className="mt-2 text-xs font-medium text-slate underline hover:text-plum"
+            >
+              Annuler
+            </button>
+          </div>
         )}
         {current === "fonds libérés" && (
           <span className="inline-flex items-center gap-2 rounded-2xl bg-emerald-soft px-6 py-3 text-sm font-semibold text-emerald">

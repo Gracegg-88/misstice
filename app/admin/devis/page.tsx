@@ -1,6 +1,7 @@
-import { FileText, TriangleAlert } from "lucide-react";
+import { FileText } from "lucide-react";
 import { getAdminQuotes } from "@/lib/pro";
 import { euro } from "@/lib/quote-doc";
+import DisputesPanel from "@/components/admin/DisputesPanel";
 import type { Quote } from "@/lib/pro-types";
 
 const STATUS_STYLE: Record<Quote["status"], string> = {
@@ -46,29 +47,7 @@ export default async function AdminDevisPage() {
         )}
       </p>
 
-      {disputed.length > 0 && (
-        <div className="mt-6 rounded-3xl border border-festif/30 bg-festif-soft p-5">
-          <p className="flex items-center gap-2 font-display text-lg font-semibold text-plum">
-            <TriangleAlert size={20} className="text-festif" />
-            Litiges à traiter
-          </p>
-          <p className="mt-1 text-sm text-slate">
-            Le client a signalé un litige dans les 48h suivant l&apos;événement
-            (art. 6.3 des CGU). Misstice agit en médiateur : contacter les deux
-            parties par email.
-          </p>
-          <ul className="mt-4 divide-y divide-black/5">
-            {disputed.map((q) => (
-              <li key={q.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                <span className="font-medium text-plum">
-                  {q.client_name || "Client"} × {q.presta_name || "Prestataire"}
-                </span>
-                <span className="text-slate">{euro(q.amount)} · {q.event_date || "date à définir"}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {disputed.length > 0 && <DisputesPanel disputed={disputed} />}
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-black/5 bg-white">
         <ul className="divide-y divide-black/5">

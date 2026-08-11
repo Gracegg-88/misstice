@@ -1,0 +1,115 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { TriangleAlert, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { euro } from "@/lib/quote-doc";
+import type { Quote } from "@/lib/pro-types";
+
+const REASON_LABEL: Record<string, string> = {
+  prestataire_absent: "Prestataire absent le jour J",
+  insatisfaction_qualite: "Insatisfaction sur la qualité",
+};
+
+function formatDate(iso: string | null) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+export default function DisputesPanel({ disputed }: { disputed: Quote[] }) {
+  const router = useRouter();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
+
+  const resolve = async (quoteId: string, refunded: boolean) => {
+    if (busyId) return;
+    setBusyId(quoteId);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/dispute/resolve", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ quoteId, refunded }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Action impossible.");
+      }
+      setResolvedIds((prev) => new Set(prev).add(quoteId));
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const remaining = disputed.filter((q) => !resolvedIds.has(q.id));
+  if (remaining.length === 0) return null;
+
+  return (
+    <div className="mt-6 rounded-3xl border border-festif/30 bg-festif-soft p-5">
+      <p className="flex items-center gap-2 font-display text-lg font-semibold text-plum">
+        <TriangleAlert size={20} className="text-festif" />
+        Litiges à traiter
+      </p>
+      <p className="mt-1 text-sm text-slate">
+        Le client a signalé un problème dans les 72h suivant l&apos;événement.
+        Les cas « prestataire absent » sont normalement remboursés
+        automatiquement (n&apos;apparaissent ici qu&apos;en cas d&apos;échec du
+        remboursement) — les cas « insatisfaction » nécessitent une décision
+        au cas par cas.
+      </p>
+      {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+      <ul className="mt-4 divide-y divide-black/5">
+        {remaining.map((q) => (
+          <li key={q.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+            <div className="min-w-0">
+              <p className="font-medium text-plum">
+                {q.client_name || "Client"} × {q.presta_name || "Prestataire"}
+              </p>
+              <p className="text-xs text-slate">
+                {REASON_LABEL[q.dispute_reason ?? ""] || "Motif non renseigné"} · signalé
+                le {formatDate(q.dispute_filed_at)} · {euro(q.amount)}
+                {q.vendor_amount != null && ` (part prestataire : ${euro(q.vendor_amount)})`}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => resolve(q.id, true)}
+                disabled={busyId === q.id}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-festif px-3.5 py-2 text-xs font-semibold text-white hover:bg-festif/90 disabled:opacity-60"
+              >
+                {busyId === q.id ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <CheckCircle2 size={13} />
+                )}
+                Rembourser
+              </button>
+              <button
+                type="button"
+                onClick={() => resolve(q.id, false)}
+                disabled={busyId === q.id}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3.5 py-2 text-xs font-semibold text-plum hover:bg-cream disabled:opacity-60"
+              >
+                <XCircle size={13} />
+                Rejeter
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

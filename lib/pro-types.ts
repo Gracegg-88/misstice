@@ -69,6 +69,13 @@ export type Quote = {
   presta_address: string | null;
   presta_siret: string | null;
   presta_company_name: string | null;
+  // Séquestre & litiges (Phase 3)
+  escrow_event_date: string | null;
+  vendor_amount: number | null;
+  commission_amount: number | null;
+  dispute_reason: "prestataire_absent" | "insatisfaction_qualite" | null;
+  dispute_filed_at: string | null;
+  dispute_resolved_at: string | null;
 };
 
 export type VendorPackage = {
