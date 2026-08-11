@@ -962,6 +962,10 @@ function QuoteForm({
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
           status: null,
+          // Relie (ou remplace) l'événement concerné à chaque nouvelle
+          // demande dans cette conversation : c'est cette date qui sert de
+          // référence au séquestre du paiement (voir /api/stripe/checkout/create).
+          ...(currentEventId ? { event_id: currentEventId } : {}),
         })
         .eq("id", convId);
     } else {
@@ -976,6 +980,7 @@ function QuoteForm({
           particulier_avatar: clientAvatar,
           demande,
           subject: `Demande de devis · ${vendor.name}`,
+          event_id: currentEventId,
         })
         .select("id")
         .single();
