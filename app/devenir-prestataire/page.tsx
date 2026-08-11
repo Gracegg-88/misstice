@@ -11,6 +11,7 @@ import {
   Lock,
   LayoutDashboard,
   ChevronDown,
+  Clock,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -39,7 +40,7 @@ const perks = [
   {
     icon: Percent,
     title: "Une commission claire",
-    text: "Une commission claire uniquement sur les prestations réalisées via la plateforme, pas d'abonnement mensuel, pas de frais cachés.",
+    text: "15 % uniquement sur les prestations réalisées via la plateforme, pas d'abonnement mensuel, pas de frais cachés.",
   },
 ];
 
@@ -66,7 +67,25 @@ const steps = [
     icon: ShieldCheck,
     label: "Étape 4",
     title: "Soyez payé sereinement",
-    text: "Vous êtes payé de façon sécurisée dès la prestation validée.",
+    text: "Paiement sécurisé par séquestre, versé automatiquement 72h après votre événement.",
+  },
+];
+
+const payment = [
+  {
+    icon: Percent,
+    title: "Une commission de 15 %",
+    text: "Misstice prélève 15 % sur chaque prestation réservée via la plateforme. Pas d'abonnement, pas de frais caché : vous ne payez que lorsque vous décrochez une mission.",
+  },
+  {
+    icon: Lock,
+    title: "Paiement sécurisé par séquestre",
+    text: "Dès que le client accepte votre devis, son paiement est immédiatement sécurisé par Misstice via Stripe. Vous n'avez rien à gérer côté paiement : tout est automatisé.",
+  },
+  {
+    icon: Clock,
+    title: "Versé automatiquement",
+    text: "Votre part est versée automatiquement sur votre compte 72h après la date de l'événement, sauf signalement du client pendant ce délai.",
   },
 ];
 
@@ -102,7 +121,11 @@ const faqs = [
   },
   {
     q: "Comment fonctionne la commission ?",
-    a: "Une commission est prélevée uniquement sur les prestations effectivement réservées via Misstice. Aucun abonnement mensuel, aucun frais caché : vous ne payez que lorsque vous décrochez une mission.",
+    a: "Une commission de 15 % est prélevée uniquement sur les prestations effectivement réservées via Misstice, au moment du paiement. Aucun abonnement mensuel, aucun frais caché : vous ne payez que lorsque vous décrochez une mission.",
+  },
+  {
+    q: "Quand suis-je payé ?",
+    a: "Le client règle l'intégralité du devis dès son acceptation, en sécurité chez Misstice (séquestre Stripe). Votre part est versée automatiquement sur votre compte 72h après la date de l'événement, sauf signalement du client pendant ce délai.",
   },
   {
     q: "Puis-je m'inscrire pour plusieurs types d'événements à la fois ?",
@@ -231,6 +254,48 @@ export default function DevenirPrestatairePage() {
             </Link>
             .
           </p>
+        </section>
+
+        {/* ── Comment fonctionne le paiement ── */}
+        <section className="bg-white py-14">
+          <div className="mx-auto max-w-content px-5 sm:px-8">
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+              Comment fonctionne le paiement
+            </h2>
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate">
+              Simple et transparent : le client paie en ligne dès qu&apos;il
+              accepte votre devis, Misstice sécurise le paiement, et vous êtes
+              réglé automatiquement après l&apos;événement.
+            </p>
+            <div className="mt-8 grid gap-5 sm:grid-cols-3">
+              {payment.map((p) => (
+                <div
+                  key={p.title}
+                  className="rounded-3xl border border-black/5 bg-cream p-6"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+                    <p.icon size={20} strokeWidth={1.75} />
+                  </span>
+                  <p className="mt-4 font-display text-lg font-semibold text-plum">
+                    {p.title}
+                  </p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate">
+                    {p.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-6 text-sm text-slate">
+              Détails complets dans nos{" "}
+              <Link
+                href="/cgu#annulation"
+                className="font-semibold text-violet hover:text-violet-dark"
+              >
+                CGU (paiement, séquestre et litiges)
+              </Link>
+              .
+            </p>
+          </div>
         </section>
 
         {/* ── Ce qui différencie Misstice ── */}

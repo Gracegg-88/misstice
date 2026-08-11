@@ -422,6 +422,16 @@ export default function DevisActions({
           </Link>
         )}
       </div>
+
+      {/* Pas de page in-app pour le moment de la redirection Stripe elle-même
+          (window.location.href immédiat vers Stripe) : ce texte s'affiche
+          donc juste avant, pendant que le bouton reste visible. */}
+      {(pending || current === "accepté") && (
+        <p className="mt-3 text-center text-xs text-slate">
+          🔐 Tu vas être redirigé vers une page de paiement sécurisée. Ton
+          argent est protégé jusqu&apos;à la réalisation de ton événement.
+        </p>
+      )}
     </div>
   );
 }
