@@ -138,7 +138,10 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
-      metadata: { quote_id: quoteId },
+      // event_date figé ici : c'est lui qui sert de référence au séquestre
+      // (fenêtre de litige + cron de libération), pas une re-résolution
+      // ultérieure via conversations.event_id qui n'est pas toujours fiable.
+      metadata: { quote_id: quoteId, event_date: eventDate },
       success_url: `${origin}/devis/${quoteId}?checkout=success`,
       cancel_url: `${origin}/devis/${quoteId}?checkout=cancelled`,
     });

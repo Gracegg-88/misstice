@@ -129,8 +129,13 @@ grant execute on function public.set_stripe_account_status(uuid, text, text, boo
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 3. Paiement, séquestre et litige — colonnes sur quotes.
---    `event_date` (texte aaaa-mm-jj) existe déjà (quote-details.sql) et sert
---    de référence pour le délai de séquestre : inutile de le dupliquer.
+--    escrow_event_date : date de référence du séquestre, figée au moment du
+--    paiement (celle qui a servi à autoriser le paiement côté Next.js —
+--    /api/stripe/checkout/create). PAS `quotes.event_date` (texte saisi par
+--    le prestataire dans le document, peut différer) ni une re-résolution
+--    via conversations.event_id (pas toujours renseigné) : cette colonne
+--    est la seule source fiable pour la fenêtre de litige et le cron de
+--    libération des fonds, une fois qu'un paiement a eu lieu.
 -- ─────────────────────────────────────────────────────────────────────────
 alter table public.quotes
   add column if not exists stripe_checkout_session_id text,
@@ -145,7 +150,8 @@ alter table public.quotes
   add column if not exists dispute_reason text
     check (dispute_reason in ('prestataire_absent', 'insatisfaction_qualite')),
   add column if not exists dispute_filed_at timestamptz,
-  add column if not exists dispute_resolved_at timestamptz;
+  add column if not exists dispute_resolved_at timestamptz,
+  add column if not exists escrow_event_date date;
 
 alter table public.quotes drop constraint if exists quotes_status_check;
 alter table public.quotes
@@ -187,6 +193,7 @@ begin
     new.dispute_reason             := old.dispute_reason;
     new.dispute_filed_at           := old.dispute_filed_at;
     new.dispute_resolved_at        := old.dispute_resolved_at;
+    new.escrow_event_date          := old.escrow_event_date;
     if new.status = any(payment_statuses) and old.status is distinct from new.status then
       new.status := old.status;
     end if;
@@ -261,7 +268,8 @@ create or replace function public.mark_quote_paid(
   p_quote uuid,
   p_session_id text,
   p_payment_intent_id text,
-  p_amount numeric
+  p_amount numeric,
+  p_event_date date
 )
 returns void
 language plpgsql security definer set search_path = public
@@ -292,6 +300,7 @@ begin
         vendor_amount              = v_vendor_amount,
         paid_at                    = now(),
         requires_trial              = coalesce(v_requires_trial, false),
+        escrow_event_date          = p_event_date,
         status = case
           when coalesce(v_requires_trial, false) then 'en attente de confirmation'
           else 'en attente de réalisation'
@@ -302,8 +311,10 @@ $$;
 
 revoke all on function public.mark_quote_paid(uuid, text, text) from public;
 revoke all on function public.mark_quote_paid(uuid, text, text, numeric) from public;
-grant execute on function public.mark_quote_paid(uuid, text, text, numeric) to service_role;
+revoke all on function public.mark_quote_paid(uuid, text, text, numeric, date) from public;
+grant execute on function public.mark_quote_paid(uuid, text, text, numeric, date) to service_role;
 drop function if exists public.mark_quote_paid(uuid, text, text);
+drop function if exists public.mark_quote_paid(uuid, text, text, numeric);
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 5. decide_quote_trial — le client confirme ou annule après la rencontre.
@@ -347,7 +358,9 @@ grant execute on function public.decide_quote_trial(uuid, boolean) to authentica
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 6. file_quote_dispute — le client signale un problème pendant la fenêtre
---    de séquestre (jusqu'à event_date + 72h). Grantée à `authenticated` :
+--    de séquestre (jusqu'à escrow_event_date + 72h — la date réelle de
+--    l'événement au moment du paiement, PAS quotes.event_date qui est un
+--    champ de document saisi par le prestataire). Grantée à `authenticated` :
 --    vérifie participant + fenêtre + statut + motif valide elle-même.
 --    Ne rembourse rien (fait depuis Next.js) — enregistre juste le litige.
 -- ─────────────────────────────────────────────────────────────────────────
@@ -358,13 +371,13 @@ as $$
 declare
   v_conv uuid;
   v_status text;
-  v_event_date text;
+  v_event_date date;
 begin
   if p_reason not in ('prestataire_absent', 'insatisfaction_qualite') then
     return false;
   end if;
 
-  select conversation_id, status, event_date into v_conv, v_status, v_event_date
+  select conversation_id, status, escrow_event_date into v_conv, v_status, v_event_date
     from public.quotes where id = p_quote;
 
   if v_conv is null or not public.is_conversation_participant(v_conv) then
@@ -373,8 +386,8 @@ begin
   if v_status is distinct from 'en attente de réalisation' then
     return false;
   end if;
-  if v_event_date !~ '^\d{4}-\d{2}-\d{2}$'
-     or v_event_date::date + interval '72 hours' < now() then
+  if v_event_date is null
+     or v_event_date + interval '72 hours' < now() then
     return false;
   end if;
 
@@ -440,5 +453,30 @@ $$;
 
 revoke all on function public.set_quote_transfer(uuid, text) from public;
 grant execute on function public.set_quote_transfer(uuid, text) to service_role;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 9. quotes_eligible_for_release — service_role uniquement. Liste les devis
+--    dont le séquestre peut être libéré (72h après escrow_event_date, sans
+--    litige actif puisque le statut aurait alors changé). Le calcul de date
+--    reste côté Postgres plutôt que recalculé en JS (fuseau horaire fiable).
+-- ─────────────────────────────────────────────────────────────────────────
+create or replace function public.quotes_eligible_for_release()
+returns table (
+  id uuid,
+  prestataire_id uuid,
+  vendor_amount numeric,
+  presta_name text
+)
+language sql security definer set search_path = public
+as $$
+  select id, prestataire_id, vendor_amount, presta_name
+  from public.quotes
+  where status = 'en attente de réalisation'
+    and escrow_event_date is not null
+    and escrow_event_date + interval '72 hours' <= now();
+$$;
+
+revoke all on function public.quotes_eligible_for_release() from public;
+grant execute on function public.quotes_eligible_for_release() to service_role;
 
 -- Fin.

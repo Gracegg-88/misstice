@@ -76,7 +76,13 @@ export async function POST(request: Request) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const quoteId = session.metadata?.quote_id;
-      if (!quoteId || session.payment_status !== "paid" || session.amount_total == null) {
+      const eventDate = session.metadata?.event_date;
+      if (
+        !quoteId ||
+        !eventDate ||
+        session.payment_status !== "paid" ||
+        session.amount_total == null
+      ) {
         break;
       }
       const paymentIntentId =
@@ -86,11 +92,15 @@ export async function POST(request: Request) {
       // Le split 85/15 est calculé sur le montant RÉELLEMENT encaissé par
       // Stripe (amount_total, en centimes) — jamais recalculé depuis
       // quotes.amount, qui n'est qu'une copie dénormalisée pouvant diverger.
+      // event_date vient des métadonnées figées à la création de la session
+      // (c'est elle qui a servi à autoriser le paiement) — devient la
+      // référence du séquestre (escrow_event_date).
       const { error } = await admin.rpc("mark_quote_paid", {
         p_quote: quoteId,
         p_session_id: session.id,
         p_payment_intent_id: paymentIntentId,
         p_amount: session.amount_total / 100,
+        p_event_date: eventDate,
       });
       if (error) console.error("stripe-webhook: mark_quote_paid échoué", error);
       break;
