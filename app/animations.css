@@ -26,13 +26,9 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-@keyframes ev-aurora {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-@keyframes ev-aurora-ticker {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+@keyframes ev-aurora-lights {
+  0%, 100% { transform: translate3d(-8%, -3%, 0) scale(1); }
+  50% { transform: translate3d(18%, 6%, 0) scale(1.12); }
 }
 @keyframes ev-cta-shift {
   0%, 100% { background-position: 0% 50%; }
@@ -50,25 +46,43 @@
 .ev-zoom-in   { animation: ev-zoom-in 0.3s ease both; }
 .ev-float     { animation: ev-float 6s ease-in-out infinite; }
 
-/* ---------- Mood & Aura : banderole lente, discrète et utile ---------- */
+/* ---------- Mood & Aura : phrase stable, lumières lentes en arrière-plan ---------- */
 .ev-aurora {
+  position: relative;
   display: flex;
   align-items: center;
-  background: linear-gradient(110deg, #1E5849, #315A4E, #E89D75, #1E5849);
-  background-size: 180% 180%;
-  animation: ev-aurora 12s ease-in-out infinite;
+  justify-content: center;
+  isolation: isolate;
+  background: #1E5849;
 }
-.ev-aurora-track {
-  display: flex;
-  width: max-content;
-  align-items: center;
-  gap: 4rem;
-  white-space: nowrap;
-  animation: ev-aurora-ticker 28s linear infinite;
+.ev-aurora::before,
+.ev-aurora::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 46%;
+  height: 150%;
+  border-radius: 999px;
+  filter: blur(16px);
+  pointer-events: none;
   will-change: transform;
+  animation: ev-aurora-lights 9s ease-in-out infinite;
 }
-.ev-aurora-track span { display: inline-block; }
-.ev-aurora:hover .ev-aurora-track { animation-play-state: paused; }
+.ev-aurora::before {
+  left: -12%;
+  background: rgba(232, 157, 117, 0.62);
+}
+.ev-aurora::after {
+  right: -14%;
+  background: rgba(115, 170, 141, 0.56);
+  animation-delay: -4.5s;
+}
+.ev-aurora-content {
+  position: relative;
+  z-index: 1;
+  padding-inline: 1.25rem;
+  white-space: nowrap;
+}
 
 /* ---------- CTA principaux : signal immédiat et stable ----------
    Un CTA n’a pas besoin d’une respiration continue pour être visible. Le
@@ -224,6 +238,6 @@
   .ev-cta-pulse::after {
     background-position: 35% 50%;
   }
-  .ev-aurora,
-  .ev-aurora-track { animation: none; }
+  .ev-aurora::before,
+  .ev-aurora::after { animation: none; }
 }
