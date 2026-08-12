@@ -12,26 +12,26 @@ const config: Config = {
       colors: {
         // Carnet de Confiance — couleur-action / primaire (CTA, liens importants)
         violet: {
-          DEFAULT: "#162B48", // Bleu nuit saphir : primaire haut de gamme
-          dark: "#0E1C31",
-          soft: "#E7EEF7",
+          DEFAULT: "#2E6953", // Vert eucalyptus : signature naturelle et mature
+          dark: "#194638",
+          soft: "#DDEFE5",
         },
         festif: {
-          DEFAULT: "#D4A373", // Or solaire : accent chaud et festif
-          soft: "#F5E8D2",
+          DEFAULT: "#D9A566", // Champagne poudré : lumière élégante
+          soft: "#F5E8D0",
         },
         emerald: {
-          DEFAULT: "#2F8067", // Succès : vert discret et lisible
-          soft: "#E2F0EA",
+          DEFAULT: "#438768", // Succès : vert positif et lisible
+          soft: "#E4F1EA",
         },
         navy: {
-          DEFAULT: "#243D63", // Saphir clair : accent premium
-          soft: "#E1E8F2",
+          DEFAULT: "#C96A45", // Abricot fête : accent humain et festif
+          soft: "#FBE3D6",
         },
-        cream: "#FAF9F5", // Lin blanc lumineux
-        ink: "#0F1D2E", // Bleu encre profond
-        plum: "#1C2E45", // Texte principal bleu ardoise
-        slate: "#586A7F", // Texte secondaire bleu-grisé
+        cream: "#FAF7F1", // Crème chaude
+        ink: "#19352B", // Encre eucalyptus profonde
+        plum: "#233F35", // Texte principal naturel et contrasté
+        slate: "#657B70", // Texte secondaire vert-grisé
 
       },
       // Dégradés de marque réutilisables → classes `bg-gradient-*`.
@@ -40,11 +40,11 @@ const config: Config = {
       // un aplat dominant.
       backgroundImage: {
         // Boutons CTA du quotidien, hero discret.
-        "gradient-primary": "linear-gradient(135deg, #162B48 0%, #0E1C31 100%)",
+        "gradient-primary": "linear-gradient(135deg, #2E6953 0%, #194638 100%)",
         // Sections premium, mise en avant prestataire, hero principal.
-        "gradient-premium": "linear-gradient(135deg, #243D63 0%, #0F1D2E 100%)",
+        "gradient-premium": "linear-gradient(135deg, #2E6953 0%, #C96A45 100%)",
         // Fonds de section doux, transitions.
-        "gradient-soft": "linear-gradient(135deg, #F5E8D2 0%, #FAF9F5 100%)",
+        "gradient-soft": "linear-gradient(135deg, #F5E8D0 0%, #FAF7F1 100%)",
       },
       fontFamily: {
         // Titres éditoriaux (l'émotion)
