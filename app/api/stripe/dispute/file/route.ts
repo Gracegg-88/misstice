@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { getAdminEmails } from "@/lib/admin-notify";
+import { sendEmail, emailShell, escapeHtml } from "@/lib/email";
+import { euro } from "@/lib/quote-doc";
 
 export const runtime = "nodejs";
 
@@ -34,7 +37,9 @@ export async function POST(request: Request) {
 
   const { data: quote } = await supabase
     .from("quotes")
-    .select("id, conversation_id, stripe_payment_intent_id, vendor_amount")
+    .select(
+      "id, conversation_id, stripe_payment_intent_id, vendor_amount, amount, client_name, presta_name, quote_number"
+    )
     .eq("id", quoteId)
     .maybeSingle();
   if (!quote || !quote.conversation_id) {
@@ -101,6 +106,42 @@ export async function POST(request: Request) {
       console.error("dispute-file: resolve_quote_dispute échoué", resolveErr);
     }
     return NextResponse.json({ ok: true, status: "annulé" });
+  }
+
+  // "insatisfaction_qualite" nécessite une décision manuelle — sans email,
+  // rien ne signale à l'équipe qu'un litige attend (visible uniquement en
+  // allant sur /admin/devis). Best-effort : un échec d'envoi ne doit pas
+  // faire échouer le signalement lui-même.
+  try {
+    const admin = createAdminClient();
+    const emails = await getAdminEmails(admin);
+    if (emails.length > 0) {
+      const html = emailShell(`
+        <h1 style="margin:0 0 8px;font-size:20px;color:#1A1A2E">Nouveau litige à traiter</h1>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#6B7280">
+          ${escapeHtml(quote.client_name || "Un client")} a signalé une
+          insatisfaction sur la prestation de
+          ${escapeHtml(quote.presta_name || "un prestataire")}
+          (${escapeHtml(quote.quote_number || "devis")}, ${euro(Number(quote.amount))}).
+          Aucun remboursement automatique pour ce motif — une décision
+          manuelle est nécessaire.
+        </p>
+        <a href="https://www.misstice.com/admin/devis"
+           style="display:inline-block;background:#6C3CE1;color:#fff;text-decoration:none;
+                  padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px">
+          Traiter le litige
+        </a>`);
+      for (const to of emails) {
+        await sendEmail({
+          to,
+          subject: "Misstice — Nouveau litige à traiter",
+          html,
+          text: `${quote.client_name || "Un client"} a signalé une insatisfaction sur la prestation de ${quote.presta_name || "un prestataire"} (${quote.quote_number || "devis"}, ${euro(Number(quote.amount))}). Traiter : https://www.misstice.com/admin/devis`,
+        });
+      }
+    }
+  } catch (e) {
+    console.error("dispute-file: alerte admin échouée", e);
   }
 
   return NextResponse.json({ ok: true, status: "en litige" });
