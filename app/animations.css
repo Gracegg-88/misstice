@@ -69,7 +69,6 @@
 }
 .ev-aurora-track span { display: inline-block; }
 .ev-aurora:hover .ev-aurora-track { animation-play-state: paused; }
-}
 
 /* ---------- CTA principaux : signal immédiat et stable ----------
    Un CTA n’a pas besoin d’une respiration continue pour être visible. Le
