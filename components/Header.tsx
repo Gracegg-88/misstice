@@ -13,7 +13,7 @@ const navLinks = [
   { label: "Prestataires", href: "/prestataires" },
   { label: "Guides", href: "/comment-ca-marche" },
   { label: "Confiance", href: "/confiance" },
-  { label: "FAQ", href: "/#faq" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 type Account = { href: string; createHref: string };

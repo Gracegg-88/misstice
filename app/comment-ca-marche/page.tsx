@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarPlus, Users, Store, ArrowRight } from "lucide-react";
+import { CalendarPlus, Users, Store, ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -42,31 +42,31 @@ const steps: {
 const guides = [
   {
     href: "/organiser-un-mariage",
-    image: "/wedding-crowd.jpg",
+    tone: "bg-ink text-cream",
     title: "Organiser un mariage",
     text: "Budget moyen, checklist mois par mois et conseils pour un mariage réussi, petit comité ou grand jour.",
   },
   {
     href: "/organiser-un-anniversaire",
-    image: "/birthday-party.jpg",
+    tone: "bg-festif text-plum",
     title: "Organiser un anniversaire",
     text: "De la petite fête entre proches à la grande soirée, tout pour organiser un anniversaire sans stress.",
   },
   {
     href: "/organiser-un-bapteme",
-    image: "/bapteme-photo.png",
+    tone: "bg-white/70 text-plum",
     title: "Organiser un baptême",
     text: "Cérémonie, réception et prestataires : le guide pour organiser un baptême serein du début à la fin.",
   },
   {
     href: "/organiser-un-evenement-professionnel",
-    image: "/cowork.jpg",
+    tone: "bg-violet text-cream",
     title: "Organiser un événement professionnel",
     text: "Séminaire, gala ou soirée d'entreprise : la méthode pour un événement professionnel maîtrisé.",
   },
   {
     href: "/organiser-une-baby-shower",
-    image: "/babyshower-photo.png",
+    tone: "bg-festif-soft text-plum",
     title: "Organiser une baby shower",
     text: "Préparez l'arrivée de bébé avec une organisation simple, entre budget raisonnable et bons souvenirs.",
   },
@@ -77,33 +77,33 @@ export default function CommentCaMarchePage() {
     <>
       <Header />
       <main className="bg-cream">
-        <div className="mx-auto max-w-content px-5 py-14 sm:px-8">
-          <Reveal className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
-              En 3 étapes
-            </p>
-            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
-              Comment ça marche&nbsp;?
-            </h1>
+        <div className="mx-auto max-w-content px-5 pb-16 pt-12 sm:px-8 sm:pt-16">
+          <Reveal className="grid gap-8 lg:grid-cols-[1fr_.42fr] lg:items-end">
+            <div>
+              <p className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-violet">Des méthodes qui restent proches de vous</p>
+              <h1 className="mt-4 max-w-[13ch] font-display text-4xl font-semibold leading-[.9] tracking-tight text-plum sm:text-5xl lg:text-6xl">Un guide pour chaque moment. Une même façon de <em className="font-normal text-violet">garder le fil.</em></h1>
+              <p className="mt-5 max-w-xl text-base font-light leading-relaxed text-slate sm:text-lg">Budget, échéances, idées et prestataires : choisissez un point de départ adapté à ce que vous préparez.</p>
+            </div>
+            <div className="flex gap-3 border-l-2 border-festif pl-4 text-sm font-light leading-relaxed text-slate"><BookOpen className="shrink-0 text-festif" size={19} /><p>Des contenus pensés pour vous aider à décider, pas pour vous faire défiler sans fin.</p></div>
           </Reveal>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-3 md:grid-cols-3">
             {steps.map((step, i) => (
               <Reveal key={step.n} delay={i * 120} className="h-full">
-                <div className="group flex h-full items-start gap-4 rounded-3xl border border-black/5 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-violet/20 hover:shadow-xl hover:shadow-violet/5">
+                <div className="group flex h-full items-start gap-4 p-3 transition-all hover:-translate-y-1">
                   <div className="relative shrink-0">
-                    <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+                    <span className="flex h-12 w-12 items-center justify-center text-violet">
                       <step.icon size={26} strokeWidth={1.75} />
                     </span>
-                    <span className="absolute -left-1.5 -top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-violet font-display text-sm font-bold text-white shadow-md shadow-violet/30">
+                    <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-festif">
                       {step.n}
                     </span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="font-display text-lg font-semibold leading-snug text-plum">
+                    <h2 className="font-display text-xl font-semibold leading-[1.02] text-plum">
                       {step.title}
                     </h2>
-                    <p className="mt-2 text-sm leading-relaxed text-slate">
+                    <p className="mt-2 text-sm font-light leading-relaxed text-slate">
                       {step.text}
                     </p>
                   </div>
@@ -112,39 +112,29 @@ export default function CommentCaMarchePage() {
             ))}
           </div>
 
-          <Reveal className="mt-20 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
-              Par type d&apos;événement
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-              Choisissez votre guide
-            </h2>
+          <Reveal className="mt-16">
+            <p className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-violet">Par type d&apos;événement</p>
+            <h2 className="mt-3 max-w-[14ch] font-display text-3xl font-semibold leading-[.95] tracking-tight text-plum sm:text-4xl">Choisissez le feuillet qui vous ressemble.</h2>
           </Reveal>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {guides.map((g, i) => (
               <Reveal key={g.href} delay={i * 80}>
                 <Link
                   href={g.href}
-                  className="group flex h-full flex-col overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-violet/20 hover:shadow-xl hover:shadow-violet/5"
+                  className={`group relative flex min-h-64 h-full flex-col overflow-hidden p-6 transition-all hover:-translate-y-1 ${g.tone}`}
                 >
-                  <div className="h-40 w-full overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={g.image}
-                      alt={g.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="font-display text-lg font-semibold text-plum">
+                  <span className="font-label text-[10px] uppercase tracking-[0.15em] opacity-65">0{i + 1}</span>
+                  <Sparkles className="absolute bottom-6 right-6 opacity-60" size={22} />
+                  <div className="mt-auto flex flex-1 flex-col">
+                    <h3 className="max-w-[12ch] font-display text-3xl font-semibold leading-[.94]">
                       {g.title}
                     </h3>
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-slate">
+                    <p className="mt-3 flex-1 text-sm font-light leading-relaxed opacity-75">
                       {g.text}
                     </p>
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-violet">
-                      Lire le guide
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold underline decoration-festif decoration-2 underline-offset-8">
+                      Préparer ce moment
                       <ArrowRight
                         size={16}
                         className="transition-transform group-hover:translate-x-0.5"
@@ -156,16 +146,7 @@ export default function CommentCaMarchePage() {
             ))}
           </div>
 
-          <p className="mt-10 text-center text-sm text-slate">
-            Tous les prestataires sont vérifiés avant publication.{" "}
-            <Link
-              href="/confiance"
-              className="font-semibold text-violet hover:text-violet-dark"
-            >
-              Découvrez comment nous vérifions chaque profil
-            </Link>
-            .
-          </p>
+          <div className="mt-12 flex flex-col gap-5 border-t border-plum/10 pt-7 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3 text-sm font-light text-slate"><Sparkles className="shrink-0 text-festif" size={18} /><p>Vous avez déjà une idée ? Commencez directement par votre projet.</p></div><Link href="/creer" className="inline-flex items-center gap-2 text-sm font-semibold text-violet underline decoration-festif decoration-2 underline-offset-6">Créer mon événement <ArrowRight size={16} /></Link></div>
         </div>
       </main>
       <Footer />

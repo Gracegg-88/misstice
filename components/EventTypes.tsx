@@ -61,7 +61,7 @@ export default function EventTypes() {
         <p className="mt-6 text-center text-sm text-slate">
           Une question avant de vous lancer ?{" "}
           <Link
-            href="/#faq"
+            href="/faq"
             className="font-semibold text-violet hover:text-violet-dark"
           >
             Consultez notre foire aux questions

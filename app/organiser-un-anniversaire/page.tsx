@@ -11,6 +11,7 @@ import GuideChecklist, {
 } from "@/components/guide/GuideChecklist";
 import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
+import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
 export const metadata: Metadata = {
   title: "Comment organiser un anniversaire réussi : budget et checklist",
@@ -132,14 +133,7 @@ export default function OrganiserUnAnniversairePage() {
 
       <GuideSection id="checklist" title="La checklist anniversaire">
         <GuideChecklist periods={checklist} />
-        <div className="mx-auto mt-6 w-full max-w-[90%] overflow-hidden rounded-2xl border border-black/5 shadow-sm sm:max-w-[560px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/dashboard_checklist.png"
-            alt="Aperçu de la checklist partagée sur le dashboard Misstice"
-            className="w-full"
-          />
-        </div>
+        <GuideProductPreview />
         <p className="mt-6 text-sm leading-relaxed text-slate sm:text-base">
           Une checklist papier suffit parfois, mais dès que plusieurs
           personnes s&apos;impliquent dans l&apos;organisation, les
@@ -223,7 +217,7 @@ export default function OrganiserUnAnniversairePage() {
         <p className="mt-5 text-sm leading-relaxed text-slate">
           Pour les questions générales sur la plateforme, consultez notre{" "}
           <Link
-            href="/#faq"
+            href="/faq"
             className="font-semibold text-violet hover:text-violet-dark"
           >
             foire aux questions
