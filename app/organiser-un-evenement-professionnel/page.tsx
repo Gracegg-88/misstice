@@ -11,12 +11,19 @@ import GuideChecklist, {
 } from "@/components/guide/GuideChecklist";
 import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
+import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
 export const metadata: Metadata = {
   title: "Comment organiser un événement professionnel ou un gala",
   description:
     "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
   alternates: { canonical: "/organiser-un-evenement-professionnel" },
+  openGraph: {
+    title: "Comment organiser un événement professionnel ou un gala",
+    description: "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser un événement professionnel — Guide Misstice" },
 };
 
 const toc = [
@@ -89,6 +96,7 @@ export default function OrganiserUnEvenementProfessionnelPage() {
       title="Comment organiser un événement professionnel ou un gala"
       subtitle="Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés."
       toc={toc}
+      path="/organiser-un-evenement-professionnel"
     >
       <Reveal className="space-y-4">
         <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
@@ -133,14 +141,7 @@ export default function OrganiserUnEvenementProfessionnelPage() {
 
       <GuideSection id="checklist" title="La checklist événement professionnel">
         <GuideChecklist periods={checklist} />
-        <div className="mx-auto mt-6 w-full max-w-[90%] overflow-hidden rounded-2xl border border-black/5 shadow-sm sm:max-w-[560px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/dashboard_checklist.png"
-            alt="Aperçu de la checklist partagée sur le dashboard Misstice"
-            className="w-full"
-          />
-        </div>
+        <GuideProductPreview />
         <p className="mt-6 text-sm leading-relaxed text-slate sm:text-base">
           Coordonner un événement professionnel implique souvent plusieurs
           prestataires en parallèle, chacun avec ses propres délais.
@@ -209,7 +210,7 @@ export default function OrganiserUnEvenementProfessionnelPage() {
         <p className="mt-5 text-sm leading-relaxed text-slate">
           Pour les questions générales sur la plateforme, consultez notre{" "}
           <Link
-            href="/#faq"
+            href="/faq"
             className="font-semibold text-violet hover:text-violet-dark"
           >
             foire aux questions

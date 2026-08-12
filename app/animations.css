@@ -26,9 +26,9 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
-@keyframes ev-aurora {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@keyframes ev-aurora-lights {
+  0%, 100% { transform: translate3d(-8%, -3%, 0) scale(1); }
+  50% { transform: translate3d(18%, 6%, 0) scale(1.12); }
 }
 @keyframes ev-cta-shift {
   0%, 100% { background-position: 0% 50%; }
@@ -40,43 +40,65 @@
 }
 
 /* ---------- Apparition au montage ---------- */
-.ev-fade-in   { animation: ev-fade-in 0.6s ease both; }
-.ev-fade-up   { animation: ev-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.ev-slide-up  { animation: ev-slide-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.ev-zoom-in   { animation: ev-zoom-in 0.5s ease both; }
+.ev-fade-in   { animation: ev-fade-in 0.32s ease both; }
+.ev-fade-up   { animation: ev-fade-up 0.42s cubic-bezier(0.23, 1, 0.32, 1) both; }
+.ev-slide-up  { animation: ev-slide-up 0.46s cubic-bezier(0.23, 1, 0.32, 1) both; }
+.ev-zoom-in   { animation: ev-zoom-in 0.3s ease both; }
 .ev-float     { animation: ev-float 6s ease-in-out infinite; }
 
-/* ---------- Aurora / aura lumineuse (bandeau d'annonce) ---------- */
+/* ---------- Mood & Aura : phrase stable, lumières lentes en arrière-plan ---------- */
 .ev-aurora {
-  background: linear-gradient(120deg, #6C3CE1, #FFA3C7, #FF8C42, #6C3CE1);
-  background-size: 300% 300%;
-  animation: ev-aurora 14s ease-in-out infinite;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  background: #2E6953;
+}
+.ev-aurora::before,
+.ev-aurora::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 46%;
+  height: 150%;
+  border-radius: 999px;
+  filter: blur(16px);
+  pointer-events: none;
+  will-change: transform;
+  animation: ev-aurora-lights 9s ease-in-out infinite;
+}
+.ev-aurora::before {
+  left: -12%;
+  background: rgba(217, 165, 102, 0.62);
+}
+.ev-aurora::after {
+  right: -14%;
+  background: rgba(201, 106, 69, 0.50);
+  animation-delay: -4.5s;
+}
+.ev-aurora-content {
+  position: relative;
+  z-index: 1;
+  padding-inline: 1.25rem;
+  white-space: nowrap;
 }
 
-/* ---------- CTA principaux : dégradé animé ----------
-   Respiration lente (12s) entre violet, violet-dark et navy — une
-   variation de la technique .ev-aurora, avec la palette CTA plutôt que
-   festif. Le survol accentue le dégradé + léger zoom + ombre portée. */
+/* ---------- CTA principaux : signal immédiat et stable ----------
+   Un CTA n’a pas besoin d’une respiration continue pour être visible. Le
+   retour est réservé au survol et à l’appui, plus rapide et plus lisible. */
 .ev-cta {
-  background-image: linear-gradient(
-    120deg,
-    #6c3ce1,
-    #5a2fc4,
-    #2b4c7e,
-    #5a2fc4,
-    #6c3ce1
-  );
-  background-size: 300% 300%;
-  animation: ev-cta-shift 12s ease-in-out infinite;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    background-size 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  background: #2E6953;
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.16s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .ev-cta:hover {
-  background-size: 340% 340%;
-  transform: scale(1.03);
-  box-shadow: 0 10px 28px rgba(108, 60, 225, 0.35);
+  background: #194638;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(25, 70, 56, 0.24);
 }
+.ev-cta:active { transform: scale(0.97); }
 
 /* ---------- CTA principal : liseré festif animé (touche ponctuelle) ----------
    Réservé à UN SEUL bouton par page (le CTA de conversion principal) —
@@ -95,11 +117,11 @@
   border-radius: inherit;
   background: linear-gradient(
     120deg,
-    #ff8c42,
-    #ffd9a8,
-    #ff8c42,
-    #ffb27a,
-    #ff8c42
+    #D9A566,
+    #F5E8D0,
+    #C96A45,
+    #E7B47D,
+    #D9A566
   );
   background-size: 300% 300%;
   animation: ev-cta-pulse-ring 6s ease-in-out infinite;
@@ -115,17 +137,17 @@
    Sur un enfant marqué .ev-stagger-item, on pose --i (index)
    en style inline pour décaler l'apparition. */
 .ev-stagger-item {
-  animation: ev-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation: ev-fade-up 0.42s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
 }
 
 /* ---------- Reveal au scroll ----------
    Piloté par le composant <Reveal /> (IntersectionObserver). */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(18px);
+  transition: opacity 0.42s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.42s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .reveal.is-visible {
   opacity: 1;
@@ -138,8 +160,8 @@
 .reveal-scale {
   opacity: 0;
   transform: scale(0.95);
-  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.32s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.32s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .reveal-scale.is-visible {
   opacity: 1;
@@ -153,8 +175,8 @@
 .reveal-item {
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .reveal-row.is-visible,
 .reveal-item.is-visible {
@@ -164,8 +186,8 @@
 
 /* ---------- Zoom au survol (cartes prestataires) ---------- */
 .ev-zoom-hover { overflow: hidden; }
-.ev-zoom-target { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-.ev-zoom-hover:hover .ev-zoom-target { transform: scale(1.07); }
+.ev-zoom-target { transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1); }
+.ev-zoom-hover:hover .ev-zoom-target { transform: scale(1.025); }
 
 /* ---------- Flip card au survol (cartes invités) ---------- */
 .ev-flip { perspective: 1000px; }
@@ -206,17 +228,16 @@
   .ev-flip:hover .ev-flip-inner { transform: none; }
   .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
 
-  /* Dégradé CTA statique et élégant, sans mouvement ; pas de zoom au
-     survol (juste l'ombre) ; liseré festif visible mais fixe (pas de
-     pulsation). */
+  /* CTA et liseré statiques ; aucun mouvement imposé. */
   .ev-cta {
-    background-position: 35% 50%;
+    background: #2E6953;
   }
   .ev-cta:hover {
-    background-size: 300% 300%;
     transform: none;
   }
   .ev-cta-pulse::after {
     background-position: 35% 50%;
   }
+  .ev-aurora::before,
+  .ev-aurora::after { animation: none; }
 }

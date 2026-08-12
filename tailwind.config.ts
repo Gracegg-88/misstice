@@ -10,36 +10,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Couleur-action / primaire (CTA, liens importants)
+        // Carnet de Confiance — couleur-action / primaire (CTA, liens importants)
         violet: {
-          DEFAULT: "#6C3CE1",
-          dark: "#5A2FC4",
-          soft: "#F1ECFD", // fond léger pour badges / surfaces
+          DEFAULT: "#2E6953", // Vert eucalyptus : signature naturelle et mature
+          dark: "#194638",
+          soft: "#DDEFE5",
         },
-        // Accent festif (réservé aux touches chaleureuses, jamais aux gros aplats)
         festif: {
-          DEFAULT: "#FF8C42",
-          soft: "#FFF1E6",
+          DEFAULT: "#D9A566", // Champagne poudré : lumière élégante
+          soft: "#F5E8D0",
         },
-        // Validation / succès
         emerald: {
-          DEFAULT: "#10B981",
-          soft: "#E7F8F1",
+          DEFAULT: "#438768", // Succès : vert positif et lisible
+          soft: "#E4F1EA",
         },
-        // Accent premium neutre (mise en avant prestataire, badges "premium").
-        // Volontairement froid/neutre — jamais de rose/blush/terracotta, pour
-        // rester perçu comme une marketplace neutre en genre, pas "réservée
-        // aux femmes". Réservé aux touches premium, jamais en usage principal.
         navy: {
-          DEFAULT: "#2B4C7E",
-          soft: "#EAF0F8",
+          DEFAULT: "#C96A45", // Abricot fête : accent humain et festif
+          soft: "#FBE3D6",
         },
-        // Fonds
-        cream: "#FAFAF9", // fond clair (jamais blanc pur)
-        ink: "#1E1B2E", // fond sombre des sections "écrin"
-        // Texte
-        plum: "#1A1A2E", // texte principal
-        slate: "#6B7280", // texte secondaire
+        cream: "#FAF7F1", // Crème chaude
+        ink: "#19352B", // Encre eucalyptus profonde
+        plum: "#233F35", // Texte principal naturel et contrasté
+        slate: "#657B70", // Texte secondaire vert-grisé
+
       },
       // Dégradés de marque réutilisables → classes `bg-gradient-*`.
       // Ne jamais créer de dégradé violet → festif en grand format : l'orange
@@ -47,17 +40,19 @@ const config: Config = {
       // un aplat dominant.
       backgroundImage: {
         // Boutons CTA du quotidien, hero discret.
-        "gradient-primary": "linear-gradient(135deg, #6C3CE1 0%, #5A2FC4 100%)",
+        "gradient-primary": "linear-gradient(135deg, #2E6953 0%, #194638 100%)",
         // Sections premium, mise en avant prestataire, hero principal.
-        "gradient-premium": "linear-gradient(135deg, #6C3CE1 0%, #2B4C7E 100%)",
+        "gradient-premium": "linear-gradient(135deg, #2E6953 0%, #C96A45 100%)",
         // Fonds de section doux, transitions.
-        "gradient-soft": "linear-gradient(135deg, #F1ECFD 0%, #FAFAF9 100%)",
+        "gradient-soft": "linear-gradient(135deg, #F5E8D0 0%, #FAF7F1 100%)",
       },
       fontFamily: {
         // Titres éditoriaux (l'émotion)
         display: ["var(--font-display)", "Georgia", "serif"],
         // Corps de texte ultra-lisible (la machine)
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        // Repères, catégories et métadonnées — usage ponctuel pour donner du rythme.
+        label: ["var(--font-label)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         xl: "12px",

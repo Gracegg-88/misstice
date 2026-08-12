@@ -19,6 +19,7 @@ const BASE_URL = "https://www.misstice.com";
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "", priority: 1, changeFrequency: "weekly" },
   { path: "/comment-ca-marche", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
   { path: "/confiance", priority: 0.7, changeFrequency: "monthly" },
   { path: "/devenir-prestataire", priority: 0.8, changeFrequency: "monthly" },
   { path: "/creer", priority: 0.8, changeFrequency: "monthly" },

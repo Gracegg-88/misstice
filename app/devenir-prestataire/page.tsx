@@ -22,6 +22,12 @@ export const metadata: Metadata = {
   description:
     "Rejoignez Misstice, la plateforme qui connecte prestataires mariage et événementiel à des particuliers en France : mariage, anniversaire, baptême, gala, baby shower. Inscription gratuite, badge Vérifié.",
   alternates: { canonical: "/devenir-prestataire" },
+  openGraph: {
+    title: "Devenir prestataire événementiel sur Misstice | Inscription gratuite",
+    description: "Rejoignez Misstice et connectez-vous à des familles qui organisent mariages, anniversaires, baptêmes et galas. Inscription gratuite, badge Vérifié.",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Devenir prestataire sur Misstice — Inscription gratuite" },
 };
 
 const CTA_HREF = "/creer?type=pro";
@@ -247,7 +253,7 @@ export default function DevenirPrestatairePage() {
           <p className="mt-6 text-sm text-slate">
             Vous avez d&apos;autres questions ? Consultez notre{" "}
             <Link
-              href="/#faq"
+              href="/faq"
               className="font-semibold text-violet hover:text-violet-dark"
             >
               foire aux questions prestataires

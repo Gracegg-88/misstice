@@ -44,12 +44,15 @@ export async function sendEmail(opts: {
 // Gabarit d'email Misstice — style plat (sans bandeau coloré), à la Google.
 export function emailShell(bodyHtml: string): string {
   return `
-  <div style="margin:0;padding:32px 16px;background:#FAFAF9;font-family:Segoe UI,Arial,sans-serif;color:#1E1B2E">
-    <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;border:1px solid #eeeeee;padding:36px 32px">
-      <div style="text-align:center;font-size:20px;font-weight:700;color:#6C3CE1;letter-spacing:-0.02em">Misstice&nbsp;&#10022;</div>
+  <div style="margin:0;padding:32px 16px;background:#F7F2E8;font-family:Segoe UI,Arial,sans-serif;color:#19483D">
+    <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;border:1px solid #E6DED2;padding:36px 32px">
+      <div style="text-align:center">
+        <img src="https://www.misstice.com/brand/misstice-mark.png" width="42" height="42" alt="Misstice" style="display:inline-block;width:42px;height:42px;object-fit:contain;vertical-align:middle" />
+        <span style="display:inline-block;margin-left:8px;vertical-align:middle;font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1E5849;letter-spacing:-0.02em">Misstice</span>
+      </div>
       <div style="margin-top:24px">${bodyHtml}</div>
     </div>
-    <p style="max-width:520px;margin:16px auto 0;text-align:center;font-size:11px;color:#B3B0BF">
+    <p style="max-width:520px;margin:16px auto 0;text-align:center;font-size:11px;color:#7D9188">
       Misstice — On transforme le stress de l'organisation en plaisir.
     </p>
   </div>`;

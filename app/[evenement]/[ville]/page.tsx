@@ -51,6 +51,17 @@ export async function generateMetadata({
   return {
     title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
     description: `Prestataires vérifiés et organisation centralisée pour un ${eventType.name.toLowerCase()} à ${city.name} : budget, invités, checklist et devis, tout dans Misstice.`,
+    alternates: { canonical: `/${params.evenement}/${params.ville}` },
+    openGraph: {
+      title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
+      description: `Prestataires vérifiés et organisation centralisée pour un ${eventType.name.toLowerCase()} à ${city.name} : budget, invités, checklist et devis, tout dans Misstice.`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
+      description: `Prestataires vérifiés pour un ${eventType.name.toLowerCase()} à ${city.name}.`,
+    },
   };
 }
 
@@ -74,11 +85,20 @@ export default async function EvenementVillePage({
   const verifiedCount = vendors.filter((v) => v.verified).length;
   const belowThreshold = verifiedCount < MIN_VERIFIED_VENDORS;
   const otherEventTypes = eventTypes.filter((et) => et.slug !== eventType.slug);
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.misstice.com/" },
+      { "@type": "ListItem", position: 2, name: `Organiser un ${eventType.name.toLowerCase()} à ${city.name}`, item: `https://www.misstice.com/${eventType.slug}/${city.slug}` },
+    ],
+  };
 
   return (
     <>
       <Header initialAccount={account} />
       <main className="min-h-screen bg-cream">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
         <section className="mx-auto max-w-content px-5 py-12 sm:px-8">
           <Breadcrumb
             items={[

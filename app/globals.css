@@ -46,8 +46,8 @@ html {
   box-sizing: border-box;
 }
 body {
-  background-color: #fafaf9;
-  color: #1a1a2e;
+  background-color: #faf7f1;
+  color: #233f35;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   /* Aucun défilement latéral parasite : un élément trop large ne décale plus
@@ -64,7 +64,7 @@ iframe {
   max-width: 100%;
 }
 :focus-visible {
-  outline: 2px solid #6c3ce1;
+  outline: 2px solid #c96a45;
   outline-offset: 3px;
   border-radius: 4px;
 }
@@ -85,13 +85,13 @@ iframe {
   border-radius: 1.5rem;
 }
 .ev-pin {
-  background: #6c3ce1;
+  background: #1e5849;
   width: 26px;
   height: 26px;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(26, 26, 46, 0.3);
+  box-shadow: 0 2px 8px rgba(18, 60, 51, 0.3);
 }
 .leaflet-popup-content-wrapper { border-radius: 14px; }
 .leaflet-popup-content { margin: 14px 16px; }

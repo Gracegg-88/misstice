@@ -9,6 +9,7 @@ export default function GuideLayout({
   title,
   subtitle,
   toc,
+  path,
   children,
 }: {
   heroImage: string;
@@ -16,38 +17,44 @@ export default function GuideLayout({
   title: string;
   subtitle?: string;
   toc: TocItem[];
+  path?: string;
   children: React.ReactNode;
 }) {
+  const breadcrumbSchema = path ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.misstice.com/" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: "https://www.misstice.com/comment-ca-marche" },
+      { "@type": "ListItem", position: 3, name: title, item: `https://www.misstice.com${path}` },
+    ],
+  } : null;
+
   return (
     <>
       <Header />
       <main className="bg-cream">
-        <div className="relative h-72 w-full overflow-hidden rounded-b-[32px] sm:h-[420px] lg:h-[480px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={heroImage}
-            alt={heroAlt}
-            className="h-full w-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/15 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 px-5 pb-7 sm:px-8 sm:pb-10">
-            <div className="mx-auto max-w-content">
-              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
-                  {subtitle}
-                </p>
-              )}
+        {breadcrumbSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />}
+        <section className="relative overflow-hidden px-5 pb-8 pt-12 sm:px-8 sm:pb-10 sm:pt-16">
+          <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-festif/10 blur-3xl" />
+          <div className="relative mx-auto grid max-w-content gap-8 lg:grid-cols-[1fr_.38fr] lg:items-end">
+            <div className="max-w-4xl">
+              <p className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-violet">Guide Misstice · à garder sous la main</p>
+              <h1 className="mt-4 max-w-[15ch] font-display text-4xl font-semibold leading-[.93] tracking-tight text-plum sm:text-5xl lg:text-6xl">{title}</h1>
+              {subtitle && <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-slate sm:text-lg">{subtitle}</p>}
+            </div>
+            <div className="bg-ink p-5 text-cream">
+              <p className="font-label text-[10px] uppercase tracking-[0.14em] text-festif">Dans ce guide</p>
+              <p className="mt-3 font-display text-2xl font-semibold leading-none">Des repères concrets, puis la liberté de les adapter.</p>
+              <p className="mt-4 text-sm font-light leading-relaxed text-cream/75">Budget, étapes, idées et prestataires : allez directement à ce qui vous aide maintenant.</p>
             </div>
           </div>
-        </div>
+        </section>
 
         <div className="mx-auto max-w-content px-5 py-10 sm:px-8 sm:py-14">
           {/* Sommaire mobile, replié par défaut. La version desktop (sticky) est plus bas. */}
-          <details className="mt-6 rounded-2xl border border-black/5 bg-white p-4 shadow-sm lg:hidden">
-            <summary className="cursor-pointer list-none font-semibold text-plum marker:hidden">
+          <details className="mt-2 bg-white/60 p-4 lg:hidden">
+            <summary className="cursor-pointer list-none font-label text-xs uppercase tracking-[0.1em] text-plum marker:hidden">
               Sommaire
             </summary>
             <nav className="mt-3 flex flex-col gap-1">
@@ -55,7 +62,7 @@ export default function GuideLayout({
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className="rounded-lg px-2 py-1.5 text-sm text-slate hover:bg-violet-soft hover:text-violet"
+                  className="px-2 py-1.5 text-sm text-slate hover:text-violet"
                 >
                   {item.label}
                 </a>
@@ -65,12 +72,12 @@ export default function GuideLayout({
 
           <div className="mt-8 grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-14">
             <aside className="hidden lg:block">
-              <nav className="sticky top-28 flex flex-col gap-1 border-l border-black/10 pl-4">
+              <nav className="sticky top-28 flex flex-col gap-1 pl-1">
                 {toc.map((item) => (
                   <a
                     key={item.id}
                     href={`#${item.id}`}
-                    className="rounded-r-lg py-1.5 pl-3 text-sm font-medium text-slate transition-colors hover:text-violet"
+                    className="py-1.5 text-sm font-medium text-slate transition-colors hover:text-violet"
                   >
                     {item.label}
                   </a>

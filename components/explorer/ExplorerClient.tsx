@@ -240,11 +240,11 @@ export default function ExplorerClient({
           </button>
         </form>
 
-        {/* ── Bandeau « bientôt disponible » (aura lumineuse) ── */}
-        <div className="ev-aurora mt-4 flex h-[60px] items-center justify-center rounded-2xl px-4">
-          <p className="font-display text-base font-medium tracking-wide text-white sm:text-lg">
-            ✦ Bientôt disponible votre test Mood &amp; Aura ✦
-          </p>
+        {/* ── Banderole Mood & Aura : texte stable, lumières en mouvement ── */}
+        <div className="ev-aurora mt-4 h-[56px] overflow-hidden rounded-2xl" aria-label="Test Mood et Aura bientôt disponible">
+          <div className="ev-aurora-content font-display text-center text-base tracking-wide text-white sm:text-lg">
+            ✦ Votre test Mood &amp; Aura arrive bientôt · trouvez le style qui vous ressemble
+          </div>
         </div>
       </div>
 

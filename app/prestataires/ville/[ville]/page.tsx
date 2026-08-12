@@ -41,6 +41,17 @@ export async function generateMetadata({
   return {
     title: `Prestataires événementiels à ${city.name} — Misstice`,
     description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
+    alternates: { canonical: `/prestataires/ville/${params.ville}` },
+    openGraph: {
+      title: `Prestataires événementiels à ${city.name} — Misstice`,
+      description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Prestataires événementiels à ${city.name} — Misstice`,
+      description: `Prestataires vérifiés à ${city.name} pour votre événement.`,
+    },
   };
 }
 

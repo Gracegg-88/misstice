@@ -7,7 +7,7 @@ const columns = [
       { label: "Créer un événement", href: "/creer" },
       { label: "Explorer les prestataires", href: "/prestataires" },
       { label: "Comment ça marche", href: "/comment-ca-marche" },
-      { label: "FAQ", href: "/#faq" },
+      { label: "FAQ", href: "/faq" },
     ],
   },
   {

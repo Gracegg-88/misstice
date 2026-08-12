@@ -11,6 +11,7 @@ import GuideChecklist, {
 } from "@/components/guide/GuideChecklist";
 import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
+import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
 export const metadata: Metadata = {
   title:
@@ -18,6 +19,12 @@ export const metadata: Metadata = {
   description:
     "Guide complet pour organiser votre mariage, petit budget ou grand jour : checklist mois par mois, budget moyen par poste, et comment trouver des prestataires vérifiés sans passer par un wedding planner.",
   alternates: { canonical: "/organiser-un-mariage" },
+  openGraph: {
+    title: "Comment organiser un mariage en 2026 : budget, étapes et checklist complète",
+    description: "Guide complet pour organiser votre mariage : checklist mois par mois, budget moyen par poste, prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser un mariage — Guide Misstice 2026" },
 };
 
 const toc = [
@@ -111,6 +118,7 @@ export default function OrganiserUnMariagePage() {
       title="Comment organiser un mariage en 2026"
       subtitle="Checklist mois par mois, budget moyen par poste, et comment trouver des prestataires vérifiés sans passer par un wedding planner."
       toc={toc}
+      path="/organiser-un-mariage"
     >
       <Reveal>
         <p className="text-sm leading-relaxed text-slate sm:text-base">
@@ -182,14 +190,7 @@ export default function OrganiserUnMariagePage() {
           réel, et vous aide à coordonner vos prestataires sans avoir à
           jongler entre dix outils différents.
         </p>
-        <div className="mx-auto mt-6 w-full max-w-[90%] overflow-hidden rounded-2xl border border-black/5 shadow-sm sm:max-w-[560px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/dashboard_budget.png"
-            alt="Aperçu du suivi budget sur le dashboard Misstice"
-            className="w-full"
-          />
-        </div>
+        <GuideProductPreview mode="budget" />
         <div className="mt-6">
           <GuideCta href="/creer" label="Créer mon événement gratuitement" accent />
         </div>
@@ -269,7 +270,7 @@ export default function OrganiserUnMariagePage() {
         <p className="mt-5 text-sm leading-relaxed text-slate">
           Pour les questions générales sur la plateforme, consultez notre{" "}
           <Link
-            href="/#faq"
+            href="/faq"
             className="font-semibold text-violet hover:text-violet-dark"
           >
             foire aux questions

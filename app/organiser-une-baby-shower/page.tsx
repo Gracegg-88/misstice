@@ -11,12 +11,19 @@ import GuideChecklist, {
 } from "@/components/guide/GuideChecklist";
 import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
+import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
 export const metadata: Metadata = {
   title: "Comment organiser une baby shower réussie : idées et budget",
   description:
     "Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires.",
   alternates: { canonical: "/organiser-une-baby-shower" },
+  openGraph: {
+    title: "Comment organiser une baby shower réussie : idées et budget",
+    description: "Guide complet pour organiser une baby shower : budget, checklist, idées de décoration et prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser une baby shower — Guide Misstice" },
 };
 
 const toc = [
@@ -84,6 +91,7 @@ export default function OrganiserUneBabyShowerPage() {
       title="Comment organiser une baby shower"
       subtitle="Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires."
       toc={toc}
+      path="/organiser-une-baby-shower"
     >
       <Reveal>
         <p className="text-sm leading-relaxed text-slate sm:text-base">
@@ -112,14 +120,7 @@ export default function OrganiserUneBabyShowerPage() {
 
       <GuideSection id="checklist" title="La checklist baby shower">
         <GuideChecklist periods={checklist} />
-        <div className="mx-auto mt-6 w-full max-w-[90%] overflow-hidden rounded-2xl border border-black/5 shadow-sm sm:max-w-[560px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/dashboard_checklist.png"
-            alt="Aperçu de la checklist partagée sur le dashboard Misstice"
-            className="w-full"
-          />
-        </div>
+        <GuideProductPreview />
         <p className="mt-6 text-sm leading-relaxed text-slate sm:text-base">
           Une baby shower s&apos;organise souvent à plusieurs, entre sœurs,
           amies ou collègues, sans toujours se coordonner facilement.
@@ -192,7 +193,7 @@ export default function OrganiserUneBabyShowerPage() {
         <p className="mt-5 text-sm leading-relaxed text-slate">
           Pour les questions générales sur la plateforme, consultez notre{" "}
           <Link
-            href="/#faq"
+            href="/faq"
             className="font-semibold text-violet hover:text-violet-dark"
           >
             foire aux questions
