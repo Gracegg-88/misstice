@@ -31,7 +31,7 @@ export default function EventTypes() {
         <Reveal delay={60} className="mt-6 overflow-hidden bg-plum/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/manus-storage/misstice-event-types-editorial_099a338a.jpg"
+            src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg"
             alt="Proches préparant ensemble une célébration autour d’une table"
             className="h-52 w-full object-cover object-center sm:h-64"
           />
