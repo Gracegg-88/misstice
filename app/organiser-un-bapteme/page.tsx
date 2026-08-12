@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   description:
     "Guide complet pour organiser un baptême civil ou religieux : budget moyen, checklist mois par mois, et comment trouver vos prestataires en toute confiance.",
   alternates: { canonical: "/organiser-un-bapteme" },
+  openGraph: {
+    title: "Comment organiser un baptême : étapes, budget et checklist",
+    description: "Guide complet pour organiser un baptême civil ou religieux : budget, checklist et prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser un baptême — Guide Misstice" },
 };
 
 const toc = [
@@ -93,6 +99,7 @@ export default function OrganiserUnBaptemePage() {
       title="Comment organiser un baptême"
       subtitle="Étapes, budget moyen, checklist mois par mois, et comment trouver vos prestataires en toute confiance."
       toc={toc}
+      path="/organiser-un-bapteme"
     >
       <Reveal>
         <p className="text-sm leading-relaxed text-slate sm:text-base">

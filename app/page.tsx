@@ -25,7 +25,16 @@ const websiteSchema = {
   name: "Misstice",
   url: "https://www.misstice.com",
   inLanguage: "fr-FR",
-  description: "Plateforme d’organisation d’événements et de mise en relation avec des prestataires vérifiés.",
+  description: "Plateforme d'organisation d'événements et de mise en relation avec des prestataires vérifiés.",
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Misstice",
+  url: "https://www.misstice.com",
+  sameAs: [],
+  contactPoint: { "@type": "ContactPoint", contactType: "customer support", availableLanguage: "French" },
 };
 
 export default async function Home() {
@@ -35,6 +44,7 @@ export default async function Home() {
       <Header initialAccount={account} />
       <main>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <Hero />
         <HomeDirectory />
         <EventTypes />

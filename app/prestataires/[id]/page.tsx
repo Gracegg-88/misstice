@@ -25,6 +25,16 @@ export async function generateMetadata({
     title: `${vendor.name} · ${vendor.category} à ${vendor.city} · Misstice`,
     description: vendor.tagline,
     alternates: { canonical: `/prestataires/${vendor.id}` },
+    openGraph: {
+      title: `${vendor.name} · ${vendor.category} à ${vendor.city} · Misstice`,
+      description: vendor.tagline ?? `Découvrez ${vendor.name} sur Misstice, prestataire vérifié pour votre événement.`,
+      type: "profile",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${vendor.name} · ${vendor.category} à ${vendor.city}`,
+      description: vendor.tagline ?? `Prestataire vérifié sur Misstice.`,
+    },
   };
 }
 
@@ -74,11 +84,26 @@ export default async function VendorPage({
     stats.count > 0
       ? { ...vendor, rating: stats.avg, reviews: stats.count }
       : vendor;
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: vendor.name,
+    description: vendor.tagline || undefined,
+    url: `https://www.misstice.com/prestataires/${vendor.id}`,
+    image: vendor.img || undefined,
+    address: vendor.city
+      ? { "@type": "PostalAddress", addressLocality: vendor.city, addressCountry: "FR" }
+      : undefined,
+    aggregateRating: stats.count > 0
+      ? { "@type": "AggregateRating", ratingValue: stats.avg, reviewCount: stats.count, bestRating: 5, worstRating: 1 }
+      : undefined,
+  };
 
   return (
     <>
       <Header />
       <main>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
         <VendorProfile
           vendor={vendorWithRating}
           packages={packages}

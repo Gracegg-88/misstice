@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   description:
     "Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires.",
   alternates: { canonical: "/organiser-une-baby-shower" },
+  openGraph: {
+    title: "Comment organiser une baby shower réussie : idées et budget",
+    description: "Guide complet pour organiser une baby shower : budget, checklist, idées de décoration et prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser une baby shower — Guide Misstice" },
 };
 
 const toc = [
@@ -85,6 +91,7 @@ export default function OrganiserUneBabyShowerPage() {
       title="Comment organiser une baby shower"
       subtitle="Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires."
       toc={toc}
+      path="/organiser-une-baby-shower"
     >
       <Reveal>
         <p className="text-sm leading-relaxed text-slate sm:text-base">

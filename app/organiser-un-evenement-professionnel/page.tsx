@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   description:
     "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
   alternates: { canonical: "/organiser-un-evenement-professionnel" },
+  openGraph: {
+    title: "Comment organiser un événement professionnel ou un gala",
+    description: "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser un événement professionnel — Guide Misstice" },
 };
 
 const toc = [
@@ -90,6 +96,7 @@ export default function OrganiserUnEvenementProfessionnelPage() {
       title="Comment organiser un événement professionnel ou un gala"
       subtitle="Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés."
       toc={toc}
+      path="/organiser-un-evenement-professionnel"
     >
       <Reveal className="space-y-4">
         <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">

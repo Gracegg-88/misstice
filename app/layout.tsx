@@ -47,11 +47,14 @@ export const metadata: Metadata = {
       "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",
     locale: "fr_FR",
     type: "website",
+    siteName: "Misstice",
+    images: [{ url: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg", width: 1200, height: 630, alt: "Misstice — Organisez vos moments importants" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Misstice | Organisez votre événement et trouvez vos prestataires",
     description: "Organisez votre événement, comparez des devis et échangez avec des prestataires vérifiés.",
+    images: ["https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg"],
   },
   robots: {
     index: true,

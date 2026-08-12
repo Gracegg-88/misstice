@@ -50,6 +50,17 @@ export async function generateMetadata({
   return {
     title: `${categoryLabel} à ${city.name} — Misstice`,
     description: `Comparez les ${categoryLabel.toLowerCase()} vérifiés à ${city.name}. Devis gratuits, avis vérifiés, tout centralisé sur Misstice.`,
+    alternates: { canonical: `/prestataires/ville/${params.ville}/${params.categorie}` },
+    openGraph: {
+      title: `${categoryLabel} à ${city.name} — Misstice`,
+      description: `Comparez les ${categoryLabel.toLowerCase()} vérifiés à ${city.name}. Devis gratuits, avis vérifiés, tout centralisé sur Misstice.`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${categoryLabel} à ${city.name} — Misstice`,
+      description: `${categoryLabel} vérifiés à ${city.name} — devis gratuits sur Misstice.`,
+    },
   };
 }
 

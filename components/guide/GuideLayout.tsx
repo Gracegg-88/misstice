@@ -9,6 +9,7 @@ export default function GuideLayout({
   title,
   subtitle,
   toc,
+  path,
   children,
 }: {
   heroImage: string;
@@ -16,12 +17,24 @@ export default function GuideLayout({
   title: string;
   subtitle?: string;
   toc: TocItem[];
+  path?: string;
   children: React.ReactNode;
 }) {
+  const breadcrumbSchema = path ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.misstice.com/" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: "https://www.misstice.com/comment-ca-marche" },
+      { "@type": "ListItem", position: 3, name: title, item: `https://www.misstice.com${path}` },
+    ],
+  } : null;
+
   return (
     <>
       <Header />
       <main className="bg-cream">
+        {breadcrumbSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />}
         <section className="relative overflow-hidden px-5 pb-8 pt-12 sm:px-8 sm:pb-10 sm:pt-16">
           <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-festif/10 blur-3xl" />
           <div className="relative mx-auto grid max-w-content gap-8 lg:grid-cols-[1fr_.38fr] lg:items-end">

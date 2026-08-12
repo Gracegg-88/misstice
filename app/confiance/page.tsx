@@ -10,6 +10,12 @@ export const metadata: Metadata = {
   description:
     "Découvrez comment Misstice vérifie chaque prestataire (SIRET), garantit des avis authentiques et ne biaise jamais son classement par un système payant. La confiance, expliquée simplement.",
   alternates: { canonical: "/confiance" },
+  openGraph: {
+    title: "Prestataires vérifiés et avis authentiques | Confiance Misstice",
+    description: "Comment Misstice vérifie chaque prestataire (SIRET) et garantit des avis authentiques sans biais commercial.",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: "Confiance Misstice — Prestataires vérifiés" },
 };
 
 const points = [
@@ -115,7 +121,7 @@ export default function ConfiancePage() {
             </Link>
             , ou consultez notre{" "}
             <Link
-              href="/#faq"
+              href="/faq"
               className="font-semibold text-[#7A5C33] hover:text-[#5F4726]"
             >
               foire aux questions

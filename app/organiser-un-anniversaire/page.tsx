@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   description:
     "Guide complet pour organiser un anniversaire, entre amis ou en famille : budget moyen, checklist étape par étape, et comment trouver vos prestataires sans y passer des heures.",
   alternates: { canonical: "/organiser-un-anniversaire" },
+  openGraph: {
+    title: "Comment organiser un anniversaire réussi : budget et checklist",
+    description: "Guide complet pour organiser un anniversaire : budget moyen, checklist étape par étape et prestataires vérifiés.",
+    type: "article",
+  },
+  twitter: { card: "summary_large_image", title: "Organiser un anniversaire — Guide Misstice" },
 };
 
 const toc = [
@@ -93,6 +99,7 @@ export default function OrganiserUnAnniversairePage() {
       title="Comment organiser un anniversaire"
       subtitle="Budget moyen, checklist étape par étape, et comment trouver vos prestataires sans y passer des heures."
       toc={toc}
+      path="/organiser-un-anniversaire"
     >
       <Reveal>
         <p className="text-sm leading-relaxed text-slate sm:text-base">
