@@ -23,7 +23,10 @@ const dmSans = DM_Sans({
 // SEO dès le jour 1 (principe 5)
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.misstice.com"),
-  title: "Misstice | Organisez votre événement et trouvez vos prestataires",
+  title: {
+    default: "Misstice | Organisez votre événement et trouvez vos prestataires",
+    template: "%s | Misstice",
+  },
   description:
     "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",
   alternates: {
@@ -35,6 +38,16 @@ export const metadata: Metadata = {
       "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",
     locale: "fr_FR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Misstice | Organisez votre événement et trouvez vos prestataires",
+    description: "Organisez votre événement, comparez des devis et échangez avec des prestataires vérifiés.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
 };
 

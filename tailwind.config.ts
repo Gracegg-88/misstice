@@ -10,16 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Couleur-action / primaire (CTA, liens importants)
+        // Carnet de Confiance — couleur-action / primaire (CTA, liens importants)
         violet: {
-          DEFAULT: "#6C3CE1",
-          dark: "#5A2FC4",
-          soft: "#F1ECFD", // fond léger pour badges / surfaces
+          DEFAULT: "#1E5849",
+          dark: "#123C33",
+          soft: "#E8F0EA", // fond léger pour badges / surfaces
         },
         // Accent festif (réservé aux touches chaleureuses, jamais aux gros aplats)
         festif: {
-          DEFAULT: "#FF8C42",
-          soft: "#FFF1E6",
+          DEFAULT: "#E89D75",
+          soft: "#F8E7D9",
         },
         // Validation / succès
         emerald: {
@@ -31,15 +31,15 @@ const config: Config = {
         // rester perçu comme une marketplace neutre en genre, pas "réservée
         // aux femmes". Réservé aux touches premium, jamais en usage principal.
         navy: {
-          DEFAULT: "#2B4C7E",
-          soft: "#EAF0F8",
+          DEFAULT: "#315A4E",
+          soft: "#EAF0E8",
         },
         // Fonds
-        cream: "#FAFAF9", // fond clair (jamais blanc pur)
-        ink: "#1E1B2E", // fond sombre des sections "écrin"
+        cream: "#F7F2E8", // fond clair (jamais blanc pur)
+        ink: "#123C33", // fond sombre des sections "écrin"
         // Texte
-        plum: "#1A1A2E", // texte principal
-        slate: "#6B7280", // texte secondaire
+        plum: "#19483D", // texte principal
+        slate: "#5B7268", // texte secondaire
       },
       // Dégradés de marque réutilisables → classes `bg-gradient-*`.
       // Ne jamais créer de dégradé violet → festif en grand format : l'orange

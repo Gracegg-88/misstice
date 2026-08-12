@@ -40,43 +40,34 @@
 }
 
 /* ---------- Apparition au montage ---------- */
-.ev-fade-in   { animation: ev-fade-in 0.6s ease both; }
-.ev-fade-up   { animation: ev-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.ev-slide-up  { animation: ev-slide-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.ev-zoom-in   { animation: ev-zoom-in 0.5s ease both; }
+.ev-fade-in   { animation: ev-fade-in 0.32s ease both; }
+.ev-fade-up   { animation: ev-fade-up 0.42s cubic-bezier(0.23, 1, 0.32, 1) both; }
+.ev-slide-up  { animation: ev-slide-up 0.46s cubic-bezier(0.23, 1, 0.32, 1) both; }
+.ev-zoom-in   { animation: ev-zoom-in 0.3s ease both; }
 .ev-float     { animation: ev-float 6s ease-in-out infinite; }
 
-/* ---------- Aurora / aura lumineuse (bandeau d'annonce) ---------- */
+/* ---------- Aurora / aura lumineuse (bandeau d'annonce) ----------
+   L’accent est désormais statique : il distingue une information sans imposer
+   un mouvement continu à l’utilisateur. */
 .ev-aurora {
-  background: linear-gradient(120deg, #6C3CE1, #FFA3C7, #FF8C42, #6C3CE1);
-  background-size: 300% 300%;
-  animation: ev-aurora 14s ease-in-out infinite;
+  background: linear-gradient(120deg, #1E5849, #315A4E, #E89D75);
 }
 
-/* ---------- CTA principaux : dégradé animé ----------
-   Respiration lente (12s) entre violet, violet-dark et navy — une
-   variation de la technique .ev-aurora, avec la palette CTA plutôt que
-   festif. Le survol accentue le dégradé + léger zoom + ombre portée. */
+/* ---------- CTA principaux : signal immédiat et stable ----------
+   Un CTA n’a pas besoin d’une respiration continue pour être visible. Le
+   retour est réservé au survol et à l’appui, plus rapide et plus lisible. */
 .ev-cta {
-  background-image: linear-gradient(
-    120deg,
-    #6c3ce1,
-    #5a2fc4,
-    #2b4c7e,
-    #5a2fc4,
-    #6c3ce1
-  );
-  background-size: 300% 300%;
-  animation: ev-cta-shift 12s ease-in-out infinite;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    background-size 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  background: #1E5849;
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.16s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.16s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .ev-cta:hover {
-  background-size: 340% 340%;
-  transform: scale(1.03);
-  box-shadow: 0 10px 28px rgba(108, 60, 225, 0.35);
+  background: #123C33;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(18, 60, 51, 0.22);
 }
+.ev-cta:active { transform: scale(0.97); }
 
 /* ---------- CTA principal : liseré festif animé (touche ponctuelle) ----------
    Réservé à UN SEUL bouton par page (le CTA de conversion principal) —
@@ -115,17 +106,17 @@
    Sur un enfant marqué .ev-stagger-item, on pose --i (index)
    en style inline pour décaler l'apparition. */
 .ev-stagger-item {
-  animation: ev-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--i, 0) * 70ms);
+  animation: ev-fade-up 0.42s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
 }
 
 /* ---------- Reveal au scroll ----------
    Piloté par le composant <Reveal /> (IntersectionObserver). */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(18px);
+  transition: opacity 0.42s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.42s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .reveal.is-visible {
   opacity: 1;
@@ -138,8 +129,8 @@
 .reveal-scale {
   opacity: 0;
   transform: scale(0.95);
-  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.32s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.32s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .reveal-scale.is-visible {
   opacity: 1;
@@ -153,8 +144,8 @@
 .reveal-item {
   opacity: 0;
   transform: translateY(14px);
-  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .reveal-row.is-visible,
 .reveal-item.is-visible {
@@ -164,8 +155,8 @@
 
 /* ---------- Zoom au survol (cartes prestataires) ---------- */
 .ev-zoom-hover { overflow: hidden; }
-.ev-zoom-target { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
-.ev-zoom-hover:hover .ev-zoom-target { transform: scale(1.07); }
+.ev-zoom-target { transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1); }
+.ev-zoom-hover:hover .ev-zoom-target { transform: scale(1.025); }
 
 /* ---------- Flip card au survol (cartes invités) ---------- */
 .ev-flip { perspective: 1000px; }
@@ -206,14 +197,11 @@
   .ev-flip:hover .ev-flip-inner { transform: none; }
   .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
 
-  /* Dégradé CTA statique et élégant, sans mouvement ; pas de zoom au
-     survol (juste l'ombre) ; liseré festif visible mais fixe (pas de
-     pulsation). */
+  /* CTA et liseré statiques ; aucun mouvement imposé. */
   .ev-cta {
-    background-position: 35% 50%;
+    background: #1E5849;
   }
   .ev-cta:hover {
-    background-size: 300% 300%;
     transform: none;
   }
   .ev-cta-pulse::after {
