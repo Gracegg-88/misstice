@@ -12,26 +12,26 @@ const config: Config = {
       colors: {
         // Carnet de Confiance — couleur-action / primaire (CTA, liens importants)
         violet: {
-          DEFAULT: "#C85A32", // Terracotta Fête : primaire chaleureux et distinctif
-          dark: "#9F4528",
-          soft: "#FCE8DE",
+          DEFAULT: "#168B72", // Vert jade lumineux : signature Misstice
+          dark: "#0D584A",
+          soft: "#D9F3EA",
         },
         festif: {
-          DEFAULT: "#D4A373", // Sable doré : accent solaire et élégant
-          soft: "#F3E6D2",
+          DEFAULT: "#9B4DCA", // Violet prune ensoleillé : accent distinctif
+          soft: "#F1DDF8",
         },
         emerald: {
-          DEFAULT: "#3F8066", // Succès : vert sauge discret, réservé aux états positifs
-          soft: "#E6F1EB",
+          DEFAULT: "#2F9B74", // Succès : vert positif lisible
+          soft: "#DDF4E9",
         },
         navy: {
-          DEFAULT: "#7B5143", // Brun cacao : accent premium chaud
-          soft: "#F0E2DB",
+          DEFAULT: "#5A3C75", // Prune profond : accent premium chaud
+          soft: "#E9DDF1",
         },
-        cream: "#FAF7F2", // Lin blanc / crème poudrée
-        ink: "#2B1E1A", // Encre brune profonde
-        plum: "#3A2923", // Texte principal chaud et contrasté
-        slate: "#755F56", // Texte secondaire brun-grisé
+        cream: "#FFF8F2", // Crème claire et chaleureuse
+        ink: "#17352E", // Encre verte profonde
+        plum: "#273B36", // Texte principal contrasté
+        slate: "#5B746E", // Texte secondaire équilibré
 
       },
       // Dégradés de marque réutilisables → classes `bg-gradient-*`.
@@ -40,11 +40,11 @@ const config: Config = {
       // un aplat dominant.
       backgroundImage: {
         // Boutons CTA du quotidien, hero discret.
-        "gradient-primary": "linear-gradient(135deg, #C85A32 0%, #9F4528 100%)",
+        "gradient-primary": "linear-gradient(135deg, #168B72 0%, #0D584A 100%)",
         // Sections premium, mise en avant prestataire, hero principal.
-        "gradient-premium": "linear-gradient(135deg, #C85A32 0%, #7B5143 100%)",
+        "gradient-premium": "linear-gradient(135deg, #9B4DCA 0%, #5A3C75 100%)",
         // Fonds de section doux, transitions.
-        "gradient-soft": "linear-gradient(135deg, #FCE8DE 0%, #FAF7F2 100%)",
+        "gradient-soft": "linear-gradient(135deg, #F1DDF8 0%, #FFF8F2 100%)",
       },
       fontFamily: {
         // Titres éditoriaux (l'émotion)
