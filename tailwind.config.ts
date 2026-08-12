@@ -12,34 +12,27 @@ const config: Config = {
       colors: {
         // Carnet de Confiance — couleur-action / primaire (CTA, liens importants)
         violet: {
-          DEFAULT: "#1E5849",
-          dark: "#123C33",
-          soft: "#E8F0EA", // fond léger pour badges / surfaces
+          DEFAULT: "#0F766E", // Vert émeraude / teal ultra-lumineux et peps
+          dark: "#115E59",
+          soft: "#CCFBF1",
         },
-        // Accent festif (réservé aux touches chaleureuses, jamais aux gros aplats)
         festif: {
-          DEFAULT: "#E89D75",
-          soft: "#F8E7D9",
+          DEFAULT: "#F97316", // Orange corail éclatant / peps
+          soft: "#FFEDD5",
         },
-        // Validation / succès
         emerald: {
-          DEFAULT: "#10B981",
-          soft: "#E7F8F1",
+          DEFAULT: "#059669",
+          soft: "#D1FAE5",
         },
-        // Accent premium neutre (mise en avant prestataire, badges "premium").
-        // Volontairement froid/neutre — jamais de rose/blush/terracotta, pour
-        // rester perçu comme une marketplace neutre en genre, pas "réservée
-        // aux femmes". Réservé aux touches premium, jamais en usage principal.
         navy: {
-          DEFAULT: "#315A4E",
-          soft: "#EAF0E8",
+          DEFAULT: "#0D9488",
+          soft: "#CCFBF1",
         },
-        // Fonds
-        cream: "#F7F2E8", // fond clair (jamais blanc pur)
-        ink: "#123C33", // fond sombre des sections "écrin"
-        // Texte
-        plum: "#19483D", // texte principal
-        slate: "#5B7268", // texte secondaire
+        cream: "#FAF5EF", // Fond ivoire clair très chaleureux et lumineux
+        ink: "#0F2922", // Fond sombre profond et élégant
+        plum: "#133830", // Texte principal sombre et contrasté
+        slate: "#4A6B5D", // Texte secondaire lisible et équilibré
+
       },
       // Dégradés de marque réutilisables → classes `bg-gradient-*`.
       // Ne jamais créer de dégradé violet → festif en grand format : l'orange
