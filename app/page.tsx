@@ -6,6 +6,9 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HomeDirectory from "@/components/HomeDirectory";
+import EventTypes from "@/components/EventTypes";
+import HowItWorks from "@/components/HowItWorks";
+import BecomeVendorCallout from "@/components/BecomeVendorCallout";
 import FeaturedVendors from "@/components/FeaturedVendors";
 import FAQ from "@/components/FAQ";
 import FinalCTA from "@/components/FinalCTA";
@@ -36,6 +39,14 @@ export default async function Home() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
         <Hero />
         <HomeDirectory />
+        <EventTypes />
+        <HowItWorks />
+        <BecomeVendorCallout
+          headline="Votre activité mérite d’être vue par les bonnes familles"
+          body="Pas besoin d’être un grand nom de l’événementiel : si vous accompagnez des mariages, anniversaires, baptêmes ou galas à taille humaine, vous avez votre place sur Misstice."
+          signupHref="/creer?type=pro"
+          ctaLabel="Discutons de votre activité"
+        />
         <FeaturedVendors />
         <FAQ />
         <FinalCTA />
