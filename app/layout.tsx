@@ -48,18 +48,24 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     type: "website",
     siteName: "Misstice",
-    images: [{ url: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg", width: 1200, height: 630, alt: "Misstice — Organisez vos moments importants" }],
+    images: [
+      { url: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg", width: 1200, height: 630, alt: "Misstice — Organisez vos moments importants" },
+      { url: "/brand/misstice-mark.png", width: 1920, height: 1920, alt: "Symbole M-papillon Misstice" },
+    ],
   },
   icons: {
     icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    shortcut: "/brand/misstice-mark.png",
+    apple: "/brand/misstice-mark.png",
   },
   twitter: {
     card: "summary_large_image",
     title: "Misstice | Organisez votre événement et trouvez vos prestataires",
     description: "Organisez votre événement, comparez des devis et échangez avec des prestataires vérifiés.",
-    images: ["https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg"],
+    images: [
+      "https://files.manuscdn.com/user_upload_by_module/session_file/310519663888016991/vgNTQhbrhLgknDqF.jpg",
+      "/brand/misstice-mark.png",
+    ],
   },
   robots: {
     index: true,

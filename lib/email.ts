@@ -47,7 +47,7 @@ export function emailShell(bodyHtml: string): string {
   <div style="margin:0;padding:32px 16px;background:#F7F2E8;font-family:Segoe UI,Arial,sans-serif;color:#19483D">
     <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;border:1px solid #E6DED2;padding:36px 32px">
       <div style="text-align:center">
-        <img src="https://www.misstice.com/manus-storage/misstice-logo-final-spark-no-oval_058337d5.png" width="42" height="42" alt="Misstice" style="display:inline-block;width:42px;height:42px;object-fit:contain;vertical-align:middle" />
+        <img src="https://www.misstice.com/brand/misstice-mark.png" width="42" height="42" alt="Misstice" style="display:inline-block;width:42px;height:42px;object-fit:contain;vertical-align:middle" />
         <span style="display:inline-block;margin-left:8px;vertical-align:middle;font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1E5849;letter-spacing:-0.02em">Misstice</span>
       </div>
       <div style="margin-top:24px">${bodyHtml}</div>
