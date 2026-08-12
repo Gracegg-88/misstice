@@ -46,8 +46,8 @@ html {
   box-sizing: border-box;
 }
 body {
-  background-color: #fff8f2;
-  color: #273b36;
+  background-color: #faf9f5;
+  color: #1c2e45;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   /* Aucun défilement latéral parasite : un élément trop large ne décale plus
@@ -64,7 +64,7 @@ iframe {
   max-width: 100%;
 }
 :focus-visible {
-  outline: 2px solid #9b4dca;
+  outline: 2px solid #d4a373;
   outline-offset: 3px;
   border-radius: 4px;
 }
