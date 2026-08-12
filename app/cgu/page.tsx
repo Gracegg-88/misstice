@@ -103,6 +103,12 @@ const sections = [
               automatique — Misstice agit en médiateur et tranche au cas par
               cas.
             </li>
+            <li>
+              Pour instruire un litige signalé, Misstice peut consulter
+              l&apos;historique des échanges entre le client et le prestataire
+              sur la conversation concernée, uniquement le temps nécessaire à
+              la médiation.
+            </li>
           </ul>
         </div>
         <div>

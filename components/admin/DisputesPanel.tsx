@@ -21,6 +21,25 @@ const REASON_LABEL: Record<string, string> = {
 
 type ThreadMessage = { id: string; sender_id: string; body: string; created_at: string };
 
+// Marqueurs techniques dans le corps d'un message (mêmes regex que
+// ConversationThread.tsx, côté messagerie normale) : ici on ne les rend pas
+// en cartes interactives (l'admin n'a pas besoin de cliquer dessus), juste
+// en texte lisible plutôt que le marquage brut "[[devis:uuid]]" illisible.
+const DEVIS_RE = /^\[\[devis:([0-9a-f-]+)\]\]\s*([\s\S]*)$/i;
+const IMG_RE = /^\[\[img:(.+?)\]\]$/i;
+const VID_RE = /^\[\[vid:(.+?)\]\]$/i;
+const DOC_RE = /^\[\[doc:(.+?)\|([\s\S]*?)\]\]$/i;
+
+function readableBody(body: string): string {
+  const devis = body.match(DEVIS_RE);
+  if (devis) return `📄 ${devis[2] || "Devis"}`;
+  if (IMG_RE.test(body)) return "🖼️ Image";
+  if (VID_RE.test(body)) return "🎬 Vidéo";
+  const doc = body.match(DOC_RE);
+  if (doc) return `📎 ${doc[2] || "Document"}`;
+  return body;
+}
+
 function formatDate(iso: string | null) {
   if (!iso) return "";
   try {
@@ -226,7 +245,9 @@ export default function DisputesPanel({ disputed }: { disputed: Quote[] }) {
                                 : thread.vendorName}{" "}
                               · {formatDateTime(m.created_at)}
                             </p>
-                            <p className="text-plum">{m.body}</p>
+                            <p className="whitespace-pre-wrap text-plum">
+                              {readableBody(m.body)}
+                            </p>
                           </li>
                         ))}
                       </ul>
