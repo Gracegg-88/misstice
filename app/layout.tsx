@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, DM_Sans } from "next/font/google";
+import { Playfair_Display, DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import GuideMascot from "@/components/GuideMascot";
@@ -18,6 +18,15 @@ const dmSans = DM_Sans({
   variable: "--font-body",
   display: "swap",
   weight: ["400", "500", "700"],
+});
+
+// Repères, statuts et microcopies : une troisième voix discrète mais plus
+// dynamique, réservée aux informations fonctionnelles.
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  variable: "--font-label",
+  display: "swap",
+  weight: ["400", "500"],
 });
 
 // SEO dès le jour 1 (principe 5)
@@ -57,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${playfair.variable} ${dmSans.variable}`}>
+    <html lang="fr" className={`${playfair.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="font-sans bg-cream text-plum antialiased">
         {children}
         <GuideMascot />

@@ -20,15 +20,15 @@ export default function EventTypes() {
     <section id="fonctionnalites" className="pt-10 pb-4 sm:pt-12 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">
+          <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
             Types d&apos;événements
           </p>
-          <h2 className="mt-2 font-display text-xl font-semibold tracking-tight text-plum sm:text-2xl">
+          <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
             Pour tous vos moments importants
           </h2>
         </Reveal>
 
-        <Reveal delay={60} className="mt-6 overflow-hidden rounded-3xl">
+        <Reveal delay={60} className="mt-6 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/family-santa.jpg"
@@ -42,14 +42,14 @@ export default function EventTypes() {
             <Reveal key={t.label} delay={i * 70}>
               <a
                 href="/creer"
-                className="flex h-full min-h-[44px] flex-col items-start gap-2 rounded-2xl border border-black/5 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet/20 hover:shadow-lg hover:shadow-violet/5 sm:flex-row sm:items-center sm:gap-3"
+                className="flex h-full min-h-[44px] flex-col items-start gap-2 p-2 transition-all hover:-translate-y-0.5 sm:flex-row sm:items-center sm:gap-3"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center text-violet">
                   <t.icon size={22} strokeWidth={1.75} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-semibold text-plum">{t.label}</span>
-                  <span className="block text-sm leading-snug text-slate">
+                  <span className="block font-display text-lg font-semibold leading-none text-plum">{t.label}</span>
+                  <span className="mt-1 block text-sm font-light leading-snug text-slate">
                     {t.text}
                   </span>
                 </span>

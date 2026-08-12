@@ -58,6 +58,8 @@ const config: Config = {
         display: ["var(--font-display)", "Georgia", "serif"],
         // Corps de texte ultra-lisible (la machine)
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        // Repères, catégories et métadonnées — usage ponctuel pour donner du rythme.
+        label: ["var(--font-label)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         xl: "12px",
