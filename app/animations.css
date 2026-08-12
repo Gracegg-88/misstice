@@ -30,6 +30,10 @@
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+@keyframes ev-aurora-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 @keyframes ev-cta-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -46,11 +50,25 @@
 .ev-zoom-in   { animation: ev-zoom-in 0.3s ease both; }
 .ev-float     { animation: ev-float 6s ease-in-out infinite; }
 
-/* ---------- Aurora / aura lumineuse (bandeau d'annonce) ----------
-   L’accent est désormais statique : il distingue une information sans imposer
-   un mouvement continu à l’utilisateur. */
+/* ---------- Mood & Aura : banderole lente, discrète et utile ---------- */
 .ev-aurora {
-  background: linear-gradient(120deg, #1E5849, #315A4E, #E89D75);
+  display: flex;
+  align-items: center;
+  background: linear-gradient(110deg, #1E5849, #315A4E, #E89D75, #1E5849);
+  background-size: 180% 180%;
+  animation: ev-aurora 12s ease-in-out infinite;
+}
+.ev-aurora-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 4rem;
+  white-space: nowrap;
+  animation: ev-aurora-ticker 28s linear infinite;
+  will-change: transform;
+}
+.ev-aurora-track span { display: inline-block; }
+.ev-aurora:hover .ev-aurora-track { animation-play-state: paused; }
 }
 
 /* ---------- CTA principaux : signal immédiat et stable ----------
@@ -207,4 +225,6 @@
   .ev-cta-pulse::after {
     background-position: 35% 50%;
   }
+  .ev-aurora,
+  .ev-aurora-track { animation: none; }
 }

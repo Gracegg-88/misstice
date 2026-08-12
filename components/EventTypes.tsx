@@ -28,12 +28,12 @@ export default function EventTypes() {
           </h2>
         </Reveal>
 
-        <Reveal delay={60} className="mt-6 overflow-hidden">
+        <Reveal delay={60} className="mt-6 overflow-hidden bg-plum/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/family-santa.jpg"
-            alt="Famille réunie et complice pour une fête de famille"
-            className="h-48 w-full object-cover sm:h-64"
+            src="/manus-storage/misstice-event-types-editorial_099a338a.jpg"
+            alt="Proches préparant ensemble une célébration autour d’une table"
+            className="h-52 w-full object-cover object-center sm:h-64"
           />
         </Reveal>
 
