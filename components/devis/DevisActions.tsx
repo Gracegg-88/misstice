@@ -59,6 +59,7 @@ export default function DevisActions({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [showDispute, setShowDispute] = useState(false);
+  const [disputeComment, setDisputeComment] = useState("");
 
   // Effet de bord du refus : synchronise la demande côté prestataire et la
   // fiche event_vendors côté famille. (Le pendant "accepté" n'existe plus
@@ -220,7 +221,7 @@ export default function DevisActions({
       const res = await fetch("/api/stripe/dispute/file", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ quoteId, reason }),
+        body: JSON.stringify({ quoteId, reason, comment: disputeComment }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -355,6 +356,14 @@ export default function DevisActions({
             <p className="text-sm font-semibold text-plum">
               Quel est le problème ?
             </p>
+            <textarea
+              value={disputeComment}
+              onChange={(e) => setDisputeComment(e.target.value)}
+              placeholder="Explique ce qui s'est passé (optionnel, mais ça aide beaucoup l'équipe Misstice à trancher rapidement)"
+              rows={3}
+              maxLength={2000}
+              className="mt-3 w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-left text-sm text-plum outline-none focus:border-violet"
+            />
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <button
                 type="button"

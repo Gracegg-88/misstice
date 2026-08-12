@@ -24,9 +24,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
   }
 
-  const { quoteId, reason } = (await request.json().catch(() => ({}))) as {
+  const { quoteId, reason, comment } = (await request.json().catch(() => ({}))) as {
     quoteId?: string;
     reason?: string;
+    comment?: string;
   };
   if (
     !quoteId ||
@@ -34,6 +35,8 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
+  // Borné pour rester lisible dans l'email et le panneau admin.
+  const trimmedComment = (comment ?? "").trim().slice(0, 2000) || null;
 
   const { data: quote } = await supabase
     .from("quotes")
@@ -59,6 +62,7 @@ export async function POST(request: Request) {
   const { data: ok, error: rpcErr } = await supabase.rpc("file_quote_dispute", {
     p_quote: quoteId,
     p_reason: reason,
+    p_comment: trimmedComment,
   });
   if (rpcErr || ok === false) {
     return NextResponse.json(
@@ -126,6 +130,11 @@ export async function POST(request: Request) {
           Aucun remboursement automatique pour ce motif — une décision
           manuelle est nécessaire.
         </p>
+        ${
+          trimmedComment
+            ? `<div style="margin:0 0 16px;padding:12px 14px;background:#F1ECFD;border-radius:12px;font-size:14px;color:#1A1A2E;white-space:pre-wrap">${escapeHtml(trimmedComment)}</div>`
+            : ""
+        }
         <a href="https://www.misstice.com/admin/devis"
            style="display:inline-block;background:#6C3CE1;color:#fff;text-decoration:none;
                   padding:13px 26px;border-radius:12px;font-weight:700;font-size:15px">
@@ -136,7 +145,7 @@ export async function POST(request: Request) {
           to,
           subject: "Misstice — Nouveau litige à traiter",
           html,
-          text: `${quote.client_name || "Un client"} a signalé une insatisfaction sur la prestation de ${quote.presta_name || "un prestataire"} (${quote.quote_number || "devis"}, ${euro(Number(quote.amount))}). Traiter : https://www.misstice.com/admin/devis`,
+          text: `${quote.client_name || "Un client"} a signalé une insatisfaction sur la prestation de ${quote.presta_name || "un prestataire"} (${quote.quote_number || "devis"}, ${euro(Number(quote.amount))}).${trimmedComment ? `\n\n"${trimmedComment}"` : ""}\n\nTraiter : https://www.misstice.com/admin/devis`,
         });
       }
     }

@@ -74,6 +74,7 @@ export type Quote = {
   vendor_amount: number | null;
   commission_amount: number | null;
   dispute_reason: "prestataire_absent" | "insatisfaction_qualite" | null;
+  dispute_comment: string | null;
   dispute_filed_at: string | null;
   dispute_resolved_at: string | null;
 };

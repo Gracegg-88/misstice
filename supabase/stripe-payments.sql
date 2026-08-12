@@ -149,6 +149,7 @@ alter table public.quotes
   add column if not exists funds_released_at timestamptz,
   add column if not exists dispute_reason text
     check (dispute_reason in ('prestataire_absent', 'insatisfaction_qualite')),
+  add column if not exists dispute_comment text,
   add column if not exists dispute_filed_at timestamptz,
   add column if not exists dispute_resolved_at timestamptz,
   add column if not exists escrow_event_date date;
@@ -191,6 +192,7 @@ begin
     new.transfer_id                := old.transfer_id;
     new.funds_released_at          := old.funds_released_at;
     new.dispute_reason             := old.dispute_reason;
+    new.dispute_comment            := old.dispute_comment;
     new.dispute_filed_at           := old.dispute_filed_at;
     new.dispute_resolved_at        := old.dispute_resolved_at;
     new.escrow_event_date          := old.escrow_event_date;
@@ -364,7 +366,11 @@ grant execute on function public.decide_quote_trial(uuid, boolean) to authentica
 --    vérifie participant + fenêtre + statut + motif valide elle-même.
 --    Ne rembourse rien (fait depuis Next.js) — enregistre juste le litige.
 -- ─────────────────────────────────────────────────────────────────────────
-create or replace function public.file_quote_dispute(p_quote uuid, p_reason text)
+create or replace function public.file_quote_dispute(
+  p_quote uuid,
+  p_reason text,
+  p_comment text default null
+)
 returns boolean
 language plpgsql security definer set search_path = public
 as $$
@@ -396,6 +402,7 @@ begin
   update public.quotes
     set status = 'en litige',
         dispute_reason = p_reason,
+        dispute_comment = nullif(btrim(coalesce(p_comment, '')), ''),
         dispute_filed_at = now()
     where id = p_quote;
 
@@ -404,7 +411,9 @@ end;
 $$;
 
 revoke all on function public.file_quote_dispute(uuid, text) from public;
-grant execute on function public.file_quote_dispute(uuid, text) to authenticated;
+revoke all on function public.file_quote_dispute(uuid, text, text) from public;
+grant execute on function public.file_quote_dispute(uuid, text, text) to authenticated;
+drop function if exists public.file_quote_dispute(uuid, text);
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- 7. resolve_quote_dispute — service_role uniquement. Appelée depuis
@@ -478,5 +487,32 @@ $$;
 
 revoke all on function public.quotes_eligible_for_release() from public;
 grant execute on function public.quotes_eligible_for_release() to service_role;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 10. Lecture admin des échanges (conversation + messages) — UNIQUEMENT pour
+--     les conversations liées à un devis ayant fait l'objet d'un litige
+--     (dispute_filed_at renseigné), jamais un accès général aux messages
+--     privés entre familles et prestataires. Nécessaire pour arbitrer en
+--     connaissance de cause (voir CGU §6.4 : "Misstice agit en médiateur").
+-- ─────────────────────────────────────────────────────────────────────────
+drop policy if exists "conv_admin_read" on public.conversations;
+create policy "conv_admin_read" on public.conversations
+  for select using (
+    public.is_admin() and exists (
+      select 1 from public.quotes q
+      where q.conversation_id = conversations.id
+        and q.dispute_filed_at is not null
+    )
+  );
+
+drop policy if exists "msg_admin_read" on public.messages;
+create policy "msg_admin_read" on public.messages
+  for select using (
+    public.is_admin() and exists (
+      select 1 from public.quotes q
+      where q.conversation_id = messages.conversation_id
+        and q.dispute_filed_at is not null
+    )
+  );
 
 -- Fin.
