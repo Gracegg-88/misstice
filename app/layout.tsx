@@ -53,8 +53,14 @@ export const metadata: Metadata = {
       { url: "/brand/misstice-mark.png", width: 1920, height: 1920, alt: "Symbole M-papillon Misstice" },
     ],
   },
+  // "?v=2" volontaire : dès qu'un objet `icons` est fourni ici, Next.js
+  // n'auto-génère plus le <link rel="icon"> avec hash de contenu depuis
+  // app/icon.svg (convention désactivée par la présence de ce champ) — sans
+  // paramètre changeant dans l'URL, les navigateurs gardaient indéfiniment
+  // en cache l'ancienne favicon (vide), même après un nouveau déploiement.
+  // Incrémenter ce "v=" à chaque future modification du contenu de l'icône.
   icons: {
-    icon: "/icon.svg",
+    icon: "/icon.svg?v=2",
     shortcut: "/brand/misstice-mark.png",
     apple: "/brand/misstice-mark.png",
   },
