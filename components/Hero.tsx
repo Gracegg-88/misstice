@@ -3,6 +3,7 @@
  * L’information essentielle est accessible sans scroll ; les CTA gardent les routes réelles de création organisateur et prestataire.
  */
 import { ArrowDownRight, CheckCircle2, Users } from "lucide-react";
+import BrandFlight from "@/components/BrandFlight";
 
 export default function Hero() {
   return (
@@ -33,6 +34,7 @@ export default function Hero() {
         </div>
 
         <div className="relative min-h-[18rem] sm:min-h-[22rem]">
+          <BrandFlight />
           <div className="absolute inset-0 overflow-hidden rounded-[2rem] bg-ink shadow-[0_24px_48px_rgba(18,60,51,0.14)] sm:left-7">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/wedding-crowd.jpg" alt="Famille et proches réunis pour célébrer un moment important" className="h-full w-full object-cover object-center opacity-80" />
