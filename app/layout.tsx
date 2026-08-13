@@ -53,14 +53,17 @@ export const metadata: Metadata = {
       { url: "/brand/misstice-mark.png", width: 1920, height: 1920, alt: "Symbole M-papillon Misstice" },
     ],
   },
-  // "?v=2" volontaire : dès qu'un objet `icons` est fourni ici, Next.js
-  // n'auto-génère plus le <link rel="icon"> avec hash de contenu depuis
-  // app/icon.svg (convention désactivée par la présence de ce champ) — sans
-  // paramètre changeant dans l'URL, les navigateurs gardaient indéfiniment
-  // en cache l'ancienne favicon (vide), même après un nouveau déploiement.
-  // Incrémenter ce "v=" à chaque future modification du contenu de l'icône.
+  // PNG direct plutôt qu'un SVG encapsulant une image (<image href="...png">) :
+  // ce dernier s'affichait bien en ouvrant le fichier directement, mais pas
+  // dans le rendu spécifique des favicons de la barre d'onglets — support
+  // incohérent des navigateurs pour ce cas précis, confirmé même en
+  // navigation privée (donc pas un souci de cache). Le PNG est le format le
+  // plus universellement fiable pour une favicon.
+  // "?v=" à incrémenter à chaque future modification du contenu de l'icône
+  // (voir commentaire plus bas sur pourquoi Next.js ne le fait plus
+  // automatiquement dès qu'un objet `icons` est fourni ici).
   icons: {
-    icon: "/icon.svg?v=2",
+    icon: "/brand/misstice-mark.png?v=1",
     shortcut: "/brand/misstice-mark.png",
     apple: "/brand/misstice-mark.png",
   },
