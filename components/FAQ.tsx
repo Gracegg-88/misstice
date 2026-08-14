@@ -24,12 +24,14 @@ export default function FAQ() {
     <section id="faq" className="py-8 sm:py-10">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="mx-auto max-w-2xl">
-          <h2 className="font-label text-[10px] font-medium uppercase tracking-[0.15em] text-violet">À savoir avant de commencer</h2>
+          <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+            Questions fréquentes
+          </h2>
           <div className="mt-8 space-y-3">
             {faqs.map((f) => (
               <details
                 key={f.q}
-                className="group border-b border-plum/10 py-5 [&_svg]:open:rotate-180"
+                className="group rounded-2xl border border-black/5 bg-white p-5 shadow-sm [&_svg]:open:rotate-180"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-plum marker:hidden">
                   {f.q}

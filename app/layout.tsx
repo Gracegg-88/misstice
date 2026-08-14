@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, DM_Mono } from "next/font/google";
+import { Playfair_Display, DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import GuideMascot from "@/components/GuideMascot";
 
 // Titres éditoriaux
-const dmSerif = DM_Serif_Display({
+const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
-  weight: "400",
+  weight: ["400", "500", "600", "700"],
 });
 
 // Corps de texte
@@ -89,7 +89,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="fr" className={`${playfair.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="font-sans bg-cream text-plum antialiased">
         {children}
         <GuideMascot />
