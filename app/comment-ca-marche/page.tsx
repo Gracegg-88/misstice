@@ -42,33 +42,43 @@ const steps: {
 const guides = [
   {
     href: "/organiser-un-mariage",
-    tone: "bg-ink text-cream",
+    image: "/wedding-crowd.jpg",
+    overlay: "bg-ink/80",
+    text: "text-cream",
     title: "Organiser un mariage",
-    text: "Budget moyen, checklist mois par mois et conseils pour un mariage réussi, petit comité ou grand jour.",
+    body: "Budget moyen, checklist mois par mois et conseils pour un mariage réussi, petit comité ou grand jour.",
   },
   {
     href: "/organiser-un-anniversaire",
-    tone: "bg-festif text-plum",
+    image: "/birthday-party.jpg",
+    overlay: "bg-festif/80",
+    text: "text-plum",
     title: "Organiser un anniversaire",
-    text: "De la petite fête entre proches à la grande soirée, tout pour organiser un anniversaire sans stress.",
+    body: "De la petite fête entre proches à la grande soirée, tout pour organiser un anniversaire sans stress.",
   },
   {
     href: "/organiser-un-bapteme",
-    tone: "bg-white/70 text-plum",
+    image: "/bapteme-photo.png",
+    overlay: "bg-white/80",
+    text: "text-plum",
     title: "Organiser un baptême",
-    text: "Cérémonie, réception et prestataires : le guide pour organiser un baptême serein du début à la fin.",
+    body: "Cérémonie, réception et prestataires : le guide pour organiser un baptême serein du début à la fin.",
   },
   {
     href: "/organiser-un-evenement-professionnel",
-    tone: "bg-violet text-cream",
+    image: "/cowork.jpg",
+    overlay: "bg-violet/80",
+    text: "text-cream",
     title: "Organiser un événement professionnel",
-    text: "Séminaire, gala ou soirée d'entreprise : la méthode pour un événement professionnel maîtrisé.",
+    body: "Séminaire, gala ou soirée d'entreprise : la méthode pour un événement professionnel maîtrisé.",
   },
   {
     href: "/organiser-une-baby-shower",
-    tone: "bg-festif-soft text-plum",
+    image: "/babyshower-photo.png",
+    overlay: "bg-festif-soft/85",
+    text: "text-plum",
     title: "Organiser une baby shower",
-    text: "Préparez l'arrivée de bébé avec une organisation simple, entre budget raisonnable et bons souvenirs.",
+    body: "Préparez l'arrivée de bébé avec une organisation simple, entre budget raisonnable et bons souvenirs.",
   },
 ];
 
@@ -122,16 +132,27 @@ export default function CommentCaMarchePage() {
               <Reveal key={g.href} delay={i * 80}>
                 <Link
                   href={g.href}
-                  className={`group relative flex min-h-64 h-full flex-col overflow-hidden p-6 transition-all hover:-translate-y-1 ${g.tone}`}
+                  className={`group relative flex min-h-64 h-full flex-col overflow-hidden p-6 transition-all hover:-translate-y-1 ${g.text}`}
                 >
-                  <span className="font-label text-[10px] uppercase tracking-[0.15em] opacity-65">0{i + 1}</span>
+                  {/* Photo en fond, légèrement visible sous le voile de couleur —
+                      garde l'aplat graphique tout en réintroduisant un peu de
+                      chaleur/texture derrière le texte. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={g.image}
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className={`absolute inset-0 ${g.overlay}`} />
+                  <span className="relative font-label text-[10px] uppercase tracking-[0.15em] opacity-65">0{i + 1}</span>
                   <Sparkles className="absolute bottom-6 right-6 opacity-60" size={22} />
-                  <div className="mt-auto flex flex-1 flex-col">
+                  <div className="relative mt-auto flex flex-1 flex-col">
                     <h3 className="max-w-[12ch] font-display text-3xl font-semibold leading-[.94]">
                       {g.title}
                     </h3>
                     <p className="mt-3 flex-1 text-sm font-light leading-relaxed opacity-75">
-                      {g.text}
+                      {g.body}
                     </p>
                     <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold underline decoration-festif decoration-2 underline-offset-8">
                       Préparer ce moment
