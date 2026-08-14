@@ -36,7 +36,14 @@ export default function GuideLayout({
       <main className="bg-cream">
         {breadcrumbSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />}
         <section className="relative overflow-hidden px-5 pb-8 pt-12 sm:px-8 sm:pb-10 sm:pt-16">
-          <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-festif/10 blur-3xl" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroImage}
+            alt={heroAlt}
+            className="absolute inset-0 h-full w-full object-cover opacity-25"
+          />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-cream/60 via-cream/90 to-cream" />
+          <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-festif/20 blur-3xl" />
           <div className="relative mx-auto grid max-w-content gap-8 lg:grid-cols-[1fr_.38fr] lg:items-end">
             <div className="max-w-4xl">
               <p className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-violet">Guide Misstice · à garder sous la main</p>
