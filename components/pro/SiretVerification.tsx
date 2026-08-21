@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ShieldCheck, Lightbulb, ArrowRight } from "lucide-react";
 
 export default function SiretVerification({
   siret,
@@ -20,6 +20,7 @@ export default function SiretVerification({
 
   const digits = value.replace(/\s/g, "");
   const canSubmit = /^\d{14}$/.test(digits) && !loading;
+  const guideUrl = process.env.NEXT_PUBLIC_SIRET_GUIDE_URL || "/devenir-prestataire";
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -64,6 +65,34 @@ export default function SiretVerification({
             SIRET vérifié{companyName ? ` · ${companyName}` : ""} (le{" "}
             {new Date(verifiedAt).toLocaleDateString("fr-FR")})
           </span>
+        </div>
+      )}
+
+      {/* Encart pédagogique, non bloquant : n'apparaît que tant qu'aucun SIRET
+          n'a été renseigné. Disparaît de lui-même dès que `siret`/`verifiedAt`
+          sont renseignés (rafraîchis après une vérification réussie via
+          router.refresh() ci-dessus) — aucun statut ni palier supplémentaire
+          en base, purement informatif. */}
+      {!siret && !verifiedAt && (
+        <div className="mt-4 rounded-2xl border border-festif/20 bg-festif-soft px-5 py-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-plum">
+            <Lightbulb size={17} className="text-festif" />
+            Pas encore de SIRET ?
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate">
+            C&apos;est gratuit et ça prend environ 15 minutes. Créez votre
+            statut auto-entrepreneur pour débloquer votre badge vérifié et
+            recevoir vos paiements.
+          </p>
+          <a
+            href={guideUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-semibold text-violet hover:text-violet-dark"
+          >
+            Voir le guide
+            <ArrowRight size={15} />
+          </a>
         </div>
       )}
 
