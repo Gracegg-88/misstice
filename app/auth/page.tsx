@@ -134,7 +134,7 @@ export default function AuthPage() {
           {/* Favicon Misstice (étincelle) */}
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-violet-soft">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.svg" alt="" aria-hidden="true" className="h-5 w-5" />
+            <img src="/brand/misstice-mark.png" alt="" aria-hidden="true" className="h-5 w-5" />
           </div>
 
           <h1 className="mt-2.5 text-center font-display text-xl font-semibold tracking-tight text-plum">

@@ -210,7 +210,7 @@ export default async function ProOverviewPage() {
       {/* Nudge personnalisé du jour (voix de la plateforme). */}
       <p className="mt-1 flex items-center gap-2 text-sm text-slate">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icon.svg" alt="" aria-hidden="true" className="h-4 w-4 shrink-0" />
+        <img src="/brand/misstice-mark.png" alt="" aria-hidden="true" className="h-4 w-4 shrink-0" />
         {tip}
       </p>
 
