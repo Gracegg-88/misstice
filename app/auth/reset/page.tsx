@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
         <div className="ev-fade-in w-full max-w-sm rounded-3xl border border-black/5 bg-white/95 p-5 shadow-xl backdrop-blur-sm sm:p-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-soft">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.svg" alt="" aria-hidden="true" className="h-8 w-8" />
+            <img src="/brand/misstice-mark.png" alt="" aria-hidden="true" className="h-8 w-8" />
           </div>
           <h1 className="mt-5 text-center font-display text-3xl font-semibold text-plum">
             Nouveau mot de passe
