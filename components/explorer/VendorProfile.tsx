@@ -18,6 +18,7 @@ import {
   CalendarCheck,
   Sparkles,
 } from "lucide-react";
+import { isVideoUrl } from "@/lib/media";
 import type { Vendor } from "./vendors";
 import type { Pkg, Review } from "./profileData";
 import { GALLERY_GRADS } from "./profileData";
@@ -423,12 +424,22 @@ export default function VendorProfile({
                           className="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02]"
                           aria-label={`Agrandir la réalisation ${i + 1}`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={url}
-                            alt={`Réalisation ${i + 1}`}
-                            className="aspect-[4/3] w-full object-cover"
-                          />
+                          {isVideoUrl(url) ? (
+                            <video
+                              src={url}
+                              muted
+                              playsInline
+                              preload="metadata"
+                              className="aspect-[4/3] w-full bg-plum/5 object-cover"
+                            />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={url}
+                              alt={`Réalisation ${i + 1}`}
+                              className="aspect-[4/3] w-full object-cover"
+                            />
+                          )}
                         </button>
                       ))
                     : GALLERY_GRADS.map((g, i) => (
@@ -569,12 +580,23 @@ export default function VendorProfile({
             <X size={20} />
           </button>
           {photos.length > 0 && photos[lightbox] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photos[lightbox]}
-              alt="Réalisation"
-              className="max-h-[85vh] w-full max-w-3xl rounded-3xl object-contain"
-            />
+            isVideoUrl(photos[lightbox]) ? (
+              <video
+                src={photos[lightbox]}
+                controls
+                autoPlay
+                playsInline
+                className="max-h-[85vh] w-full max-w-3xl rounded-3xl object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photos[lightbox]}
+                alt="Réalisation"
+                className="max-h-[85vh] w-full max-w-3xl rounded-3xl object-contain"
+              />
+            )
           ) : (
             <div
               className={`aspect-[4/3] w-full max-w-3xl rounded-3xl bg-gradient-to-br ${

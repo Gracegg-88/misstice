@@ -15,6 +15,12 @@ import { createClient } from "@/lib/supabase/client";
 import CategorySelect from "@/components/pro/CategorySelect";
 import type { ProVendor, VendorPackage, VendorPhoto } from "@/lib/pro-types";
 import {
+  isVideoUrl,
+  readVideoMeta,
+  BOOK_VIDEO_MAX_SECONDS,
+  BOOK_VIDEO_MAX_SHORT_SIDE,
+} from "@/lib/media";
+import {
   MOODS,
   ENERGIES,
   LIGHTS,
@@ -342,6 +348,26 @@ export default function ProfilClient({
     const supabase = createClient();
 
     for (const file of files) {
+      if (file.type.startsWith("video/")) {
+        try {
+          const meta = await readVideoMeta(file);
+          if (meta.duration > BOOK_VIDEO_MAX_SECONDS) {
+            setError(
+              `Vidéo trop longue (max ${Math.round(BOOK_VIDEO_MAX_SECONDS / 60)} minutes pour le moment).`
+            );
+            continue;
+          }
+          if (Math.min(meta.width, meta.height) > BOOK_VIDEO_MAX_SHORT_SIDE) {
+            setError(
+              `Résolution trop élevée (max ${BOOK_VIDEO_MAX_SHORT_SIDE}p pour le moment).`
+            );
+            continue;
+          }
+        } catch (e) {
+          setError(e instanceof Error ? e.message : "Vidéo illisible.");
+          continue;
+        }
+      }
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${vendor.profileId}/${Date.now()}-${Math.random()
         .toString(36)
@@ -897,26 +923,39 @@ export default function ProfilClient({
             className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-violet/40 px-3 py-2 text-sm font-semibold text-violet hover:bg-violet-soft disabled:opacity-60"
           >
             <Upload size={15} />
-            {uploading ? "Envoi…" : "Ajouter des photos"}
+            {uploading ? "Envoi…" : "Ajouter des photos ou vidéos"}
           </button>
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
             multiple
             onChange={onUpload}
             className="hidden"
           />
         </div>
+        <p className="mt-2 text-xs text-slate">
+          Vidéos acceptées pour le moment : {BOOK_VIDEO_MAX_SHORT_SIDE}p max,{" "}
+          {Math.round(BOOK_VIDEO_MAX_SECONDS / 60)} minutes max.
+        </p>
         <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
           {pics.map((photo, i) => (
             <div key={photo.id} className="group relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo.url}
-                alt={`Réalisation ${i + 1}`}
-                className="aspect-[4/3] w-full rounded-2xl object-cover"
-              />
+              {isVideoUrl(photo.url) ? (
+                <video
+                  src={photo.url}
+                  controls
+                  playsInline
+                  className="aspect-[4/3] w-full rounded-2xl bg-plum/5 object-cover"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={photo.url}
+                  alt={`Réalisation ${i + 1}`}
+                  className="aspect-[4/3] w-full rounded-2xl object-cover"
+                />
+              )}
               <button
                 aria-label="Supprimer la photo"
                 onClick={() => deletePhoto(photo.id)}
