@@ -5,12 +5,16 @@ import Footer from "@/components/Footer";
 import FeaturedVendorsGrid from "@/components/FeaturedVendorsGrid";
 import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
+import PicksList from "@/components/geo/PicksList";
+import PicksMap from "@/components/geo/PicksMap";
 import { getHeaderAccount } from "@/lib/header-account";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
   getCityCategoryContent,
   getCityCategoryIntro,
+  getCityCategoryPickCombos,
+  getCityCategoryPicks,
   getIndexableCityCategoryCombos,
   getKnownCategorySlugs,
   getVendorsForCityCategory,
@@ -20,16 +24,19 @@ import {
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
-  const [combos, editorialContent] = await Promise.all([
+  const [combos, editorialContent, pickCombos] = await Promise.all([
     getIndexableCityCategoryCombos(),
     getCityCategoryContent(),
+    getCityCategoryPickCombos(),
   ]);
-  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
-  // la main pour cette combinaison (même logique que /[evenement]/[ville]).
+  // Publiée si assez de prestataires vérifiés, si un texte a été rédigé à la
+  // main, OU si un Top 10 a été édité pour cette combinaison (même logique
+  // que /[evenement]/[ville]).
   const byVendors = combos.map((c) => ({ ville: c.citySlug, categorie: c.categorySlug }));
   const byContent = editorialContent.map((c) => ({ ville: c.citySlug, categorie: slugify(c.category) }));
+  const byPicks = pickCombos.map((c) => ({ ville: c.citySlug, categorie: c.categorySlug }));
   const seen = new Set<string>();
-  return [...byVendors, ...byContent].filter((p) => {
+  return [...byVendors, ...byContent, ...byPicks].filter((p) => {
     const key = `${p.ville}::${p.categorie}`;
     if (seen.has(key)) return false;
     seen.add(key);
@@ -78,9 +85,10 @@ export default async function VilleCategoriePage({
   // (Différent d'une catégorie réelle juste absente de cette ville, cf. plus bas.)
   if (!categoryLabel) notFound();
 
-  const [vendors, introText, account] = await Promise.all([
+  const [vendors, introText, picks, account] = await Promise.all([
     getVendorsForCityCategory(city.slug, params.categorie),
     getCityCategoryIntro(city.slug, params.categorie),
+    getCityCategoryPicks(city.slug, params.categorie),
     getHeaderAccount(),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
@@ -107,14 +115,37 @@ export default async function VilleCategoriePage({
           <p className="mt-3 max-w-2xl leading-relaxed text-slate">
             {introText ??
               (belowThreshold
-                ? `Comparez bientôt les ${categoryLabel.toLowerCase()} vérifiés à ${city.name} : devis gratuits, avis vérifiés, échanges centralisés sur Misstice.`
+                ? picks.length
+                  ? `Aucun ${categoryLabel.toLowerCase()} n'est encore inscrit sur Misstice à ${city.name}. En attendant les premiers profils vérifiés, voici notre sélection.`
+                  : `Comparez bientôt les ${categoryLabel.toLowerCase()} vérifiés à ${city.name} : devis gratuits, avis vérifiés, échanges centralisés sur Misstice.`
                 : `${verifiedCount} ${categoryLabel.toLowerCase()} vérifié${verifiedCount > 1 ? "s" : ""} à ${city.name}. Comparez les devis et réservez sans quitter Misstice.`)}
           </p>
 
           {belowThreshold ? (
-            <div className="mt-8">
-              <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} categoryLabel={categoryLabel} />
-            </div>
+            picks.length ? (
+              <div className="mt-8">
+                <PicksMap picks={picks} />
+                <PicksList picks={picks} />
+                <div className="mt-8 rounded-3xl bg-violet-soft px-6 py-8 text-center">
+                  <p className="font-display text-lg font-semibold text-plum">
+                    Vous êtes {categoryLabel.toLowerCase()} à {city.name}&nbsp;?
+                  </p>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-slate">
+                    Rejoignez gratuitement les prestataires vérifiés de Misstice.
+                  </p>
+                  <a
+                    href="/creer?type=pro"
+                    className="ev-cta mt-4 inline-flex items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold text-cream"
+                  >
+                    Devenir prestataire
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8">
+                <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} categoryLabel={categoryLabel} />
+              </div>
+            )
           ) : (
             <FeaturedVendorsGrid vendors={vendors} />
           )}

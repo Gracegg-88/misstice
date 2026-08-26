@@ -5,12 +5,16 @@ import Footer from "@/components/Footer";
 import FeaturedVendorsGrid from "@/components/FeaturedVendorsGrid";
 import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
+import PicksList from "@/components/geo/PicksList";
+import PicksMap from "@/components/geo/PicksMap";
 import { getHeaderAccount } from "@/lib/header-account";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
   getCityEventContent,
   getCityEventIntro,
+  getCityEventPickCombos,
+  getCityEventPicks,
   getEventTypeBySlug,
   getEventTypes,
   getIndexableCitySlugs,
@@ -20,17 +24,19 @@ import {
 export const revalidate = 86400;
 
 export async function generateStaticParams() {
-  const [eventTypes, indexableCitySlugs, editorialContent] = await Promise.all([
+  const [eventTypes, indexableCitySlugs, editorialContent, pickCombos] = await Promise.all([
     getEventTypes(),
     getIndexableCitySlugs(),
     getCityEventContent(),
+    getCityEventPickCombos(),
   ]);
-  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
-  // la main pour cette combinaison — les deux justifient la page séparément.
+  // Publiée si assez de prestataires vérifiés, si un texte a été rédigé à la
+  // main, OU si un Top 10 a été édité pour cette combinaison.
   const byVendors = eventTypes.flatMap((et) => indexableCitySlugs.map((ville) => ({ evenement: et.slug, ville })));
   const byContent = editorialContent.map((c) => ({ evenement: c.eventTypeSlug, ville: c.citySlug }));
+  const byPicks = pickCombos.map((c) => ({ evenement: c.eventTypeSlug, ville: c.citySlug }));
   const seen = new Set<string>();
-  return [...byVendors, ...byContent].filter((p) => {
+  return [...byVendors, ...byContent, ...byPicks].filter((p) => {
     const key = `${p.evenement}::${p.ville}`;
     if (seen.has(key)) return false;
     seen.add(key);
@@ -77,9 +83,10 @@ export default async function EvenementVillePage({
   ]);
   if (!eventType || !city) notFound();
 
-  const [vendors, introText, account] = await Promise.all([
+  const [vendors, introText, picks, account] = await Promise.all([
     getVendorsForCity(city.slug),
     getCityEventIntro(city.slug, eventType.slug),
+    getCityEventPicks(city.slug, eventType.slug),
     getHeaderAccount(),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
@@ -141,9 +148,35 @@ export default async function EvenementVillePage({
           )}
 
           {belowThreshold ? (
-            <div className="mt-8">
-              <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} eventTypeLabel={eventType.name} />
-            </div>
+            picks.length ? (
+              <div className="mt-8">
+                <p className="font-display text-xl font-semibold text-plum">
+                  {eventType.name} à {city.name}&nbsp;: notre sélection
+                </p>
+                <div className="mt-5">
+                  <PicksMap picks={picks} />
+                  <PicksList picks={picks} />
+                </div>
+                <div className="mt-8 rounded-3xl bg-violet-soft px-6 py-8 text-center">
+                  <p className="font-display text-lg font-semibold text-plum">
+                    Vous êtes prestataire à {city.name}&nbsp;?
+                  </p>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-slate">
+                    Rejoignez gratuitement les prestataires vérifiés de Misstice.
+                  </p>
+                  <a
+                    href="/creer?type=pro"
+                    className="ev-cta mt-4 inline-flex items-center justify-center rounded-2xl px-6 py-3 text-sm font-semibold text-cream"
+                  >
+                    Devenir prestataire
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-8">
+                <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} eventTypeLabel={eventType.name} />
+              </div>
+            )
           ) : (
             <FeaturedVendorsGrid vendors={vendors} />
           )}

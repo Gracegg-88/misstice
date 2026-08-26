@@ -19,6 +19,20 @@ import VendorCard from "./VendorCard";
 import FilterPanel, { type Filters } from "./FilterPanel";
 import { useFavorites } from "@/lib/useFavorites";
 import { EMPTY_VIBES, countVibes, vendorMatchesVibes } from "@/lib/vibes";
+import type { DirectoryPick } from "@/lib/geo";
+import PicksList from "@/components/geo/PicksList";
+import PicksMap from "@/components/geo/PicksMap";
+
+// Même normalisation que lib/geo.ts slugify() — dupliquée ici pour rester
+// un composant client pur (lib/geo.ts importe des utilitaires serveur).
+function slugifyClient(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 // La carte ne se charge que côté client (Leaflet a besoin du navigateur).
 const VendorsMap = dynamic(() => import("./VendorsMap"), {
@@ -60,9 +74,13 @@ const selectCls =
 export default function ExplorerClient({
   vendors,
   categories,
+  allCities = [],
+  picksByCombo = {},
 }: {
   vendors: Vendor[];
   categories: string[];
+  allCities?: string[];
+  picksByCombo?: Record<string, DirectoryPick[]>;
 }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [query, setQuery] = useState("");
@@ -93,11 +111,21 @@ export default function ExplorerClient({
 
   const cities = useMemo(
     () =>
-      Array.from(new Set(vendors.map((v) => v.city))).sort((a, b) =>
-        a.localeCompare(b, "fr")
+      Array.from(new Set([...vendors.map((v) => v.city), ...allCities])).sort(
+        (a, b) => a.localeCompare(b, "fr")
       ),
-    [vendors]
+    [vendors, allCities]
   );
+
+  // Sélection "Top 10" éditoriale pour la combinaison catégorie+ville
+  // actuellement filtrée (une seule catégorie sélectionnée, une ville
+  // précise) — affichée à la place du message générique quand l'annuaire
+  // n'a encore aucun prestataire pour ce couple.
+  const currentPicks = useMemo(() => {
+    if (filters.categories.length !== 1 || filters.city === "all") return [];
+    const key = `${slugifyClient(filters.city)}::${slugifyClient(filters.categories[0])}`;
+    return picksByCombo[key] ?? [];
+  }, [filters.categories, filters.city, picksByCombo]);
 
 
   const results = useMemo(() => {
@@ -334,6 +362,28 @@ export default function ExplorerClient({
 
             {view === "carte" ? (
               <VendorsMap vendors={results} />
+            ) : results.length === 0 && currentPicks.length > 0 ? (
+              <div className="rounded-3xl border border-black/5 bg-white p-6 sm:p-8">
+                <p className="font-display text-xl font-semibold text-plum">
+                  {filters.categories[0]} à {filters.city}&nbsp;: notre sélection
+                </p>
+                <p className="mt-2 max-w-lg text-sm text-slate">
+                  Aucun {filters.categories[0].toLowerCase()} n&apos;est encore
+                  inscrit sur Misstice à {filters.city}. En attendant les
+                  premiers profils vérifiés, voici les mieux notés du secteur,
+                  directement ici.
+                </p>
+                <div className="mt-5">
+                  <PicksMap picks={currentPicks} />
+                  <PicksList picks={currentPicks} />
+                </div>
+                <a
+                  href="/devenir-prestataire"
+                  className="mt-2 inline-block rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Devenir prestataire
+                </a>
+              </div>
             ) : results.length === 0 && vendors.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-black/10 bg-white py-20 text-center">
                 <p className="font-display text-xl font-semibold text-plum">

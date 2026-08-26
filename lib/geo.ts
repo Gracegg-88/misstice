@@ -61,6 +61,27 @@ const fetchKnownCategorySlugsCached = cache(async (): Promise<Map<string, string
   return map;
 });
 
+const PICK_COLUMNS =
+  "id, city_slug, rank, name, address, lat, lng, phone, price_level, description, source_url, claimed_vendor_id";
+
+const fetchCityCategoryPicksCached = cache(async (): Promise<DirectoryPick[]> => {
+  const supabase = db();
+  const { data } = await supabase
+    .from("city_category_picks")
+    .select(`${PICK_COLUMNS}, category`)
+    .order("rank");
+  return (data as (DirectoryPick & { category: string })[] | null) ?? [];
+});
+
+const fetchCityEventPicksCached = cache(async (): Promise<DirectoryPick[]> => {
+  const supabase = db();
+  const { data } = await supabase
+    .from("city_event_picks")
+    .select(`${PICK_COLUMNS}, event_type_slug`)
+    .order("rank");
+  return (data as (DirectoryPick & { event_type_slug: string })[] | null) ?? [];
+});
+
 export type City = {
   slug: string;
   name: string;
@@ -77,6 +98,29 @@ export type CityCategoryCombo = {
   categorySlug: string;
   category: string;
   verifiedCount: number;
+};
+
+/**
+ * Sélection éditoriale "Top 10" d'un prestataire public (pas forcément
+ * inscrit sur Misstice), affichée sur une page ville×catégorie ou
+ * ville×événement en attendant assez de vrais prestataires vérifiés — voir
+ * public.city_category_picks / public.city_event_picks (supabase/directory-picks.sql).
+ * Jamais générée en masse : chaque ligne est vérifiée à la main, sourceUrl
+ * à l'appui.
+ */
+export type DirectoryPick = {
+  id: string;
+  city_slug: string;
+  rank: number;
+  name: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
+  phone: string | null;
+  price_level: string | null;
+  description: string;
+  source_url: string;
+  claimed_vendor_id: string | null;
 };
 
 // Sous ce seuil, une page ville×catégorie (ou ville×événement) n'est pas
@@ -242,4 +286,96 @@ export async function getCityCategoryIntro(
  */
 export async function getKnownCategorySlugs(): Promise<Map<string, string>> {
   return fetchKnownCategorySlugsCached();
+}
+
+/** Top 10 édité à la main pour une page ville×catégorie, trié par rang. */
+export async function getCityCategoryPicks(
+  citySlug: string,
+  categorySlug: string
+): Promise<DirectoryPick[]> {
+  const picks = (await fetchCityCategoryPicksCached()) as (DirectoryPick & {
+    category: string;
+  })[];
+  return picks.filter(
+    (p) => p.city_slug === citySlug && slugify(p.category) === categorySlug
+  );
+}
+
+/** Top 10 édité à la main pour une page ville×événement, trié par rang. */
+export async function getCityEventPicks(
+  citySlug: string,
+  eventTypeSlug: string
+): Promise<DirectoryPick[]> {
+  const picks = (await fetchCityEventPicksCached()) as (DirectoryPick & {
+    event_type_slug: string;
+  })[];
+  return picks.filter(
+    (p) => p.city_slug === citySlug && p.event_type_slug === eventTypeSlug
+  );
+}
+
+/**
+ * Toutes les sélections "Top 10" (ville×catégorie ET ville×événement),
+ * regroupées par clé "citySlug::categorySlug" (ou "citySlug::eventTypeSlug")
+ * — sert l'outil de recherche (ExplorerClient), qui ne connaît que les
+ * filtres catégorie/ville, pas les pages statiques individuelles.
+ */
+export async function getAllPicksByCombo(): Promise<Record<string, DirectoryPick[]>> {
+  const [categoryPicks, eventPicks] = await Promise.all([
+    fetchCityCategoryPicksCached() as Promise<(DirectoryPick & { category: string })[]>,
+    fetchCityEventPicksCached() as Promise<(DirectoryPick & { event_type_slug: string })[]>,
+  ]);
+  const byCombo: Record<string, DirectoryPick[]> = {};
+  for (const p of categoryPicks) {
+    const key = `${p.city_slug}::${slugify(p.category)}`;
+    (byCombo[key] ??= []).push(p);
+  }
+  for (const p of eventPicks) {
+    const key = `${p.city_slug}::${p.event_type_slug}`;
+    (byCombo[key] ??= []).push(p);
+  }
+  for (const key in byCombo) byCombo[key].sort((a, b) => a.rank - b.rank);
+  return byCombo;
+}
+
+/**
+ * Combinaisons ville×catégorie ayant un Top 10 édité, pour
+ * generateStaticParams — sans ça, une page dont la seule justification est
+ * le Top 10 (pas de prestataire vérifié, pas de contenu éditorial classique)
+ * ne serait générée qu'au premier accès (ISR), jamais en avance.
+ */
+export async function getCityCategoryPickCombos(): Promise<
+  { citySlug: string; categorySlug: string }[]
+> {
+  const picks = (await fetchCityCategoryPicksCached()) as (DirectoryPick & {
+    category: string;
+  })[];
+  const seen = new Set<string>();
+  const combos: { citySlug: string; categorySlug: string }[] = [];
+  for (const p of picks) {
+    const categorySlug = slugify(p.category);
+    const key = `${p.city_slug}::${categorySlug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    combos.push({ citySlug: p.city_slug, categorySlug });
+  }
+  return combos;
+}
+
+/** Même principe que getCityCategoryPickCombos, pour les pages ville×événement. */
+export async function getCityEventPickCombos(): Promise<
+  { citySlug: string; eventTypeSlug: string }[]
+> {
+  const picks = (await fetchCityEventPicksCached()) as (DirectoryPick & {
+    event_type_slug: string;
+  })[];
+  const seen = new Set<string>();
+  const combos: { citySlug: string; eventTypeSlug: string }[] = [];
+  for (const p of picks) {
+    const key = `${p.city_slug}::${p.event_type_slug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    combos.push({ citySlug: p.city_slug, eventTypeSlug: p.event_type_slug });
+  }
+  return combos;
 }

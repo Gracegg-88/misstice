@@ -93,5 +93,25 @@ iframe {
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(18, 60, 51, 0.3);
 }
+/* Repère numéroté (sélections "Top 10" éditoriales, components/geo/PicksMap) */
+.ev-pin-rank {
+  background: #6c3ce1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(108, 60, 225, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ev-pin-rank span {
+  transform: rotate(45deg);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: "DM Sans", sans-serif;
+}
 .leaflet-popup-content-wrapper { border-radius: 14px; }
 .leaflet-popup-content { margin: 14px 16px; }
