@@ -3,7 +3,9 @@ import { getVendors } from "@/lib/vendors";
 import {
   getCities,
   getCityCategoryContent,
+  getCityCategoryPickCombos,
   getCityEventContent,
+  getCityEventPickCombos,
   getCitySlugsWithVendors,
   getEventTypes,
   getIndexableCityCategoryCombos,
@@ -64,6 +66,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     eventTypes,
     editorialEventContent,
     editorialCategoryContent,
+    categoryPickCombos,
+    eventPickCombos,
   ] = await Promise.all([
     getCitySlugsWithVendors(),
     getCities(),
@@ -72,6 +76,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getEventTypes(),
     getCityEventContent(),
     getCityCategoryContent(),
+    getCityCategoryPickCombos(),
+    getCityEventPickCombos(),
   ]);
   const activeCitySlugs = new Set(citySlugsWithVendors);
   const cityBySlug = new Map(cities.map((c) => [c.slug, c]));
@@ -85,11 +91,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  // Publiée si assez de prestataires vérifiés OU si un texte a été rédigé à
-  // la main pour cette combinaison (voir generateStaticParams de la page).
+  // Publiée si assez de prestataires vérifiés, si un texte a été rédigé à la
+  // main, OU si un Top 10 éditorial existe pour cette combinaison (voir
+  // generateStaticParams de la page).
   const cityCategorySlugs = new Set([
     ...cityCategoryCombos.map((c) => `${c.citySlug}::${c.categorySlug}`),
     ...editorialCategoryContent.map((c) => `${c.citySlug}::${slugify(c.category)}`),
+    ...categoryPickCombos.map((c) => `${c.citySlug}::${c.categorySlug}`),
   ]);
   const cityCategoryEntries: MetadataRoute.Sitemap = Array.from(cityCategorySlugs)
     .map((key) => {
@@ -107,6 +115,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const eventCitySlugs = new Set([
     ...indexableCitySlugs.flatMap((ville) => eventTypes.map((et) => `${et.slug}::${ville}`)),
     ...editorialEventContent.map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
+    ...eventPickCombos.map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
   ]);
   const eventCityEntries: MetadataRoute.Sitemap = Array.from(eventCitySlugs)
     .map((key) => {
