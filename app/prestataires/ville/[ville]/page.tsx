@@ -11,7 +11,6 @@ import {
   getCityBySlug,
   getCityCategoryContent,
   getCityEventContent,
-  getCitySlugsWithVendors,
   getEventTypes,
   getIndexableCityCategoryCombos,
   getVendorsForCity,
@@ -22,13 +21,15 @@ import {
 // évolue progressivement, pas besoin de temps réel.
 export const revalidate = 86400;
 
+// Toutes les villes connues, jamais seulement celles avec déjà un
+// prestataire : la page gère elle-même le cas "aucun vérifié" (ComingSoon)
+// et un generateStaticParams vide pour CE segment (aucune ville avec
+// prestataire vérifié, ce qui arrive tant que l'annuaire démarre) a déjà
+// provoqué une 500 en prod sur ce type de route dynamique — jamais revenir
+// à un filtre qui peut renvoyer un tableau vide ici.
 export async function generateStaticParams() {
-  const [cities, citySlugsWithVendors] = await Promise.all([
-    getCities(),
-    getCitySlugsWithVendors(),
-  ]);
-  const withVendors = new Set(citySlugsWithVendors);
-  return cities.filter((c) => withVendors.has(c.slug)).map((c) => ({ ville: c.slug }));
+  const cities = await getCities();
+  return cities.map((c) => ({ ville: c.slug }));
 }
 
 export async function generateMetadata({
