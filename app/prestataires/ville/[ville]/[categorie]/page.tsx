@@ -7,7 +7,6 @@ import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
 import PicksList from "@/components/geo/PicksList";
 import PicksMap from "@/components/geo/PicksMap";
-import { getHeaderAccount } from "@/lib/header-account";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
@@ -85,18 +84,20 @@ export default async function VilleCategoriePage({
   // (Différent d'une catégorie réelle juste absente de cette ville, cf. plus bas.)
   if (!categoryLabel) notFound();
 
-  const [vendors, introText, picks, account] = await Promise.all([
+  // Pas de getHeaderAccount() ici : voir la note dans
+  // app/prestataires/ville/[ville]/page.tsx (DYNAMIC_SERVER_USAGE sur une
+  // route statique/ISR pas encore pré-générée pour ce combo précis).
+  const [vendors, introText, picks] = await Promise.all([
     getVendorsForCityCategory(city.slug, params.categorie),
     getCityCategoryIntro(city.slug, params.categorie),
     getCityCategoryPicks(city.slug, params.categorie),
-    getHeaderAccount(),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
   const belowThreshold = verifiedCount < MIN_VERIFIED_VENDORS;
 
   return (
     <>
-      <Header initialAccount={account} />
+      <Header />
       <main className="min-h-screen bg-cream">
         <section className="mx-auto max-w-content px-5 py-12 sm:px-8">
           <Breadcrumb
