@@ -7,7 +7,6 @@ import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
 import PicksList from "@/components/geo/PicksList";
 import PicksMap from "@/components/geo/PicksMap";
-import { getHeaderAccount } from "@/lib/header-account";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
@@ -83,11 +82,13 @@ export default async function EvenementVillePage({
   ]);
   if (!eventType || !city) notFound();
 
-  const [vendors, introText, picks, account] = await Promise.all([
+  // Pas de getHeaderAccount() ici : voir la note dans
+  // app/prestataires/ville/[ville]/page.tsx (DYNAMIC_SERVER_USAGE sur une
+  // route statique/ISR pas encore pré-générée pour ce combo précis).
+  const [vendors, introText, picks] = await Promise.all([
     getVendorsForCity(city.slug),
     getCityEventIntro(city.slug, eventType.slug),
     getCityEventPicks(city.slug, eventType.slug),
-    getHeaderAccount(),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
   const belowThreshold = verifiedCount < MIN_VERIFIED_VENDORS;
@@ -103,7 +104,7 @@ export default async function EvenementVillePage({
 
   return (
     <>
-      <Header initialAccount={account} />
+      <Header />
       <main className="min-h-screen bg-cream">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
         <section className="mx-auto max-w-content px-5 py-12 sm:px-8">

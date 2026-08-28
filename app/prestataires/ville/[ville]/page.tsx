@@ -5,7 +5,6 @@ import Footer from "@/components/Footer";
 import FeaturedVendorsGrid from "@/components/FeaturedVendorsGrid";
 import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
-import { getHeaderAccount } from "@/lib/header-account";
 import {
   getCities,
   getCityBySlug,
@@ -60,13 +59,17 @@ export default async function VillePage({ params }: { params: { ville: string } 
   const city = await getCityBySlug(params.ville);
   if (!city) notFound();
 
-  const [vendors, combos, categoryContent, eventContent, eventTypes, account] = await Promise.all([
+  // Pas de getHeaderAccount() ici : cette page est statique/ISR
+  // (generateStaticParams + revalidate), et cookies() (utilisé par
+  // getHeaderAccount) y déclenche une erreur DYNAMIC_SERVER_USAGE pour
+  // toute route pas déjà pré-générée — c'est exactement ce qui causait le
+  // 500 en prod. Header sans initialAccount résout la session côté client.
+  const [vendors, combos, categoryContent, eventContent, eventTypes] = await Promise.all([
     getVendorsForCity(city.slug),
     getIndexableCityCategoryCombos(),
     getCityCategoryContent(),
     getCityEventContent(),
     getEventTypes(),
-    getHeaderAccount(),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
 
@@ -87,7 +90,7 @@ export default async function VillePage({ params }: { params: { ville: string } 
 
   return (
     <>
-      <Header initialAccount={account} />
+      <Header />
       <main className="min-h-screen bg-cream">
         <section className="mx-auto max-w-content px-5 py-12 sm:px-8">
           <Breadcrumb
