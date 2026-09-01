@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCities, getVendorsForCityCategory, slugify, MIN_VERIFIED_VENDORS } from "@/lib/geo";
-import { CATEGORY_NAF_CODES, GOUV_SEARCH_API, sleep } from "@/lib/sirene";
+import { CATEGORY_NAF_CODES, GOUV_SEARCH_API, sleep, toImportCandidate } from "@/lib/sirene";
 import type { GouvSearchResponse } from "@/lib/sirene";
 
 export const runtime = "nodejs";
+
+// Même plafond que l'import (app/api/admin/sirene/import/route.ts) : le
+// nombre affiché ici doit correspondre à ce que l'import produira réellement.
+const SAMPLE_SIZE = 25;
 
 // Scanne chaque couple ville×catégorie (villes de public.cities × catégories
 // mappées dans CATEGORY_NAF_CODES), saute celles qui ont déjà assez de
 // fiches actives (même seuil que les pages SEO géo — pas la peine de diluer
 // l'existant), et renvoie les couples "creux" triés par volume d'entreprises
-// disponibles décroissant. Ne lit qu'un total (per_page=1) : pas d'import ici.
+// réellement importables décroissant.
+//
+// Compte les résultats qui passeraient le filtre d'import (toImportCandidate
+// — sociétés uniquement, jamais EI/micro-entreprise) plutôt que le total brut
+// de l'API : sur des catégories comme "Photographe", la grande majorité des
+// résultats sont des micro-entrepreneurs qui seraient de toute façon
+// écartés — un total brut aurait affiché un volume trompeur, sans rapport
+// avec ce que l'import produit vraiment.
 export async function POST() {
   const supabase = createClient();
   const {
@@ -50,7 +61,7 @@ export async function POST() {
         q: city.name,
         activite_principale: nafCodes,
         etat_administratif: "A",
-        per_page: "1",
+        per_page: String(SAMPLE_SIZE),
       });
       try {
         const res = await fetch(`${GOUV_SEARCH_API}?${params.toString()}`, {
@@ -58,7 +69,7 @@ export async function POST() {
         });
         if (res.ok) {
           const data = (await res.json()) as GouvSearchResponse;
-          const available = data.total_results ?? 0;
+          const available = (data.results ?? []).filter((r) => toImportCandidate(r)).length;
           if (available > 0) {
             suggestions.push({
               citySlug: city.slug,

@@ -133,6 +133,7 @@ export default function SireneImportClient() {
                             <span className="text-xs text-slate">
                               {result.imported} importée{result.imported > 1 ? "s" : ""}
                               {result.skippedDuplicate > 0 ? ` · ${result.skippedDuplicate} déjà connue(s)` : ""}
+                              {result.skippedLegalForm > 0 ? ` · ${result.skippedLegalForm} écartée(s) (EI/micro-entreprise ou incomplète)` : ""}
                             </span>
                           ) : (
                             <button
