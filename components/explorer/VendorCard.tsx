@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, BadgeCheck, MapPin, Heart, Sparkles } from "lucide-react";
+import { Star, BadgeCheck, MapPin, Heart, Sparkles, Lock } from "lucide-react";
 import type { Vendor } from "./vendors";
 import { vibesVisible } from "@/lib/vibes";
 import { priceFromLabel } from "@/lib/price";
@@ -66,6 +66,14 @@ export default function VendorCard({
                 Nouveau
               </span>
             )}
+          </div>
+        )}
+        {vendor.claimStatus === "non_reclamee" && (
+          <div className="absolute bottom-4 left-4">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-festif shadow-sm">
+              <Lock size={14} />
+              Fiche non réclamée
+            </span>
           </div>
         )}
       </div>

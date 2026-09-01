@@ -24,6 +24,7 @@ type Row = {
   grad: string;
   image: string | null;
   user_id: string | null;
+  claim_status: "reclamee" | "non_reclamee";
   moods: string[] | null;
   energies: string[] | null;
   lights: string[] | null;
@@ -54,6 +55,7 @@ function map(r: Row): Vendor {
     grad: r.grad,
     img: r.image ?? "",
     userId: r.user_id ?? null,
+    claimStatus: r.claim_status,
     moods: r.moods ?? [],
     energies: r.energies ?? [],
     lights: r.lights ?? [],
@@ -68,9 +70,14 @@ function map(r: Row): Vendor {
  * client sans cookies (lib/supabase/static) quand l'appel vient de
  * generateStaticParams (build time, sans requête).
  *
- * Une fiche n'apparaît que si le prestataire est à la fois vérifié (SIRET)
- * et actif côté paiement (Stripe Connect Express), pour ne jamais exposer
- * un profil qui ne peut pas encore être payé en cas de réservation. Statut
+ * Une fiche apparaît si le prestataire est à la fois vérifié (SIRET) et actif
+ * côté paiement (Stripe Connect Express), pour ne jamais exposer un profil
+ * qui ne peut pas encore être payé en cas de réservation — OU s'il s'agit
+ * d'une fiche vitrine importée (claim_status = 'non_reclamee', voir
+ * supabase/vendor-import.sql) : sans ça, personne ne les voit jamais pour
+ * les réclamer. `order by claim_status` fait naturellement passer les
+ * fiches réclamées ("reclamee") avant les non réclamées (ordre alphabétique),
+ * donc les vraies fiches actives restent toujours prioritaires. Statut
  * "en cours" affiché uniquement dans son propre tableau de bord (voir
  * app/pro/page.tsx), jamais dans l'annuaire.
  */
@@ -79,8 +86,8 @@ export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
   const { data } = await supabase
     .from("vendors")
     .select("*")
-    .eq("verified", true)
-    .eq("payouts_enabled", true)
+    .or("and(verified.eq.true,payouts_enabled.eq.true),claim_status.eq.non_reclamee")
+    .order("claim_status", { ascending: true })
     .order("position", { ascending: true });
   return ((data as Row[]) ?? []).map(map);
 }

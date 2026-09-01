@@ -76,9 +76,11 @@ export default function VendorProfile({
   const [loggedIn, setLoggedIn] = useState(false);
   const { has: favHas, toggle: favToggle } = useFavorites();
   const saved = favHas(vendor.id);
-  // Fiche VITRINE (sans compte) → contenu d'exemple autorisé. Vrai compte non
-  // rempli → on n'invente rien, on affiche des états vides.
-  const isDemo = !vendor.userId;
+  // Fiche VITRINE de démonstration (sans compte, ancien contenu d'exemple
+  // fictif) → contenu d'exemple autorisé. Vrai compte non rempli, OU fiche
+  // vitrine importée depuis SIRENE (claimStatus="non_reclamee", vraie
+  // entreprise réelle) → on n'invente rien, on affiche des états vides.
+  const isDemo = !vendor.userId && vendor.claimStatus !== "non_reclamee";
   // Disponibilité formatée, en se prémunissant d'une date invalide.
   const availabilityLabel = (() => {
     if (!nextAvailability) return null;
@@ -121,6 +123,23 @@ export default function VendorProfile({
         });
     });
   }, [vendor.id, vendor.userId]);
+
+  // Compteur réel de vues pour les fiches vitrines importées (non réclamées),
+  // séparé de profile_views (réservé aux vrais comptes) — une fois par
+  // session, même mécanique de déduplication.
+  useEffect(() => {
+    if (typeof window === "undefined" || vendor.claimStatus !== "non_reclamee") return;
+    const key = `vv-${vendor.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    const supabase = createClient();
+    supabase.rpc("increment_vendor_view", { p_vendor_id: vendor.id }).then(({ error }) => {
+      if (error) {
+        sessionStorage.removeItem(key);
+        console.error("increment_vendor_view:", error.message);
+      }
+    });
+  }, [vendor.id, vendor.claimStatus]);
 
   return (
     <div className="bg-cream">
@@ -191,6 +210,12 @@ export default function VendorProfile({
                         Nouveau
                       </span>
                     )}
+                    {vendor.claimStatus === "non_reclamee" && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2.5 py-1 font-medium text-festif">
+                        <Lock size={13} />
+                        Fiche non réclamée
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -214,6 +239,14 @@ export default function VendorProfile({
                   Envoyer un message
                 </button>
               </div>
+              {vendor.claimStatus === "non_reclamee" && (
+                <p className="mt-3 text-sm text-slate">
+                  Cette entreprise est la vôtre ?{" "}
+                  <a href="/devenir-prestataire" className="font-semibold text-violet hover:text-violet-dark">
+                    Réclamez-la
+                  </a>
+                </p>
+              )}
             </div>
 
             <button
@@ -803,6 +836,59 @@ function matchEventType(type: string | null): string {
   return "Autre";
 }
 
+// Écran affiché quand on tente de contacter une fiche sans compte
+// prestataire lié — vitrine de démo (ancien contenu d'exemple) ou fiche
+// importée depuis SIRENE, pas encore réclamée. Pour ces dernières, on
+// comptabilise la tentative (compteur réel, jamais estimé — voir
+// increment_vendor_contact_attempt, supabase/vendor-import.sql) et on
+// oriente vers la réclamation plutôt que de juste fermer la modale.
+function UnclaimedContactNotice({ vendor, onDone }: { vendor: Vendor; onDone: () => void }) {
+  useEffect(() => {
+    if (vendor.claimStatus !== "non_reclamee") return;
+    const supabase = createClient();
+    supabase.rpc("increment_vendor_contact_attempt", { p_vendor_id: vendor.id }).then(({ error }) => {
+      if (error) console.error("increment_vendor_contact_attempt:", error.message);
+    });
+    // Une fois par ouverture de la modale, pas par re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const unclaimed = vendor.claimStatus === "non_reclamee";
+
+  return (
+    <div className="py-4 text-center">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">
+        <Lock size={22} />
+      </span>
+      <p className="mt-3 font-semibold text-plum">Prestataire non inscrit</p>
+      <p className="mt-1 text-sm text-slate">
+        {unclaimed
+          ? "Cette entreprise n'a pas encore rejoint Misstice. Le contact direct sera disponible dès qu'elle aura réclamé sa fiche."
+          : "Cette fiche est une vitrine. Le contact direct sera disponible dès que ce prestataire aura rejoint Misstice."}
+      </p>
+      {unclaimed && (
+        <a
+          href="/devenir-prestataire"
+          className="mt-5 block w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
+        >
+          Cette entreprise est la vôtre ? Réclamez-la
+        </a>
+      )}
+      <button
+        type="button"
+        onClick={onDone}
+        className={
+          unclaimed
+            ? "mt-2 w-full rounded-xl px-5 py-3 text-sm font-semibold text-slate hover:text-plum"
+            : "mt-5 w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
+        }
+      >
+        Fermer
+      </button>
+    </div>
+  );
+}
+
 function QuoteForm({
   vendor,
   onDone,
@@ -848,23 +934,7 @@ function QuoteForm({
   // Fiche démo : pas de compte prestataire → contact indisponible.
   if (!vendor.userId) {
     return (
-      <div className="py-4 text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">
-          <Lock size={22} />
-        </span>
-        <p className="mt-3 font-semibold text-plum">Prestataire non inscrit</p>
-        <p className="mt-1 text-sm text-slate">
-          Cette fiche est une vitrine. Le contact direct sera disponible dès que
-          ce prestataire aura rejoint Misstice.
-        </p>
-        <button
-          type="button"
-          onClick={onDone}
-          className="mt-5 w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          Fermer
-        </button>
-      </div>
+      <UnclaimedContactNotice vendor={vendor} onDone={onDone} />
     );
   }
 
@@ -1213,23 +1283,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
 
   if (!vendor.userId) {
     return (
-      <div className="py-4 text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-soft text-violet">
-          <Lock size={22} />
-        </span>
-        <p className="mt-3 font-semibold text-plum">Prestataire non inscrit</p>
-        <p className="mt-1 text-sm text-slate">
-          Cette fiche est une vitrine. Le contact direct sera disponible dès que
-          ce prestataire aura rejoint Misstice.
-        </p>
-        <button
-          type="button"
-          onClick={onDone}
-          className="mt-5 w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          Fermer
-        </button>
-      </div>
+      <UnclaimedContactNotice vendor={vendor} onDone={onDone} />
     );
   }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Store, Users, Tags, ShieldCheck, Star, FileText } from "lucide-react";
+import { LayoutDashboard, Store, Users, Tags, ShieldCheck, Star, FileText, Download } from "lucide-react";
 
 export default function AdminNav({
   canManageAdmins = false,
@@ -20,6 +20,7 @@ export default function AdminNav({
       title: "Gestion",
       items: [
         { icon: Store, label: "Prestataires", href: "/admin/prestataires" },
+        { icon: Download, label: "Import SIRENE", href: "/admin/sirene" },
         { icon: Users, label: "Utilisateurs", href: "/admin/utilisateurs" },
         { icon: Star, label: "Avis", href: "/admin/avis" },
         { icon: FileText, label: "Devis", href: "/admin/devis" },

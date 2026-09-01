@@ -19,6 +19,7 @@ export type Vendor = {
   grad: string; // dégradé de repli
   img: string; // photo
   userId?: string | null; // compte prestataire lié (null = fiche démo, non contactable)
+  claimStatus: "reclamee" | "non_reclamee"; // fiche vitrine importée (SIRENE) pas encore réclamée
   about?: string | null; // description réelle (vendor_profiles.about)
   // Ambiance & Vibe (tags renseignés par le prestataire).
   moods: string[];

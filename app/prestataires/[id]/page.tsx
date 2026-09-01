@@ -60,11 +60,14 @@ export default async function VendorPage({
         ? getNextAvailability(vendor.userId)
         : Promise.resolve(null),
     ]);
-  // Contenu démo (forfaits d'exemple) UNIQUEMENT pour les fiches vitrines
-  // (sans compte). Un vrai compte non rempli affiche un état vide, pas du faux.
+  // Contenu démo (forfaits d'exemple) UNIQUEMENT pour les anciennes fiches de
+  // démonstration (sans compte, claim_status='reclamee' par défaut). Un vrai
+  // compte non rempli, ou une fiche vitrine importée depuis SIRENE
+  // (claim_status='non_reclamee'), affiche un état vide — jamais de contenu
+  // inventé sur une vraie entreprise.
   const packages = realPackages.length
     ? realPackages
-    : vendor.userId
+    : vendor.userId || vendor.claimStatus === "non_reclamee"
       ? []
       : getPackages(vendor);
 

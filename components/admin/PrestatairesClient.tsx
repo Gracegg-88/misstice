@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -10,6 +10,9 @@ import {
   ExternalLink,
   Eye,
   Sparkles,
+  Mail,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -22,6 +25,11 @@ type Vendor = {
   verified: boolean;
   reviewed_at: string | null;
   isDemo: boolean;
+  claimStatus: "reclamee" | "non_reclamee";
+  contactEmail: string | null;
+  vuesFiche: number;
+  tentativesContact: number;
+  lastRelanceSentAt: string | null;
 };
 
 export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
@@ -29,6 +37,45 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmVendor, setConfirmVendor] = useState<Vendor | null>(null);
   const [error, setError] = useState("");
+  const [emailDraft, setEmailDraft] = useState<Record<string, string>>({});
+  const [relanceSent, setRelanceSent] = useState<Record<string, boolean>>({});
+
+  const saveContactEmail = async (v: Vendor) => {
+    const value = (emailDraft[v.id] ?? v.contactEmail ?? "").trim();
+    setBusy(v.id);
+    setError("");
+    const supabase = createClient();
+    const { error: upErr } = await supabase
+      .from("vendors")
+      .update({ contact_email: value || null })
+      .eq("id", v.id);
+    setBusy(null);
+    if (upErr) {
+      setError(upErr.message);
+      return;
+    }
+    router.refresh();
+  };
+
+  const sendRelance = async (v: Vendor) => {
+    setBusy(v.id);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/sirene/relance", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ vendorId: v.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "L'envoi a échoué.");
+      setRelanceSent((prev) => ({ ...prev, [v.id]: true }));
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const toggle = async (v: Vendor) => {
     setBusy(v.id);
@@ -115,7 +162,8 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                 </tr>
               )}
               {vendors.map((v) => (
-                <tr key={v.id} className="border-b border-black/5 last:border-0">
+                <Fragment key={v.id}>
+                <tr className="border-b border-black/5 last:border-0">
                   <td className="px-5 py-3 font-medium text-plum">{v.name}</td>
                   <td className="px-5 py-3">
                     {v.category ? (
@@ -129,9 +177,14 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                   <td className="px-5 py-3 text-slate">{v.city ?? "—"}</td>
                   <td className="px-5 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {v.isDemo && (
+                      {v.isDemo && v.claimStatus === "reclamee" && (
                         <span className="rounded-full bg-navy-soft px-2 py-0.5 text-xs font-semibold text-navy">
                           Démo
+                        </span>
+                      )}
+                      {v.claimStatus === "non_reclamee" && (
+                        <span className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                          Fiche non réclamée
                         </span>
                       )}
                       {v.verified ? (
@@ -195,6 +248,44 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                     </div>
                   </td>
                 </tr>
+                {v.claimStatus === "non_reclamee" && (
+                  <tr className="border-b border-black/5 bg-cream/60 last:border-0">
+                    <td colSpan={5} className="px-5 py-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-xs text-slate">
+                          {v.vuesFiche} vue{v.vuesFiche > 1 ? "s" : ""} · {v.tentativesContact} tentative
+                          {v.tentativesContact > 1 ? "s" : ""} de contact
+                          {v.lastRelanceSentAt && (
+                            <> · dernière relance le {new Date(v.lastRelanceSentAt).toLocaleDateString("fr-FR")}</>
+                          )}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <Mail size={14} className="text-slate" />
+                          <input
+                            type="email"
+                            placeholder="email de contact"
+                            defaultValue={v.contactEmail ?? ""}
+                            onChange={(e) =>
+                              setEmailDraft((prev) => ({ ...prev, [v.id]: e.target.value }))
+                            }
+                            onBlur={() => saveContactEmail(v)}
+                            className="rounded-lg border border-black/10 px-2.5 py-1.5 text-xs text-plum outline-none focus:border-violet"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          disabled={busy === v.id || !v.contactEmail || v.tentativesContact < 1}
+                          onClick={() => sendRelance(v)}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-1.5 text-xs font-semibold text-plum transition-colors hover:border-violet/40 disabled:opacity-50"
+                        >
+                          {busy === v.id ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                          {relanceSent[v.id] ? "Relance envoyée" : "Envoyer relance"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               ))}
             </tbody>
           </table>
