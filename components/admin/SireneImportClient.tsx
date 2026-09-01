@@ -34,6 +34,7 @@ export default function SireneImportClient() {
       const res = await fetch("/api/admin/sirene/scan", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Le scan a échoué.");
+      if (data.warning) setError(data.warning);
       setSuggestions(data.suggestions);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");

@@ -50,6 +50,10 @@ export async function POST() {
     active: number;
   }[] = [];
 
+  let checked = 0;
+  let failed = 0;
+  let lastFailureStatus: number | null = null;
+
   for (const city of cities) {
     for (const category of categories) {
       const existing = await getVendorsForCityCategory(city.slug, slugify(category));
@@ -63,6 +67,7 @@ export async function POST() {
         etat_administratif: "A",
         per_page: String(SAMPLE_SIZE),
       });
+      checked++;
       try {
         const res = await fetch(`${GOUV_SEARCH_API}?${params.toString()}`, {
           headers: { accept: "application/json" },
@@ -79,8 +84,13 @@ export async function POST() {
               active: activeCount,
             });
           }
+        } else {
+          failed++;
+          lastFailureStatus = res.status;
+          console.error("sirene-scan: réponse API gouv non-ok", city.slug, category, res.status);
         }
       } catch (e) {
+        failed++;
         console.error("sirene-scan: appel API gouv échoué", city.slug, category, e);
       }
       await sleep(150);
@@ -88,5 +98,13 @@ export async function POST() {
   }
 
   suggestions.sort((a, b) => b.available - a.available);
-  return NextResponse.json({ ok: true, suggestions });
+  // Si une bonne partie des requêtes a échoué (ex. limitation de débit de
+  // l'API gouv.fr, publique et sans clé), le prévenir explicitement plutôt
+  // que de laisser afficher "aucun couple en manque" comme si le scan avait
+  // simplement conclu qu'il n'y avait rien à importer.
+  const warning =
+    checked > 0 && failed / checked > 0.3
+      ? `${failed} des ${checked} recherches ont échoué${lastFailureStatus ? ` (dernière erreur : ${lastFailureStatus})` : ""} — l'API gouv.fr est peut-être temporairement limitée, réessaie dans quelques minutes.`
+      : null;
+  return NextResponse.json({ ok: true, suggestions, checked, failed, warning });
 }
