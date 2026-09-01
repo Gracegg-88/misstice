@@ -124,7 +124,12 @@ begin
 end;
 $$;
 
-revoke all on function public.set_stripe_account_status(uuid, text, text, boolean) from public;
+-- "revoke ... from public" seul ne suffit pas (Supabase accorde EXECUTE
+-- par défaut à anon/authenticated sur toute nouvelle fonction, séparément
+-- du grant à PUBLIC) — voir supabase/vendor-import.sql pour l'explication
+-- complète. Revoke explicite sur les deux rôles pour chaque fonction
+-- service_role-only de ce fichier.
+revoke all on function public.set_stripe_account_status(uuid, text, text, boolean) from public, anon, authenticated;
 grant execute on function public.set_stripe_account_status(uuid, text, text, boolean) to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────
@@ -313,7 +318,7 @@ $$;
 
 revoke all on function public.mark_quote_paid(uuid, text, text) from public;
 revoke all on function public.mark_quote_paid(uuid, text, text, numeric) from public;
-revoke all on function public.mark_quote_paid(uuid, text, text, numeric, date) from public;
+revoke all on function public.mark_quote_paid(uuid, text, text, numeric, date) from public, anon, authenticated;
 grant execute on function public.mark_quote_paid(uuid, text, text, numeric, date) to service_role;
 drop function if exists public.mark_quote_paid(uuid, text, text);
 drop function if exists public.mark_quote_paid(uuid, text, text, numeric);
@@ -438,7 +443,7 @@ begin
 end;
 $$;
 
-revoke all on function public.resolve_quote_dispute(uuid, boolean) from public;
+revoke all on function public.resolve_quote_dispute(uuid, boolean) from public, anon, authenticated;
 grant execute on function public.resolve_quote_dispute(uuid, boolean) to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────
@@ -460,7 +465,7 @@ begin
 end;
 $$;
 
-revoke all on function public.set_quote_transfer(uuid, text) from public;
+revoke all on function public.set_quote_transfer(uuid, text) from public, anon, authenticated;
 grant execute on function public.set_quote_transfer(uuid, text) to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────
@@ -485,7 +490,7 @@ as $$
     and escrow_event_date + interval '72 hours' <= now();
 $$;
 
-revoke all on function public.quotes_eligible_for_release() from public;
+revoke all on function public.quotes_eligible_for_release() from public, anon, authenticated;
 grant execute on function public.quotes_eligible_for_release() to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────

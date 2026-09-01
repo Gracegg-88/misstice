@@ -98,5 +98,10 @@ begin
 end;
 $$;
 
-revoke all on function public.set_siret_verification(uuid, text, boolean, text) from public;
+-- "revoke ... from public" seul ne suffit pas : Supabase accorde EXECUTE
+-- par défaut à anon/authenticated sur toute nouvelle fonction du schéma
+-- public, séparément du grant à PUBLIC — sans ce revoke explicite,
+-- n'importe quel visiteur non authentifié pouvait appeler cette fonction
+-- directement via /rest/v1/rpc/set_siret_verification.
+revoke all on function public.set_siret_verification(uuid, text, boolean, text) from public, anon, authenticated;
 grant execute on function public.set_siret_verification(uuid, text, boolean, text) to service_role;
