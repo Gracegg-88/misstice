@@ -91,7 +91,14 @@ begin
 end;
 $$;
 
-revoke all on function public.import_sirene_vendor(text, text, text, text) from public;
+-- "revoke ... from public" seul ne suffit pas : Supabase accorde EXECUTE
+-- par défaut à anon/authenticated sur toute nouvelle fonction du schéma
+-- public (privilèges par défaut du projet), indépendamment du grant à
+-- PUBLIC — il faut donc aussi révoquer explicitement ces deux rôles, sans
+-- quoi la fonction reste appelable directement via
+-- /rest/v1/rpc/import_sirene_vendor par n'importe quel visiteur non
+-- authentifié, en contournant la vérification admin de la route Next.js.
+revoke all on function public.import_sirene_vendor(text, text, text, text) from public, anon, authenticated;
 grant execute on function public.import_sirene_vendor(text, text, text, text) to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────
@@ -150,5 +157,5 @@ begin
 end;
 $$;
 
-revoke all on function public.mark_relance_sent(uuid) from public;
+revoke all on function public.mark_relance_sent(uuid) from public, anon, authenticated;
 grant execute on function public.mark_relance_sent(uuid) to service_role;
