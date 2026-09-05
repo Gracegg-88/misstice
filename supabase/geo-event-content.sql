@@ -101,4 +101,61 @@ insert into public.city_event_content (city_slug, event_type_slug, intro_text) v
 
 on conflict (city_slug, event_type_slug) do update set intro_text = excluded.intro_text;
 
+-- ============================================================================
+--  Contenu unique — pages ville×événement signalées par Search Console comme
+--  quasi-identiques entre elles (mariage/marseille, montpellier, nantes,
+--  nice, rennes) et nouvelles combinaisons hors mariage (anniversaire,
+--  baptême, gala) jusque-là sans contenu éditorial dédié. Ajoute aussi une
+--  photo (+ alt text ville×événement, pour le SEO images) par page : à
+--  défaut d'une photo distincte par ville, on réutilise l'illustration du
+--  type d'événement avec une légende locale, jamais un gabarit générique
+--  identique partout.
+-- ============================================================================
+
+alter table public.city_event_content add column if not exists image_url text;
+alter table public.city_event_content add column if not exists image_alt text;
+
+insert into public.city_event_content (city_slug, event_type_slug, intro_text, image_url, image_alt) values
+
+('marseille', 'mariage',
+  'Un mariage à Marseille peut se dérouler face à la Méditerranée, dans une bastide des calanques ou un domaine viticole de la Provence toute proche. Misstice sélectionne des prestataires marseillais habitués à ces cadres : traiteurs pour cocktails en extérieur, photographes maîtrisant la lumière du sud, wedding planners connaissant les lieux emblématiques (Château Borély, îles du Frioul, domaines des Baux).',
+  '/mariage.png', 'Mariage à Marseille, entre Vieux-Port et calanques — Misstice'),
+
+('montpellier', 'mariage',
+  'Montpellier séduit les mariés pour son climat méditerranéen et ses domaines viticoles du Pic Saint-Loup ou de la Camargue toute proche. Misstice met en relation avec des prestataires montpelliérains habitués aux mariages en extérieur, aux réceptions dans les mas viticoles, et à la logistique propre au climat du sud (chaleur, mistral occasionnel).',
+  '/mariage.png', 'Mariage à Montpellier, dans un domaine viticole du Pic Saint-Loup — Misstice'),
+
+('nantes', 'mariage',
+  'À Nantes, les mariages profitent souvent du cadre atypique de l''île de Nantes, des châteaux de la Loire à proximité, ou des domaines viticoles du Muscadet. Misstice référence des prestataires nantais habitués à ces lieux variés, du château historique au lieu industriel réhabilité, avec une vraie connaissance de la logistique locale (accès, parkings, saisonnalité).',
+  '/mariage.png', 'Mariage à Nantes, sur l''île de Nantes et ses lieux atypiques — Misstice'),
+
+('nice', 'mariage',
+  'Un mariage à Nice profite d''un cadre exceptionnel entre mer et collines : villas avec vue, jardins méditerranéens, domaines de l''arrière-pays niçois. Misstice sélectionne des prestataires habitués à ce type de réception haut de gamme, avec une attention particulière à la gestion de la chaleur estivale et à la proximité de nombreux lieux de réception prestigieux.',
+  '/mariage.png', 'Mariage à Nice, entre mer et collines de la baie des Anges — Misstice'),
+
+('rennes', 'mariage',
+  'Rennes et sa région (vallée de la Vilaine, châteaux bretons) offrent un cadre à la fois historique et verdoyant pour un mariage. Misstice met en avant des prestataires rennais habitués aux mariages en manoir ou en longère bretonne, avec une bonne connaissance des contraintes météo locales et des solutions de repli en intérieur.',
+  '/mariage.png', 'Mariage à Rennes, dans un manoir breton — Misstice'),
+
+('saint-etienne', 'anniversaire',
+  'Organiser un anniversaire à Saint-Étienne, c''est profiter d''une ville à taille humaine où salles de réception, traiteurs et animateurs sont facilement accessibles depuis le centre-ville ou les quartiers de Bellevue et Terrasse. Que tu prépares un anniversaire d''enfant dans un parc comme celui de l''Europe, ou une soirée entre adultes dans un lieu atypique du quartier Manufacture, Misstice te met en relation avec des prestataires stéphanois qui connaissent les spécificités locales : disponibilité des salles, parkings, contraintes de bruit en centre-ville.',
+  '/anniversaire.png', 'Anniversaire à Saint-Étienne, entre Bellevue et quartier Manufacture — Misstice'),
+
+('marseille', 'bapteme',
+  'À Marseille, un baptême se prépare souvent avec vue sur mer ou dans l''un des nombreux domaines provençaux des environs (Aubagne, Aix, la Côte Bleue). La ville offre un vivier de traiteurs habitués aux grandes tablées familiales et aux journées qui s''étirent du déjeuner au dîner. Misstice référence des prestataires marseillais rompus aux codes du baptême méditerranéen : buffet généreux, decoration extérieure, logistique adaptée à la chaleur en saison.',
+  '/bapteme.png', 'Baptême à Marseille, réception face à la Méditerranée — Misstice'),
+
+('reims', 'gala',
+  'Reims, capitale du Champagne, est un cadre naturel pour un gala d''entreprise ou de charité : demeures de maisons de Champagne, salons classés, domaines viticoles en périphérie. Misstice met en avant des prestataires rémois habitués aux événements corporate haut de gamme — traiteurs gastronomiques, DJ et régie technique pour soirées de plusieurs centaines d''invités, souvent en lien avec le secteur du vin et du champagne local.',
+  '/gala.png', 'Gala d''entreprise à Reims, au cœur du vignoble champenois — Misstice'),
+
+('toulon', 'gala',
+  'À Toulon, l''organisation d''un gala profite souvent du cadre maritime : terrasses avec vue sur la rade, salles de réception en bord de mer, domaines dans l''arrière-pays varois. Misstice connecte les organisateurs avec des prestataires toulonnais habitués aux contraintes spécifiques de la ville (vent, accès aux lieux en bord de mer, saisonnalité touristique) pour des soirées d''entreprise ou de gala associatif réussies.',
+  '/gala.png', 'Gala à Toulon, réception face à la rade — Misstice')
+
+on conflict (city_slug, event_type_slug) do update
+  set intro_text = excluded.intro_text,
+      image_url  = excluded.image_url,
+      image_alt  = excluded.image_alt;
+
 -- Fin.
