@@ -10,6 +10,7 @@ import {
 } from "@/lib/sirene";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const MAX_PER_RUN = 25;
 
