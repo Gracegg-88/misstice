@@ -20,16 +20,20 @@ export const CATEGORY_NAF_CODES: Record<string, string[]> = {
 };
 
 /**
- * Catégorie juridique renvoyée par l'API (nomenclature INSEE) : les codes commençant
- * par "1" désignent une personne physique (1000 = Entrepreneur individuel — la
- * micro-entreprise est un régime fiscal appliqué à un EI, pas une catégorie juridique
- * distincte). Les personnes morales (SARL, SAS, SASU, SA...) sont codées "2xxx" et plus.
- * Filtre volontairement large (par préfixe) plutôt qu'une énumération de codes qu'on
- * pourrait mal recopier.
+ * Nature juridique renvoyée par l'API (champ "nature_juridique", nomenclature
+ * INSEE — vérifiée directement dans le code source de l'API,
+ * github.com/annuaire-entreprises-data-gouv-fr/search-api, fichier
+ * app/labels/natures-juridiques.json) : un seul code commence par "1" dans
+ * toute la nomenclature — "1000" = Entrepreneur individuel (la
+ * micro-entreprise est un régime fiscal appliqué à un EI, pas une catégorie
+ * juridique distincte). Tous les autres codes ("2xxx" et plus) désignent des
+ * personnes morales (SARL, SAS, SASU, SA, associations...). Filtre par
+ * préfixe plutôt que par énumération : plus robuste qu'une liste de codes
+ * qu'on pourrait mal recopier.
  */
-export function isCompanyLegalForm(categorieJuridique: string | null | undefined): boolean {
-  if (!categorieJuridique) return false;
-  return !categorieJuridique.startsWith("1");
+export function isCompanyLegalForm(natureJuridique: string | null | undefined): boolean {
+  if (!natureJuridique) return false;
+  return !natureJuridique.startsWith("1");
 }
 
 export type GouvEtablissement = {
@@ -43,7 +47,7 @@ export type GouvResult = {
   siren?: string;
   nom_complet?: string;
   nom_raison_sociale?: string;
-  categorie_juridique?: string;
+  nature_juridique?: string;
   siege?: GouvEtablissement;
   matching_etablissements?: GouvEtablissement[];
 };
@@ -69,7 +73,7 @@ export type ImportCandidate = {
  * (forme juridique EI/micro, établissement fermé, ville absente). Ne lit/n'invente
  * aucune photo ni description — seulement les champs factuels de l'API. */
 export function toImportCandidate(result: GouvResult): ImportCandidate | null {
-  if (!isCompanyLegalForm(result.categorie_juridique)) return null;
+  if (!isCompanyLegalForm(result.nature_juridique)) return null;
   const etab =
     result.siege?.etat_administratif === "A"
       ? result.siege

@@ -85,7 +85,7 @@ export async function POST() {
           totalAfterLegalFilter += passing.length;
           if (sampleLegalForms.length < 15) {
             sampleLegalForms.push(
-              ...rawResults.slice(0, 15 - sampleLegalForms.length).map((r) => r.categorie_juridique ?? "?")
+              ...rawResults.slice(0, 15 - sampleLegalForms.length).map((r) => r.nature_juridique ?? "?")
             );
           }
           if (passing.length > 0) {
