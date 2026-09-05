@@ -53,6 +53,11 @@ export async function POST() {
   let checked = 0;
   let failed = 0;
   let lastFailureStatus: number | null = null;
+  // Diagnostic : d'où vient un total à zéro ? (requête qui ne renvoie rien
+  // du tout, vs résultats renvoyés mais tous écartés par le filtre société).
+  let totalRawResults = 0;
+  let totalAfterLegalFilter = 0;
+  let sampleLegalForms: string[] = [];
 
   for (const city of cities) {
     for (const category of categories) {
@@ -74,13 +79,21 @@ export async function POST() {
         });
         if (res.ok) {
           const data = (await res.json()) as GouvSearchResponse;
-          const available = (data.results ?? []).filter((r) => toImportCandidate(r)).length;
-          if (available > 0) {
+          const rawResults = data.results ?? [];
+          totalRawResults += rawResults.length;
+          const passing = rawResults.filter((r) => toImportCandidate(r));
+          totalAfterLegalFilter += passing.length;
+          if (sampleLegalForms.length < 15) {
+            sampleLegalForms.push(
+              ...rawResults.slice(0, 15 - sampleLegalForms.length).map((r) => r.categorie_juridique ?? "?")
+            );
+          }
+          if (passing.length > 0) {
             suggestions.push({
               citySlug: city.slug,
               cityName: city.name,
               category,
-              available,
+              available: passing.length,
               active: activeCount,
             });
           }
@@ -106,5 +119,12 @@ export async function POST() {
     checked > 0 && failed / checked > 0.3
       ? `${failed} des ${checked} recherches ont échoué${lastFailureStatus ? ` (dernière erreur : ${lastFailureStatus})` : ""} — l'API gouv.fr est peut-être temporairement limitée, réessaie dans quelques minutes.`
       : null;
-  return NextResponse.json({ ok: true, suggestions, checked, failed, warning });
+  return NextResponse.json({
+    ok: true,
+    suggestions,
+    checked,
+    failed,
+    warning,
+    diagnostic: { totalRawResults, totalAfterLegalFilter, sampleLegalForms },
+  });
 }

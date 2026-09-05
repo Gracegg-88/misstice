@@ -17,12 +17,20 @@ type ImportResult = {
   skippedDuplicate: number;
 };
 
+type Diagnostic = {
+  totalRawResults: number;
+  totalAfterLegalFilter: number;
+  sampleLegalForms: string[];
+};
+
 export default function SireneImportClient() {
   const [scanning, setScanning] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [error, setError] = useState("");
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, ImportResult>>({});
+  const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
+  const [counts, setCounts] = useState<{ checked: number; failed: number } | null>(null);
 
   const key = (s: Suggestion) => `${s.citySlug}::${s.category}`;
 
@@ -30,12 +38,16 @@ export default function SireneImportClient() {
     setScanning(true);
     setError("");
     setSuggestions(null);
+    setDiagnostic(null);
+    setCounts(null);
     try {
       const res = await fetch("/api/admin/sirene/scan", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Le scan a échoué.");
       if (data.warning) setError(data.warning);
       setSuggestions(data.suggestions);
+      setDiagnostic(data.diagnostic ?? null);
+      setCounts({ checked: data.checked, failed: data.failed });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Une erreur est survenue.");
     } finally {
@@ -111,7 +123,19 @@ export default function SireneImportClient() {
                 {suggestions.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-5 py-10 text-center text-slate">
-                      Aucun couple ville×catégorie en manque de fiches pour l&apos;instant.
+                      <p>Aucun couple ville×catégorie en manque de fiches pour l&apos;instant.</p>
+                      {diagnostic && counts && (
+                        <p className="mt-3 text-xs text-slate/70">
+                          Diagnostic : {counts.checked} recherche{counts.checked > 1 ? "s" : ""} effectuée
+                          {counts.checked > 1 ? "s" : ""} ({counts.failed} en échec) ·{" "}
+                          {diagnostic.totalRawResults} résultat{diagnostic.totalRawResults > 1 ? "s" : ""} brut
+                          {diagnostic.totalRawResults > 1 ? "s" : ""} de l&apos;API ·{" "}
+                          {diagnostic.totalAfterLegalFilter} après filtre société
+                          {diagnostic.sampleLegalForms.length > 0 && (
+                            <> · formes juridiques vues : {diagnostic.sampleLegalForms.join(", ")}</>
+                          )}
+                        </p>
+                      )}
                     </td>
                   </tr>
                 )}
