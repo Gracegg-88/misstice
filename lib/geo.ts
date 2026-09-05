@@ -30,25 +30,45 @@ const fetchEventTypesCached = cache(async (): Promise<EventType[]> => {
   return (data as EventType[]) ?? [];
 });
 const fetchCityEventContentCached = cache(
-  async (): Promise<{ citySlug: string; eventTypeSlug: string; introText: string }[]> => {
+  async (): Promise<
+    { citySlug: string; eventTypeSlug: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
+  > => {
     const supabase = db();
     const { data } = await supabase
       .from("city_event_content")
-      .select("city_slug, event_type_slug, intro_text");
+      .select("city_slug, event_type_slug, intro_text, image_url, image_alt");
     return (
-      (data as { city_slug: string; event_type_slug: string; intro_text: string }[] | null) ?? []
-    ).map((r) => ({ citySlug: r.city_slug, eventTypeSlug: r.event_type_slug, introText: r.intro_text }));
+      (data as
+        | { city_slug: string; event_type_slug: string; intro_text: string; image_url: string | null; image_alt: string | null }[]
+        | null) ?? []
+    ).map((r) => ({
+      citySlug: r.city_slug,
+      eventTypeSlug: r.event_type_slug,
+      introText: r.intro_text,
+      imageUrl: r.image_url,
+      imageAlt: r.image_alt,
+    }));
   }
 );
 const fetchCityCategoryContentCached = cache(
-  async (): Promise<{ citySlug: string; category: string; introText: string }[]> => {
+  async (): Promise<
+    { citySlug: string; category: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
+  > => {
     const supabase = db();
     const { data } = await supabase
       .from("city_category_content")
-      .select("city_slug, category, intro_text");
+      .select("city_slug, category, intro_text, image_url, image_alt");
     return (
-      (data as { city_slug: string; category: string; intro_text: string }[] | null) ?? []
-    ).map((r) => ({ citySlug: r.city_slug, category: r.category, introText: r.intro_text }));
+      (data as
+        | { city_slug: string; category: string; intro_text: string; image_url: string | null; image_alt: string | null }[]
+        | null) ?? []
+    ).map((r) => ({
+      citySlug: r.city_slug,
+      category: r.category,
+      introText: r.intro_text,
+      imageUrl: r.image_url,
+      imageAlt: r.image_alt,
+    }));
   }
 );
 const fetchKnownCategorySlugsCached = cache(async (): Promise<Map<string, string>> => {
@@ -235,7 +255,7 @@ export async function getIndexableCitySlugs(
  * de prestataires sur une page par ailleurs réellement rédigée).
  */
 export async function getCityEventContent(): Promise<
-  { citySlug: string; eventTypeSlug: string; introText: string }[]
+  { citySlug: string; eventTypeSlug: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
 > {
   return fetchCityEventContentCached();
 }
@@ -252,6 +272,20 @@ export async function getCityEventIntro(
 }
 
 /**
+ * Photo dédiée (+ alt text SEO ville×événement) rédigée à la main pour une
+ * page ville×événement, même source que getCityEventIntro
+ * (public.city_event_content.image_url / image_alt).
+ */
+export async function getCityEventImage(
+  citySlug: string,
+  eventTypeSlug: string
+): Promise<{ url: string; alt: string } | null> {
+  const content = await getCityEventContent();
+  const entry = content.find((c) => c.citySlug === citySlug && c.eventTypeSlug === eventTypeSlug);
+  return entry?.imageUrl ? { url: entry.imageUrl, alt: entry.imageAlt ?? "" } : null;
+}
+
+/**
  * Même principe que getCityEventContent, pour les pages ville×catégorie
  * (public.city_category_content). La catégorie y est stockée en toutes
  * lettres (comme public.vendors.category, pas de colonne slug dédiée) —
@@ -259,7 +293,7 @@ export async function getCityEventIntro(
  * ailleurs dans ce fichier.
  */
 export async function getCityCategoryContent(): Promise<
-  { citySlug: string; category: string; introText: string }[]
+  { citySlug: string; category: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
 > {
   return fetchCityCategoryContentCached();
 }
@@ -273,6 +307,20 @@ export async function getCityCategoryIntro(
     content.find((c) => c.citySlug === citySlug && slugify(c.category) === categorySlug)
       ?.introText ?? null
   );
+}
+
+/**
+ * Photo dédiée (+ alt text SEO ville×catégorie) rédigée à la main pour une
+ * page ville×catégorie, même source que getCityCategoryIntro
+ * (public.city_category_content.image_url / image_alt).
+ */
+export async function getCityCategoryImage(
+  citySlug: string,
+  categorySlug: string
+): Promise<{ url: string; alt: string } | null> {
+  const content = await getCityCategoryContent();
+  const entry = content.find((c) => c.citySlug === citySlug && slugify(c.category) === categorySlug);
+  return entry?.imageUrl ? { url: entry.imageUrl, alt: entry.imageAlt ?? "" } : null;
 }
 
 /**

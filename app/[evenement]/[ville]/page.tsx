@@ -11,6 +11,7 @@ import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
   getCityEventContent,
+  getCityEventImage,
   getCityEventIntro,
   getCityEventPickCombos,
   getCityEventPicks,
@@ -85,9 +86,10 @@ export default async function EvenementVillePage({
   // Pas de getHeaderAccount() ici : voir la note dans
   // app/prestataires/ville/[ville]/page.tsx (DYNAMIC_SERVER_USAGE sur une
   // route statique/ISR pas encore pré-générée pour ce combo précis).
-  const [vendors, introText, picks] = await Promise.all([
+  const [vendors, introText, image, picks] = await Promise.all([
     getVendorsForCity(city.slug),
     getCityEventIntro(city.slug, eventType.slug),
+    getCityEventImage(city.slug, eventType.slug),
     getCityEventPicks(city.slug, eventType.slug),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
@@ -124,6 +126,19 @@ export default async function EvenementVillePage({
             {introText ??
               `Trouvez des prestataires vérifiés à ${city.name} et centralisez budget, invités, checklist et devis pour votre ${eventType.name.toLowerCase()}, du premier au dernier détail.`}
           </p>
+
+          {image && (
+            <figure className="mt-6 overflow-hidden rounded-3xl">
+              <img
+                src={image.url}
+                alt={image.alt}
+                className="h-64 w-full object-cover sm:h-80"
+              />
+              {image.alt && (
+                <figcaption className="mt-2 text-xs text-slate">{image.alt}</figcaption>
+              )}
+            </figure>
+          )}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a

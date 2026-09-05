@@ -119,4 +119,50 @@ insert into public.city_category_content (city_slug, category, intro_text) value
 
 on conflict (city_slug, category) do update set intro_text = excluded.intro_text;
 
+-- ============================================================================
+--  Contenu unique — pages ville×catégorie signalées par Search Console comme
+--  quasi-identiques entre elles. Ajoute aussi une photo (+ alt text
+--  ville×catégorie, pour le SEO images) par page : à défaut d'une photo
+--  distincte par ville, on réutilise l'illustration du métier avec une
+--  légende locale, jamais un gabarit générique identique partout.
+-- ============================================================================
+
+alter table public.city_category_content add column if not exists image_url text;
+alter table public.city_category_content add column if not exists image_alt text;
+
+insert into public.city_category_content (city_slug, category, intro_text, image_url, image_alt) values
+
+('saint-etienne', 'Traiteur',
+  'Les traiteurs référencés à Saint-Étienne sur Misstice couvrent aussi bien les réceptions familiales (mariages, anniversaires, baptêmes) que les événements professionnels dans la région stéphanoise. Beaucoup travaillent en circuit court avec des producteurs de la Loire et du Forez, un argument apprécié pour les mariages et galas locaux. Compare leurs offres, avis et disponibilités directement sur la fiche de chaque prestataire.',
+  '/traiteur.png', 'Traiteur à Saint-Étienne, cuisine en circuit court du Forez — Misstice'),
+
+('le-havre', 'Traiteur',
+  'Les traiteurs référencés au Havre sur Misstice s''adressent aussi bien aux réceptions privées (mariages, anniversaires) qu''aux événements d''entreprise, nombreux dans cette ville portuaire. Beaucoup proposent des produits de la mer normands en circuit court, un atout pour les réceptions en bord de Manche ou dans le centre reconstruit classé UNESCO.',
+  '/traiteur.png', 'Traiteur au Havre, produits de la mer normands — Misstice'),
+
+('nice', 'Traiteur',
+  'À Nice, les traiteurs référencés sur Misstice maîtrisent aussi bien la cuisine méditerranéenne (socca, farcis niçois) que les standards de la restauration événementielle haut de gamme, pour des réceptions allant du cocktail sur terrasse au dîner assis en villa. Compare leurs prestations et avis directement sur la plateforme.',
+  '/traiteur.png', 'Traiteur à Nice, cuisine méditerranéenne — Misstice'),
+
+('rouen', 'Traiteur',
+  'Les traiteurs rouennais présents sur Misstice travaillent fréquemment avec des produits normands (cidre, produits laitiers, poisson de la Manche) pour des réceptions mariage, anniversaire ou entreprise. Leur connaissance des salles de réception locales (manoirs normands, abbayes, salles en centre historique) facilite l''organisation logistique.',
+  '/traiteur.png', 'Traiteur à Rouen, gastronomie normande — Misstice'),
+
+('paris', 'Photographe',
+  'Les photographes parisiens référencés sur Misstice couvrent aussi bien les mariages dans des lieux emblématiques (jardins, hôtels particuliers, bords de Seine) que les événements corporate. Beaucoup proposent des styles variés (reportage, posé, drone) adaptés aux contraintes spécifiques de la capitale (autorisations de lieux, affluence touristique).',
+  '/photographe.png', 'Photographe à Paris, entre jardins et bords de Seine — Misstice'),
+
+('rouen', 'Photographe',
+  'Les photographes rouennais référencés sur Misstice connaissent bien les lieux emblématiques de la ville (vieux Rouen, bords de Seine, abbayes normandes) pour immortaliser mariages et événements. Leur expérience locale permet d''anticiper les meilleures heures de lumière selon les saisons normandes, souvent plus changeantes qu''ailleurs.',
+  '/photographe.png', 'Photographe à Rouen, entre vieux Rouen et abbayes normandes — Misstice'),
+
+('toulouse', 'Photographe',
+  'Les photographes toulousains référencés sur Misstice interviennent aussi bien sur les mariages dans les propriétés du Lauragais et du Gers voisin que sur les événements d''entreprise liés à l''écosystème aéronautique de la ville. Leur portfolio couvre généralement plusieurs styles, du reportage naturel au posé traditionnel.',
+  '/photographe.png', 'Photographe à Toulouse, entre Lauragais et écosystème aéronautique — Misstice')
+
+on conflict (city_slug, category) do update
+  set intro_text = excluded.intro_text,
+      image_url  = excluded.image_url,
+      image_alt  = excluded.image_alt;
+
 -- Fin.

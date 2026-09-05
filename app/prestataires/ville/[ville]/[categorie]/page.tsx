@@ -11,6 +11,7 @@ import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
   getCityCategoryContent,
+  getCityCategoryImage,
   getCityCategoryIntro,
   getCityCategoryPickCombos,
   getCityCategoryPicks,
@@ -87,9 +88,10 @@ export default async function VilleCategoriePage({
   // Pas de getHeaderAccount() ici : voir la note dans
   // app/prestataires/ville/[ville]/page.tsx (DYNAMIC_SERVER_USAGE sur une
   // route statique/ISR pas encore pré-générée pour ce combo précis).
-  const [vendors, introText, picks] = await Promise.all([
+  const [vendors, introText, image, picks] = await Promise.all([
     getVendorsForCityCategory(city.slug, params.categorie),
     getCityCategoryIntro(city.slug, params.categorie),
+    getCityCategoryImage(city.slug, params.categorie),
     getCityCategoryPicks(city.slug, params.categorie),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
@@ -121,6 +123,19 @@ export default async function VilleCategoriePage({
                   : `Comparez bientôt les ${categoryLabel.toLowerCase()} vérifiés à ${city.name} : devis gratuits, avis vérifiés, échanges centralisés sur Misstice.`
                 : `${verifiedCount} ${categoryLabel.toLowerCase()} vérifié${verifiedCount > 1 ? "s" : ""} à ${city.name}. Comparez les devis et réservez sans quitter Misstice.`)}
           </p>
+
+          {image && (
+            <figure className="mt-6 overflow-hidden rounded-3xl">
+              <img
+                src={image.url}
+                alt={image.alt}
+                className="h-64 w-full object-cover sm:h-80"
+              />
+              {image.alt && (
+                <figcaption className="mt-2 text-xs text-slate">{image.alt}</figcaption>
+              )}
+            </figure>
+          )}
 
           {belowThreshold ? (
             picks.length ? (
