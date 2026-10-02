@@ -417,7 +417,7 @@ export default function CreerPage() {
                     >
                       {i < step ? <Check size={15} /> : i + 1}
                     </span>
-                    <span className="mt-1 text-[11px] text-slate">{s}</span>
+                    <span className="mt-1 text-xs text-slate">{s}</span>
                   </div>
                   {i < steps.length - 1 && (
                     <div

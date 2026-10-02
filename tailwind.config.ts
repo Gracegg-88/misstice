@@ -61,6 +61,13 @@ const config: Config = {
         // Corps de texte, menu, boutons, libellés (la machine)
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
       },
+      // Échelle éditoriale fluide (s'adapte seule au mobile via clamp()).
+      // Minimum absolu du site : 12px (text-xs) — jamais en dessous.
+      fontSize: {
+        hero: ["clamp(2.75rem, 5.5vw, 6rem)", { lineHeight: "1.05", letterSpacing: "-0.01em" }],
+        h2: ["clamp(2rem, 3.5vw, 3.25rem)", { lineHeight: "1.1", letterSpacing: "-0.01em" }],
+        h3: ["clamp(1.375rem, 2vw, 1.75rem)", { lineHeight: "1.15" }],
+      },
       borderRadius: {
         xl: "12px",
         "2xl": "16px",

@@ -29,12 +29,12 @@ export default function FinalCTA() {
               Gratuit pour commencer
             </span>
 
-            <h2 className="mt-3 font-display text-2xl font-semibold leading-[1.15] tracking-tight text-plum sm:text-3xl">
+            <h2 className="mt-3 font-display text-h2 font-medium text-plum">
               Prêt à organiser votre événement{" "}
               <span className="text-festif">sans stress</span> ?
             </h2>
 
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-plum/80">
+            <p className="mt-3 max-w-md text-base leading-relaxed text-plum/80">
               Créez votre événement gratuitement, centralisez vos invités, votre
               budget et vos prestataires, puis profitez pleinement du moment.
             </p>

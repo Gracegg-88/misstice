@@ -213,7 +213,7 @@ export default function EquipeClient({
                         {m.permissions.map((p) => (
                           <span
                             key={p}
-                            className="rounded-md bg-violet-soft px-1.5 py-0.5 text-[11px] font-medium text-violet"
+                            className="rounded-md bg-violet-soft px-1.5 py-0.5 text-xs font-medium text-violet"
                           >
                             {SECTION_LABEL[p] ?? p}
                           </span>

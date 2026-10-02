@@ -11,11 +11,11 @@ export default function Hero() {
       <div aria-hidden="true" className="absolute right-[21%] top-32 hidden h-4 w-4 rounded-full bg-festif lg:block" />
       <div className="relative mx-auto grid max-w-content items-center gap-8 lg:grid-cols-[.95fr_1.05fr] lg:gap-12">
         <div className="max-w-xl">
-          <p className="mb-5 text-[10px] font-medium uppercase tracking-[0.16em] text-plum/70">Les moments qui comptent, bien entourés</p>
-          <h1 className="max-w-[10ch] font-display text-5xl font-semibold leading-[.91] tracking-tight text-plum sm:text-6xl lg:text-7xl">
+          <p className="mb-5 eyebrow text-plum/70">Les moments qui comptent, bien entourés</p>
+          <h1 className="max-w-[14ch] font-display text-hero font-medium text-plum">
             Votre fête commence par une <em className="font-normal text-violet">décision</em> simple.
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate sm:text-lg">
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate sm:text-[17px]">
             Misstice réunit votre projet, vos proches et des prestataires vérifiés pour comparer les devis et préparer chaque moment à votre rythme.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -27,8 +27,8 @@ export default function Hero() {
             </a>
           </div>
           <div className="mt-5 grid gap-3 pt-2 sm:grid-cols-2">
-            <span className="flex items-start gap-2 text-xs leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-festif" /> Devis gratuit, sans engagement.</span>
-            <span className="flex items-start gap-2 text-xs leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-festif" /> Coordonnées protégées jusqu’à votre accord.</span>
+            <span className="flex items-start gap-2 text-sm leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-festif" /> Devis gratuit, sans engagement.</span>
+            <span className="flex items-start gap-2 text-sm leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-festif" /> Coordonnées protégées jusqu’à votre accord.</span>
           </div>
         </div>
 
@@ -38,8 +38,8 @@ export default function Hero() {
             <img src="/wedding-crowd.jpg" alt="Famille et proches réunis pour célébrer un moment important" className="h-full w-full object-cover object-center opacity-80" />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 bg-cream/95 p-4 backdrop-blur-sm sm:bottom-8 sm:left-8 sm:right-auto sm:w-72">
-              <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate">Votre projet</p>
-              <p className="mt-1 font-display text-2xl font-semibold leading-none text-plum">Prêt à prendre forme.</p>
+              <p className="eyebrow text-slate">Votre projet</p>
+              <p className="mt-1 font-display text-2xl font-medium leading-tight text-plum">Prêt à prendre forme.</p>
               <div className="mt-4 h-1 bg-plum/10"><span className="block h-full w-2/5 bg-violet" /></div>
             </div>
           </div>

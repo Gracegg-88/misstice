@@ -79,7 +79,7 @@ export default function ProSidebar({
                 <span className="flex-1">{item.label}</span>
                 {badge > 0 && (
                   <span
-                    className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold ${
+                    className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
                       active ? "bg-white/25 text-white" : "bg-violet text-white"
                     }`}
                   >

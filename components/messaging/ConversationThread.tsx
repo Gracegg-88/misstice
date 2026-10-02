@@ -337,7 +337,7 @@ export default function ConversationThread({
             <Fragment key={m.id}>
               {showSep && (
                 <div className="flex justify-center py-1">
-                  <span className="rounded-full bg-cream px-3 py-1 text-[11px] font-medium text-slate">
+                  <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-slate">
                     {dayLabel(m.created_at)}
                   </span>
                 </div>
@@ -362,7 +362,7 @@ export default function ConversationThread({
                         </p>
                       </div>
                     </div>
-                    <p className="mt-2 text-[11px] text-slate">{fmt(m.created_at)}</p>
+                    <p className="mt-2 text-xs text-slate">{fmt(m.created_at)}</p>
                   </Link>
                 </div>
               ) : imgUrl ? (
@@ -380,7 +380,7 @@ export default function ConversationThread({
                       referrerPolicy="no-referrer"
                       className="max-h-72 w-full object-cover"
                     />
-                    <p className="bg-white px-3 py-1 text-[11px] text-slate">
+                    <p className="bg-white px-3 py-1 text-xs text-slate">
                       {fmt(m.created_at)}
                     </p>
                   </a>
@@ -394,7 +394,7 @@ export default function ConversationThread({
                       playsInline
                       className="max-h-72 w-full object-contain"
                     />
-                    <p className="bg-white px-3 py-1 text-[11px] text-slate">
+                    <p className="bg-white px-3 py-1 text-xs text-slate">
                       {fmt(m.created_at)}
                     </p>
                   </div>
@@ -414,7 +414,7 @@ export default function ConversationThread({
                       <p className="truncate text-sm font-medium text-plum">
                         {doc?.[2]?.trim() || "Document"}
                       </p>
-                      <p className="text-[11px] text-slate">{fmt(m.created_at)}</p>
+                      <p className="text-xs text-slate">{fmt(m.created_at)}</p>
                     </div>
                   </a>
                 </div>
@@ -427,7 +427,7 @@ export default function ConversationThread({
                   >
                     <p className="whitespace-pre-wrap break-words">{m.body}</p>
                     <p
-                      className={`mt-1 text-[11px] ${
+                      className={`mt-1 text-xs ${
                         mine ? "text-white/70" : "text-slate"
                       }`}
                     >
@@ -438,7 +438,7 @@ export default function ConversationThread({
               )}
 
               {idx === seenIdx && (
-                <p className="pr-1 text-right text-[11px] font-medium text-violet">
+                <p className="pr-1 text-right text-xs font-medium text-violet">
                   Vu
                 </p>
               )}

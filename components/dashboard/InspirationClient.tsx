@@ -384,7 +384,7 @@ export default function InspirationClient({
                 </>
               )}
               {i.source && (
-                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-violet">
+                <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-violet">
                   {i.source}
                 </span>
               )}

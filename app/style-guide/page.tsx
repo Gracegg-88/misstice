@@ -169,7 +169,7 @@ function Swatch({ s }: { s: Swatch }) {
         <p className="font-mono text-xs opacity-90">{s.hex}</p>
       </div>
       <div className="space-y-1.5 bg-cream p-4">
-        <p className="font-mono text-[11px] text-violet">{s.token}</p>
+        <p className="font-mono text-xs text-violet">{s.token}</p>
         <p className="text-sm text-plum">{s.usage}</p>
         <p className="text-xs text-slate">{s.contrastNote}</p>
       </div>

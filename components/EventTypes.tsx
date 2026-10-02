@@ -20,10 +20,10 @@ export default function EventTypes() {
     <section id="fonctionnalites" className="pt-10 pb-4 sm:pt-12 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
+          <p className="eyebrow text-violet">
             Types d&apos;événements
           </p>
-          <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+          <h2 className="mt-2 font-display text-h2 font-medium text-plum">
             Pour tous vos moments importants
           </h2>
         </Reveal>
@@ -48,7 +48,7 @@ export default function EventTypes() {
                   <t.icon size={22} strokeWidth={1.75} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-lg font-semibold leading-none text-plum">{t.label}</span>
+                  <span className="block font-display text-xl font-medium leading-tight text-plum">{t.label}</span>
                   <span className="mt-1 block text-sm font-light leading-snug text-slate">
                     {t.text}
                   </span>

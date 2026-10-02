@@ -227,7 +227,7 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                         <c.icon size={16} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-slate">
+                        <p className="text-xs font-medium text-slate">
                           {c.label}
                         </p>
                         <p className="truncate text-sm font-semibold text-plum">

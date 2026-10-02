@@ -26,10 +26,10 @@ export default function BecomeVendorCallout({
           <span className="mx-auto flex h-11 w-11 items-center justify-center text-violet">
             <Heart size={19} strokeWidth={1.75} />
           </span>
-          <h2 className="mx-auto mt-4 max-w-xl font-display text-2xl font-semibold leading-[1.02] tracking-tight text-plum sm:text-3xl">
+          <h2 className="mx-auto mt-4 max-w-xl font-display text-h2 font-medium text-plum">
             {headline}
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm font-light leading-relaxed text-slate">
+          <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-slate">
             {body}
           </p>
           <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
