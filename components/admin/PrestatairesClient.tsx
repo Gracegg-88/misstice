@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -13,6 +13,8 @@ import {
   Mail,
   Send,
   Loader2,
+  Search,
+  RotateCcw,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -32,6 +34,54 @@ type Vendor = {
   lastRelanceSentAt: string | null;
 };
 
+// Filtres de statut proposés dans la liste déroulante.
+const STATUS_FILTERS = [
+  { v: "all", l: "Tous les statuts" },
+  { v: "nouveau", l: "Nouveaux (non relus)" },
+  { v: "verifie", l: "Vérifiés" },
+  { v: "non_verifie", l: "Non vérifiés" },
+  { v: "non_reclamee", l: "Fiches non réclamées" },
+  { v: "reclamee", l: "Fiches réclamées" },
+  { v: "demo", l: "Démo" },
+  { v: "avec_email", l: "Avec email de contact" },
+  { v: "sans_email", l: "Sans email de contact" },
+  { v: "avec_contact", l: "Avec tentative de contact" },
+] as const;
+
+type StatusFilter = (typeof STATUS_FILTERS)[number]["v"];
+
+// Recherche insensible à la casse et aux accents.
+const normalize = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+function matchesStatus(v: Vendor, status: StatusFilter): boolean {
+  switch (status) {
+    case "nouveau":
+      return !v.reviewed_at;
+    case "verifie":
+      return v.verified;
+    case "non_verifie":
+      return !v.verified;
+    case "non_reclamee":
+      return v.claimStatus === "non_reclamee";
+    case "reclamee":
+      return v.claimStatus === "reclamee";
+    case "demo":
+      return v.isDemo && v.claimStatus === "reclamee";
+    case "avec_email":
+      return !!v.contactEmail;
+    case "sans_email":
+      return !v.contactEmail;
+    case "avec_contact":
+      return v.tentativesContact > 0;
+    default:
+      return true;
+  }
+}
+
+const filterCls =
+  "min-w-0 rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm text-plum outline-none focus:border-violet";
+
 export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -39,6 +89,49 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
   const [error, setError] = useState("");
   const [emailDraft, setEmailDraft] = useState<Record<string, string>>({});
   const [relanceSent, setRelanceSent] = useState<Record<string, boolean>>({});
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [city, setCity] = useState("all");
+  const [status, setStatus] = useState<StatusFilter>("all");
+
+  const categories = useMemo(
+    () =>
+      Array.from(new Set(vendors.map((v) => v.category).filter((c): c is string => !!c))).sort(
+        (a, b) => a.localeCompare(b, "fr")
+      ),
+    [vendors]
+  );
+  const cities = useMemo(
+    () =>
+      Array.from(new Set(vendors.map((v) => v.city).filter((c): c is string => !!c))).sort(
+        (a, b) => a.localeCompare(b, "fr")
+      ),
+    [vendors]
+  );
+
+  const filtered = useMemo(() => {
+    const q = normalize(query);
+    return vendors.filter((v) => {
+      if (category !== "all" && v.category !== category) return false;
+      if (city !== "all" && v.city !== city) return false;
+      if (!matchesStatus(v, status)) return false;
+      if (q) {
+        const haystack = normalize(
+          [v.name, v.category ?? "", v.city ?? "", v.contactEmail ?? ""].join(" ")
+        );
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [vendors, query, category, city, status]);
+
+  const hasFilters = query !== "" || category !== "all" || city !== "all" || status !== "all";
+  const resetFilters = () => {
+    setQuery("");
+    setCategory("all");
+    setCity("all");
+    setStatus("all");
+  };
 
   const saveContactEmail = async (v: Vendor) => {
     const value = (emailDraft[v.id] ?? v.contactEmail ?? "").trim();
@@ -133,8 +226,82 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
         Prestataires
       </h1>
       <p className="mt-1 text-sm text-slate">
+        {hasFilters ? (
+          <>
+            <span className="font-semibold text-plum">{filtered.length}</span> sur{" "}
+          </>
+        ) : null}
         {vendors.length} fiche{vendors.length > 1 ? "s" : ""} prestataire.
       </p>
+
+      {/* Recherche + filtres */}
+      <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-black/5 bg-white p-3 shadow-sm lg:flex-row lg:items-center">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate"
+            aria-hidden="true"
+          />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Nom, ville, catégorie, email…"
+            aria-label="Rechercher un prestataire"
+            className={`${filterCls} w-full pl-10`}
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex">
+          <select
+            aria-label="Filtrer par catégorie"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={filterCls}
+          >
+            <option value="all">Toutes les catégories</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrer par ville"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className={filterCls}
+          >
+            <option value="all">Toutes les villes</option>
+            {cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrer par statut"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as StatusFilter)}
+            className={filterCls}
+          >
+            {STATUS_FILTERS.map((f) => (
+              <option key={f.v} value={f.v}>
+                {f.l}
+              </option>
+            ))}
+          </select>
+        </div>
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-violet transition-colors hover:bg-violet-soft"
+          >
+            <RotateCcw size={14} aria-hidden="true" />
+            Réinitialiser
+          </button>
+        )}
+      </div>
       {error && (
         <p className="mt-3 rounded-xl bg-festif-soft px-4 py-2 text-sm font-medium text-festif">
           {error}
@@ -154,14 +321,16 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
               </tr>
             </thead>
             <tbody>
-              {vendors.length === 0 && (
+              {filtered.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-5 py-10 text-center text-slate">
-                    Aucune fiche prestataire.
+                    {vendors.length === 0
+                      ? "Aucune fiche prestataire."
+                      : "Aucune fiche ne correspond à ces critères."}
                   </td>
                 </tr>
               )}
-              {vendors.map((v) => (
+              {filtered.map((v) => (
                 <Fragment key={v.id}>
                 <tr className="border-b border-black/5 last:border-0">
                   <td className="px-5 py-3 font-medium text-plum">{v.name}</td>
