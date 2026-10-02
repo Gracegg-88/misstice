@@ -13,7 +13,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/prestataires" },
 };
 
-export default async function PrestatairesPage() {
+export default async function PrestatairesPage({
+  searchParams,
+}: {
+  searchParams?: { page?: string | string[] };
+}) {
+  // ?page=N : lien partageable vers une page précise des résultats.
+  const pageParam = Number.parseInt(String(searchParams?.page ?? "1"), 10);
+  const initialPage = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
   const vendors = await getVendors();
   const [account, cities, knownCategories, picksByCombo] = await Promise.all([
     getHeaderAccount(),
@@ -38,6 +45,7 @@ export default async function PrestatairesPage() {
           categories={categories}
           allCities={cities.map((c) => c.name)}
           picksByCombo={picksByCombo}
+          initialPage={initialPage}
         />
 
         {cities.length > 0 && (
