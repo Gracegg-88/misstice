@@ -195,7 +195,7 @@ export default function ExplorerClient({
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
-              <span className="text-festif">qui vous ressemble</span>
+              <span className="text-violet">qui vous ressemble</span>
             </h1>
             <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate">
               Photographes, traiteurs, DJ, salles… Comparez en toute

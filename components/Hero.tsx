@@ -7,8 +7,6 @@ import { ArrowDownRight, CheckCircle2, Users } from "lucide-react";
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-cream pb-8 pt-7 sm:pb-10 sm:pt-10 lg:flex lg:min-h-[85vh] lg:items-center lg:py-12">
-      <div aria-hidden="true" className="absolute right-[9%] top-12 hidden h-[28rem] w-[28rem] rounded-full bg-festif/10 blur-3xl lg:block" />
-      <div aria-hidden="true" className="absolute right-[21%] top-32 hidden h-4 w-4 rounded-full bg-festif lg:block" />
       <div className="relative mx-auto grid w-full max-w-content px-page gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-stretch lg:gap-12">
         <div className="flex flex-col justify-center lg:py-6">
           <p className="mb-5 eyebrow text-plum/70">Les moments qui comptent, bien entourés</p>
@@ -22,13 +20,13 @@ export default function Hero() {
             <a href="/creer" className="inline-flex min-h-14 items-center justify-center gap-2 bg-violet px-6 py-3 text-base font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5">
               Créer mon événement <ArrowDownRight size={19} />
             </a>
-            <a href="/creer?type=pro" className="inline-flex min-h-14 items-center justify-center gap-2 px-2 py-3 text-base font-semibold text-plum underline decoration-festif decoration-2 underline-offset-8 transition-colors duration-200 hover:text-violet">
+            <a href="/creer?type=pro" className="inline-flex min-h-14 items-center justify-center gap-2 px-2 py-3 text-base font-semibold text-plum underline decoration-violet/40 decoration-2 underline-offset-8 transition-colors duration-200 hover:text-violet">
               Je suis prestataire <Users size={18} />
             </a>
           </div>
           <div className="mt-5 grid gap-3 pt-2 sm:grid-cols-2">
-            <span className="flex items-start gap-2 text-sm leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-festif" /> Devis gratuit, sans engagement.</span>
-            <span className="flex items-start gap-2 text-sm leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-festif" /> Coordonnées protégées jusqu’à votre accord.</span>
+            <span className="flex items-start gap-2 text-sm leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-violet" /> Devis gratuit, sans engagement.</span>
+            <span className="flex items-start gap-2 text-sm leading-relaxed text-slate"><CheckCircle2 size={17} className="mt-0.5 shrink-0 text-violet" /> Coordonnées protégées jusqu’à votre accord.</span>
           </div>
         </div>
 

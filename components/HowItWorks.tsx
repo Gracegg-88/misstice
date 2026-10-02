@@ -53,7 +53,7 @@ export default function HowItWorks() {
                   <span className="flex h-12 w-12 items-center justify-center text-violet">
                     <step.icon size={26} strokeWidth={1.75} />
                   </span>
-                  <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-festif">
+                  <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-violet">
                     {step.n}
                   </span>
                 </div>

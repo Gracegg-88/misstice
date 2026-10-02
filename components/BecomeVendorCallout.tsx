@@ -46,7 +46,7 @@ export default function BecomeVendorCallout({
               label={ctaLabel}
               className={
                 signupHref
-                  ? "inline-flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-semibold text-plum underline decoration-festif decoration-2 underline-offset-8 transition-colors hover:text-violet"
+                  ? "inline-flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-semibold text-plum underline decoration-violet/40 decoration-2 underline-offset-8 transition-colors hover:text-violet"
                   : "ev-cta inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
               }
             />

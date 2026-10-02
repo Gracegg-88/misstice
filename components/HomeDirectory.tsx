@@ -17,7 +17,7 @@ const destinations = [
     title: "Explorer les prestataires",
     body: "Comparez les profils vérifiés, les disponibilités et les services sans perdre le fil de votre projet.",
     href: "/prestataires",
-    className: "bg-festif-soft text-plum",
+    className: "bg-violet-soft text-plum",
   },
   {
     eyebrow: "Je veux des repères",
@@ -34,7 +34,7 @@ export default function HomeDirectory() {
       <div className="mx-auto max-w-content px-page">
         <div className="grid items-end gap-5 pb-8 lg:grid-cols-[3fr_2fr] lg:gap-12">
           <div>
-            <p className="mb-3 eyebrow text-festif">Un point de départ, pas un tunnel</p>
+            <p className="mb-3 eyebrow text-violet">Un point de départ, pas un tunnel</p>
             <h2 id="orienter-title" className="max-w-[24ch] font-display text-h2 font-medium text-plum">
               Choisissez la prochaine décision, nous gardons le reste en ordre.
             </h2>
@@ -52,7 +52,7 @@ export default function HomeDirectory() {
               className={`group relative flex min-h-64 flex-col overflow-hidden p-6 transition-transform duration-200 hover:-translate-y-1 ${destination.className}`}
             >
               <span className="eyebrow opacity-70">0{index + 1} · {destination.eyebrow}</span>
-              <h3 className="mt-auto max-w-[14ch] font-display text-h3 font-medium first-letter:text-festif">{destination.title}</h3>
+              <h3 className="mt-auto max-w-[14ch] font-display text-h3 font-medium">{destination.title}</h3>
               <p className="mt-3 max-w-sm text-base leading-relaxed opacity-80">{destination.body}</p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold">
                 Ouvrir <ArrowRight size={17} className="transition-transform duration-200 group-hover:translate-x-1" />
@@ -62,9 +62,9 @@ export default function HomeDirectory() {
         </div>
 
         <div className="mt-7 grid gap-4 pt-7 md:grid-cols-3">
-          <div className="flex gap-3 text-sm text-slate"><ShieldCheck className="mt-0.5 shrink-0 text-festif" size={20} /><p><b className="text-plum">Prestataires vérifiés.</b><br />Un contrôle réel avant publication.</p></div>
-          <div className="flex gap-3 text-sm text-slate"><LockKeyhole className="mt-0.5 shrink-0 text-festif" size={20} /><p><b className="text-plum">Coordonnées protégées.</b><br />Débloquées seulement après acceptation du devis.</p></div>
-          <div className="flex gap-3 text-sm text-slate"><FileCheck2 className="mt-0.5 shrink-0 text-festif" size={20} /><p><b className="text-plum">Décisions au même endroit.</b><br />Devis, projet et prochaines actions restent centralisés.</p></div>
+          <div className="flex gap-3 text-sm text-slate"><ShieldCheck className="mt-0.5 shrink-0 text-violet" size={20} /><p><b className="text-plum">Prestataires vérifiés.</b><br />Un contrôle réel avant publication.</p></div>
+          <div className="flex gap-3 text-sm text-slate"><LockKeyhole className="mt-0.5 shrink-0 text-violet" size={20} /><p><b className="text-plum">Coordonnées protégées.</b><br />Débloquées seulement après acceptation du devis.</p></div>
+          <div className="flex gap-3 text-sm text-slate"><FileCheck2 className="mt-0.5 shrink-0 text-violet" size={20} /><p><b className="text-plum">Décisions au même endroit.</b><br />Devis, projet et prochaines actions restent centralisés.</p></div>
         </div>
       </div>
     </section>

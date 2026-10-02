@@ -10,13 +10,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Couleur-action / primaire (CTA, liens importants)
+        // Couleur principale unique : boutons, liens, élément actif.
         violet: {
           DEFAULT: "#6C3CE1",
           dark: "#5A2FC4",
           soft: "#F1ECFD", // fond léger pour badges / surfaces
         },
-        // Accent festif (réservé aux touches chaleureuses, jamais aux gros aplats)
+        // Accent festif : UN seul usage ponctuel par écran (ex. badge du hero).
+        // Jamais sur les titres, liens, icônes ou soulignements — c'est le rôle du violet.
         festif: {
           DEFAULT: "#FF8C42",
           soft: "#FFF1E6",

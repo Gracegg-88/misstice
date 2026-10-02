@@ -44,7 +44,7 @@ export default function Header({ initialAccount = null }: { initialAccount?: Acc
             {navLinks.map((link) => <a key={link.href} href={link.href} className="text-sm font-medium text-plum/80 transition-colors hover:text-violet">{link.label}</a>)}
           </nav>
           <div className="hidden items-center gap-3 md:flex">
-            {!account && <a href="/devenir-prestataire" className="text-sm font-medium text-violet underline decoration-festif decoration-2 underline-offset-4 transition-colors hover:text-violet-dark">Devenir prestataire</a>}
+            {!account && <a href="/devenir-prestataire" className="text-sm font-medium text-violet underline decoration-violet/40 decoration-2 underline-offset-4 transition-colors hover:text-violet-dark">Devenir prestataire</a>}
             <a href={account ? account.href : "/auth"} aria-label={account ? "Mon compte" : "Connexion"} title={account ? "Mon compte" : "Connexion"} className="flex h-10 w-10 items-center justify-center text-plum transition-colors hover:text-violet"><CircleUserRound size={19} /></a>
             <a href={account ? account.createHref : "/creer"} className="inline-flex items-center rounded-full bg-violet px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">Créer mon événement</a>
           </div>
