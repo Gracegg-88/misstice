@@ -54,12 +54,12 @@ const config: Config = {
         "gradient-soft": "linear-gradient(135deg, #F1ECFD 0%, #FAFAF9 100%)",
       },
       fontFamily: {
-        // Titres éditoriaux (l'émotion)
-        display: ["var(--font-display)", "Georgia", "serif"],
-        // Corps de texte ultra-lisible (la machine)
+        // Titres éditoriaux (l'émotion) — `font-heading`, `font-display` gardé
+        // comme alias historique.
+        heading: ["var(--font-heading)", "Georgia", "serif"],
+        display: ["var(--font-heading)", "Georgia", "serif"],
+        // Corps de texte, menu, boutons, libellés (la machine)
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
-        // Repères, catégories et métadonnées — usage ponctuel pour donner du rythme.
-        label: ["var(--font-label)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         xl: "12px",

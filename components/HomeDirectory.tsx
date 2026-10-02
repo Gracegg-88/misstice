@@ -34,7 +34,7 @@ export default function HomeDirectory() {
       <div className="mx-auto max-w-content">
         <div className="grid items-end gap-5 pb-8 lg:grid-cols-[1.15fr_.65fr]">
           <div>
-            <p className="mb-3 font-label text-[10px] font-medium uppercase tracking-[0.15em] text-festif">Un point de départ, pas un tunnel</p>
+            <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.15em] text-festif">Un point de départ, pas un tunnel</p>
             <h2 id="orienter-title" className="max-w-[15ch] font-display text-3xl font-semibold leading-[1.02] tracking-tight text-plum sm:text-4xl">
               Choisissez la prochaine décision, nous gardons le reste en ordre.
             </h2>
@@ -51,7 +51,7 @@ export default function HomeDirectory() {
               href={destination.href}
               className={`group relative flex min-h-64 flex-col overflow-hidden p-6 transition-transform duration-200 hover:-translate-y-1 ${destination.className}`}
             >
-              <span className="font-label text-[10px] font-medium uppercase tracking-[0.14em] opacity-70">0{index + 1} · {destination.eyebrow}</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.14em] opacity-70">0{index + 1} · {destination.eyebrow}</span>
               <h3 className="mt-auto max-w-[14ch] font-display text-3xl font-semibold leading-none tracking-tight first-letter:text-festif">{destination.title}</h3>
               <p className="mt-3 max-w-sm text-sm font-light leading-relaxed opacity-75">{destination.body}</p>
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold">

@@ -81,7 +81,7 @@ iframe {
 
 /* ---------- Carte Leaflet ---------- */
 .leaflet-container {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-body), sans-serif;
   border-radius: 1.5rem;
 }
 .ev-pin {
@@ -111,7 +111,7 @@ iframe {
   color: #fff;
   font-size: 10.5px;
   font-weight: 700;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-body), sans-serif;
 }
 .leaflet-popup-content-wrapper { border-radius: 14px; }
 .leaflet-popup-content { margin: 14px 16px; }

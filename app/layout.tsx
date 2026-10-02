@@ -1,32 +1,30 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, DM_Mono } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import GuideMascot from "@/components/GuideMascot";
 
-// Titres éditoriaux
-const dmSerif = DM_Serif_Display({
+// Deux voix seulement, centralisées dans --font-heading / --font-body
+// (consommées par tailwind.config.ts et globals.css). Pour changer de duo
+// (ex. Cormorant Garamond + Inter, Playfair Display + Manrope), il suffit
+// de remplacer ces deux imports.
+
+// Titres éditoriaux : police variable (graisses réelles 400–600 + axe optique),
+// donc plus de faux gras comme avec DM Serif Display (graisse unique).
+const headingFont = Fraunces({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-heading",
   display: "swap",
-  weight: "400",
+  style: ["normal", "italic"],
+  axes: ["opsz"],
 });
 
-// Corps de texte
-const dmSans = DM_Sans({
+// Texte courant, menu, boutons, libellés
+const bodyFont = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
-  weight: ["400", "500", "700"],
-});
-
-// Repères, statuts et microcopies : une troisième voix discrète mais plus
-// dynamique, réservée aux informations fonctionnelles.
-const dmMono = DM_Mono({
-  subsets: ["latin"],
-  variable: "--font-label",
-  display: "swap",
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
 });
 
 // SEO dès le jour 1 (principe 5)
@@ -89,7 +87,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${dmSerif.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="fr" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-sans bg-cream text-plum antialiased">
         {children}
         <GuideMascot />

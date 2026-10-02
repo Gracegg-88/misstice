@@ -34,7 +34,7 @@ export default function HowItWorks() {
     <section id="comment-ca-marche" className="pt-4 pb-4 sm:pt-6 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
-          <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
             En 3 étapes
           </p>
           <h2 className="mt-2 text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">

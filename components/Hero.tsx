@@ -11,7 +11,7 @@ export default function Hero() {
       <div aria-hidden="true" className="absolute right-[21%] top-32 hidden h-4 w-4 rounded-full bg-festif lg:block" />
       <div className="relative mx-auto grid max-w-content items-center gap-8 lg:grid-cols-[.95fr_1.05fr] lg:gap-12">
         <div className="max-w-xl">
-          <p className="mb-5 font-label text-[10px] font-medium uppercase tracking-[0.16em] text-plum/70">Les moments qui comptent, bien entourés</p>
+          <p className="mb-5 text-[10px] font-medium uppercase tracking-[0.16em] text-plum/70">Les moments qui comptent, bien entourés</p>
           <h1 className="max-w-[10ch] font-display text-5xl font-semibold leading-[.91] tracking-tight text-plum sm:text-6xl lg:text-7xl">
             Votre fête commence par une <em className="font-normal text-violet">décision</em> simple.
           </h1>
@@ -38,7 +38,7 @@ export default function Hero() {
             <img src="/wedding-crowd.jpg" alt="Famille et proches réunis pour célébrer un moment important" className="h-full w-full object-cover object-center opacity-80" />
             <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 bg-cream/95 p-4 backdrop-blur-sm sm:bottom-8 sm:left-8 sm:right-auto sm:w-72">
-              <p className="font-label text-[10px] font-medium uppercase tracking-[0.15em] text-slate">Votre projet</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate">Votre projet</p>
               <p className="mt-1 font-display text-2xl font-semibold leading-none text-plum">Prêt à prendre forme.</p>
               <div className="mt-4 h-1 bg-plum/10"><span className="block h-full w-2/5 bg-violet" /></div>
             </div>

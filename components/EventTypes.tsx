@@ -20,7 +20,7 @@ export default function EventTypes() {
     <section id="fonctionnalites" className="pt-10 pb-4 sm:pt-12 sm:pb-6">
       <div className="mx-auto max-w-content px-5 sm:px-8">
         <Reveal className="text-center">
-          <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
             Types d&apos;événements
           </p>
           <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
