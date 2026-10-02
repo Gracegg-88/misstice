@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Créer mon événement · Misstice",
+  title: "Créer mon événement",
   description:
     "Créez gratuitement votre événement sur Misstice ou inscrivez-vous comme prestataire : budget, invités, checklist et prestataires vérifiés réunis au même endroit.",
   alternates: { canonical: "/creer" },

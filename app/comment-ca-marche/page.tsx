@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Comment organiser votre événement | Guides Misstice",
+  title: { absolute: "Comment organiser votre événement | Guides Misstice" },
   description:
     "Découvrez comment Misstice simplifie l'organisation de votre événement, puis consultez le guide dédié à votre projet : mariage, anniversaire, baptême, événement professionnel ou baby shower.",
   alternates: { canonical: "/comment-ca-marche" },

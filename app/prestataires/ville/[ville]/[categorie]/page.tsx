@@ -50,12 +50,12 @@ export async function generateMetadata({
   params: { ville: string; categorie: string };
 }): Promise<Metadata> {
   const city = await getCityBySlug(params.ville);
-  if (!city) return { title: "Prestataires — Misstice" };
+  if (!city) return { title: "Prestataires" };
   const knownCategories = await getKnownCategorySlugs();
   const categoryLabel = knownCategories.get(params.categorie);
-  if (!categoryLabel) return { title: "Prestataires — Misstice" };
+  if (!categoryLabel) return { title: "Prestataires" };
   return {
-    title: `${categoryLabel} à ${city.name} — Misstice`,
+    title: `${categoryLabel} à ${city.name}`,
     description: `Comparez les ${categoryLabel.toLowerCase()} vérifiés à ${city.name}. Devis gratuits, avis vérifiés, tout centralisé sur Misstice.`,
     alternates: { canonical: `/prestataires/ville/${params.ville}/${params.categorie}` },
     openGraph: {

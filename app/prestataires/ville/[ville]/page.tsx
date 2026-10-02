@@ -37,9 +37,9 @@ export async function generateMetadata({
   params: { ville: string };
 }): Promise<Metadata> {
   const city = await getCityBySlug(params.ville);
-  if (!city) return { title: "Prestataires — Misstice" };
+  if (!city) return { title: "Prestataires" };
   return {
-    title: `Prestataires événementiels à ${city.name} — Misstice`,
+    title: `Prestataires événementiels à ${city.name}`,
     description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
     alternates: { canonical: `/prestataires/ville/${params.ville}` },
     openGraph: {

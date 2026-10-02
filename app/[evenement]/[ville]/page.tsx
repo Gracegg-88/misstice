@@ -53,9 +53,9 @@ export async function generateMetadata({
     getEventTypeBySlug(params.evenement),
     getCityBySlug(params.ville),
   ]);
-  if (!eventType || !city) return { title: "Misstice" };
+  if (!eventType || !city) return { title: { absolute: "Misstice" } };
   return {
-    title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
+    title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name}`,
     description: `Prestataires vérifiés et organisation centralisée pour un ${eventType.name.toLowerCase()} à ${city.name} : budget, invités, checklist et devis, tout dans Misstice.`,
     alternates: { canonical: `/${params.evenement}/${params.ville}` },
     openGraph: {
