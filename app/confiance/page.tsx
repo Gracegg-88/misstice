@@ -46,7 +46,7 @@ export default function ConfiancePage() {
     <>
       <Header />
       <main className="bg-cream">
-        <div className="mx-auto max-w-content px-5 py-14 sm:px-8">
+        <div className="mx-auto max-w-content px-page py-14">
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
             Pourquoi faire confiance à Misstice
           </h1>

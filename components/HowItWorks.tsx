@@ -32,12 +32,12 @@ const steps: {
 export default function HowItWorks() {
   return (
     <section id="comment-ca-marche" className="pt-4 pb-4 sm:pt-6 sm:pb-6">
-      <div className="mx-auto max-w-content px-5 sm:px-8">
+      <div className="mx-auto max-w-content px-page">
         <Reveal className="text-center">
-          <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-violet">
+          <p className="eyebrow text-violet">
             En 3 étapes
           </p>
-          <h2 className="mt-2 text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+          <h2 className="mt-2 text-center font-display text-h2 font-medium text-plum">
             <Link href="/comment-ca-marche" className="transition-colors hover:text-violet">
               Comment ça marche&nbsp;?
             </Link>
@@ -53,16 +53,16 @@ export default function HowItWorks() {
                   <span className="flex h-12 w-12 items-center justify-center text-violet">
                     <step.icon size={26} strokeWidth={1.75} />
                   </span>
-                  <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-festif">
+                  <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-violet">
                     {step.n}
                   </span>
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="font-display text-xl font-semibold leading-[1.02] text-plum">
+                  <h3 className="font-display text-h3 font-medium text-plum">
                     {step.title}
                   </h3>
-                  <p className="mt-2 text-sm font-light leading-relaxed text-slate">
+                  <p className="mt-2 text-base leading-relaxed text-slate">
                     {step.text}
                   </p>
                 </div>

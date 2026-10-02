@@ -15,7 +15,7 @@ export default async function FeaturedVendors() {
     return (
       <section
         id="prestataires"
-        className="mx-auto max-w-content px-4 pb-16 pt-6 sm:px-8 sm:pb-20 sm:pt-8"
+        className="mx-auto max-w-content px-page pb-16 pt-6 sm:pb-20 sm:pt-8"
       >
         <Reveal>
           <div className="rounded-[32px] bg-gradient-soft px-6 py-14 text-center sm:px-12 sm:py-16">
@@ -46,7 +46,7 @@ export default async function FeaturedVendors() {
   return (
     <section
       id="prestataires"
-      className="mx-auto max-w-content px-4 pb-16 pt-6 sm:px-8 sm:pb-20 sm:pt-8"
+      className="mx-auto max-w-content px-page pb-16 pt-6 sm:pb-20 sm:pt-8"
     >
       <Reveal className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">

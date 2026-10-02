@@ -48,6 +48,8 @@ html {
 body {
   background-color: #fafaf9;
   color: #1a1a2e;
+  font-size: 1rem;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   /* Aucun défilement latéral parasite : un élément trop large ne décale plus
@@ -64,9 +66,22 @@ iframe {
   max-width: 100%;
 }
 :focus-visible {
-  outline: 2px solid #ff8c42;
+  outline: 2px solid #6c3ce1;
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* ---------- Typographie ---------- */
+@layer components {
+  /* Sur-titres / eyebrows : DM Sans 12px, majuscules, espacées. */
+  .eyebrow {
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
 }
 
 /* ---------- Détails ---------- */
@@ -81,7 +96,7 @@ iframe {
 
 /* ---------- Carte Leaflet ---------- */
 .leaflet-container {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-body), sans-serif;
   border-radius: 1.5rem;
 }
 .ev-pin {
@@ -109,9 +124,9 @@ iframe {
 .ev-pin-rank span {
   transform: rotate(45deg);
   color: #fff;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-body), sans-serif;
 }
 .leaflet-popup-content-wrapper { border-radius: 14px; }
 .leaflet-popup-content { margin: 14px 16px; }

@@ -168,8 +168,9 @@ Le produit se structure en **trois zones** :
 
 **Typographie**
 
-- **Titres** : Playfair Display (serif éditoriale) — classe `font-display`.
-- **Corps** : DM Sans (sans-serif) — classe `font-sans`.
+- **Titres** : Fraunces (serif éditoriale variable, graisses 400–600) — variable CSS `--font-heading`, classes `font-heading` / `font-display`.
+- **Corps, menu, boutons, libellés** : DM Sans — variable CSS `--font-body`, classe `font-sans`.
+- Deux familles seulement : les polices se changent à un seul endroit (`app/layout.tsx`).
 
 **Animations** : système centralisé (`animations.css`) — apparitions, cascade (stagger), reveal au scroll, zoom/flip au survol. **Respect de `prefers-reduced-motion`**.
 

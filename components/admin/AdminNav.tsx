@@ -39,7 +39,7 @@ export default function AdminNav({
     <nav className="space-y-2">
       {GROUPS.map((g) => (
         <div key={g.title}>
-          <p className="px-3 pb-0.5 pt-1 text-[11px] font-semibold uppercase tracking-wide text-slate/70">
+          <p className="px-3 pb-0.5 pt-1 text-xs font-semibold uppercase tracking-wide text-slate/70">
             {g.title}
           </p>
           {g.items.map((n) => {

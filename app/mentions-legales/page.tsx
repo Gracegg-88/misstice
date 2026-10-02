@@ -94,7 +94,7 @@ export default function MentionsLegalesPage() {
     <>
       <Header />
       <main className="bg-cream">
-        <div className="mx-auto max-w-content px-5 py-14 sm:px-8">
+        <div className="mx-auto max-w-[75rem] px-page py-14">
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
             Mentions Légales
           </h1>

@@ -35,7 +35,7 @@ function ChipGroup({
 }) {
   return (
     <div className="mt-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate">
         {label}
       </p>
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -306,7 +306,7 @@ export default function FilterPanel({
             <Sparkles size={15} className="text-violet" />
             <span className={labelCls}>Ambiance &amp; Vibe</span>
             {vibeCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet px-1.5 text-[11px] font-semibold text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-violet px-1.5 text-xs font-semibold text-white">
                 {vibeCount}
               </span>
             )}

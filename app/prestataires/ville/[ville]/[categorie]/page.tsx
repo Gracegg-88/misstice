@@ -101,7 +101,7 @@ export default async function VilleCategoriePage({
     <>
       <Header />
       <main className="min-h-screen bg-cream">
-        <section className="mx-auto max-w-content px-5 py-12 sm:px-8">
+        <section className="mx-auto max-w-content px-page py-12">
           <Breadcrumb
             items={[
               { label: "Accueil", href: "/" },

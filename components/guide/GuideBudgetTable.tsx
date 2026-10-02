@@ -14,7 +14,7 @@ export default function GuideBudgetTable({ rows }: { rows: BudgetRow[] }) {
     >
       <table className="w-full min-w-[420px] text-left text-[13px]">
         <thead>
-          <tr className="border-b border-black/5 bg-violet-soft/50 text-[11px] uppercase tracking-wide text-plum">
+          <tr className="border-b border-black/5 bg-violet-soft/50 text-xs uppercase tracking-wide text-plum">
             <th className="px-3 py-2 font-semibold">Poste</th>
             <th className="px-3 py-2 font-semibold">Région parisienne</th>
             <th className="px-3 py-2 font-semibold">Province</th>

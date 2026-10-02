@@ -46,7 +46,7 @@ export default async function Home() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <Hero />
-        <div aria-hidden="true" className="mx-auto max-w-content px-5 py-2 sm:px-8">
+        <div aria-hidden="true" className="mx-auto max-w-content px-page py-2">
           <div className="h-px w-full bg-gradient-to-r from-transparent via-plum/15 to-transparent" />
         </div>
         <HomeDirectory />

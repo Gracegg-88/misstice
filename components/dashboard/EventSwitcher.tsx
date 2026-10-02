@@ -48,7 +48,7 @@ export default function EventSwitcher({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-full z-50 mt-2 w-[min(16rem,calc(100vw-2rem))] rounded-2xl border border-black/5 bg-white p-1.5 shadow-lg">
-            <p className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate">
+            <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate">
               Événements récents
             </p>
             {recent.map((e) => (

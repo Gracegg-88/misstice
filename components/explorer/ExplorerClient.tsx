@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Search,
@@ -68,6 +68,28 @@ const PROMISES = [
 
 const PER_PAGE = 9;
 
+/** Lit `?page=` dans l'URL courante (1 si absent ou invalide). */
+function readPageParam(search: string): number {
+  const n = Number.parseInt(new URLSearchParams(search).get("page") ?? "", 10);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+/** Écrit la page dans l'URL (sans `?page=` pour la 1re), en gardant les autres paramètres. */
+function writePageParam(p: number, mode: "push" | "replace") {
+  const url = new URL(window.location.href);
+  if (p > 1) url.searchParams.set("page", String(p));
+  else url.searchParams.delete("page");
+  if (url.href === window.location.href) return;
+  if (mode === "push") window.history.pushState(null, "", url);
+  else window.history.replaceState(null, "", url);
+}
+
+// Pastilles de pagination : 40×40px minimum, jamais écrasées (shrink-0).
+const pageBtnCls =
+  "flex h-10 min-w-10 shrink-0 items-center justify-center rounded-full px-2 transition-colors";
+const pageIdleCls =
+  "border border-black/10 text-plum hover:border-violet/40 hover:text-violet";
+
 const selectCls =
   "rounded-xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-plum outline-none focus:border-violet";
 
@@ -76,11 +98,14 @@ export default function ExplorerClient({
   categories,
   allCities = [],
   picksByCombo = {},
+  initialPage = 1,
 }: {
   vendors: Vendor[];
   categories: string[];
   allCities?: string[];
   picksByCombo?: Record<string, DirectoryPick[]>;
+  /** Page demandée via `?page=` (lien partagé / retour arrière). */
+  initialPage?: number;
 }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [query, setQuery] = useState("");
@@ -88,25 +113,41 @@ export default function ExplorerClient({
   const { ids: saved, toggle: toggleSave } = useFavorites();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [view, setView] = useState<"liste" | "carte">("liste");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const scrollToResults = () =>
     resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // Change de page ET remonte en haut des résultats (sinon on ne voit pas le
-  // changement, on reste au niveau des boutons de pagination).
+  // Change de page, l'inscrit dans l'URL (?page=N, lien partageable et
+  // retour arrière) ET remonte en haut des résultats (sinon on ne voit pas le
+  // changement, on reste au niveau des boutons de pagination). Les filtres
+  // vivent dans l'état du composant : ils restent actifs.
   const goToPage = (p: number) => {
     setPage(p);
+    writePageParam(p, "push");
     scrollToResults();
   };
+
+  // Tout changement de filtre, recherche ou tri repart de la page 1.
+  const resetPage = () => {
+    setPage(1);
+    writePageParam(1, "replace");
+  };
+
+  // Boutons précédent / suivant du navigateur : on relit ?page= dans l'URL.
+  useEffect(() => {
+    const onPopState = () => setPage(readPageParam(window.location.search));
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   // Réinitialise TOUT : filtres, recherche, tri et pagination.
   const resetAll = () => {
     setFilters(DEFAULT_FILTERS);
     setQuery("");
     setSort("merite");
-    setPage(1);
+    resetPage();
   };
 
   const cities = useMemo(
@@ -164,7 +205,15 @@ export default function ExplorerClient({
   }, [vendors, filters, query, sort]);
 
   const totalPages = Math.max(1, Math.ceil(results.length / PER_PAGE));
-  const currentPage = Math.min(page, totalPages);
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  // Deux numéros seulement : la page courante + la suivante (ou la précédente
+  // + la courante sur la dernière page).
+  const visiblePages =
+    totalPages === 1
+      ? [1]
+      : currentPage < totalPages
+        ? [currentPage, currentPage + 1]
+        : [currentPage - 1, currentPage];
   const paged = results.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
 
   const activeCount =
@@ -191,11 +240,11 @@ export default function ExplorerClient({
             style={{ objectPosition: "70% 30%" }}
           />
         </div>
-        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-20">
+        <div className="relative mx-auto max-w-content px-page py-8 sm:py-14 lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
-              <span className="text-festif">qui vous ressemble</span>
+              <span className="text-violet">qui vous ressemble</span>
             </h1>
             <p className="mt-4 max-w-lg text-lg leading-relaxed text-slate">
               Photographes, traiteurs, DJ, salles… Comparez en toute
@@ -220,7 +269,7 @@ export default function ExplorerClient({
       </section>
 
       {/* ── CARTES DE CONFIANCE ── */}
-      <div className="mx-auto max-w-content px-5 sm:px-8">
+      <div className="mx-auto max-w-content px-page">
         <div className="relative z-10 -mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PROMISES.map((p) => (
             <div
@@ -252,7 +301,7 @@ export default function ExplorerClient({
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
-                setPage(1);
+                resetPage();
               }}
               placeholder="Rechercher un prestataire, une ville…"
               className="w-full rounded-xl border border-black/10 bg-white py-3 pl-11 pr-4 text-sm text-plum outline-none placeholder:text-slate focus:border-violet"
@@ -277,7 +326,7 @@ export default function ExplorerClient({
       </div>
 
       {/* ── RÉSULTATS ── */}
-      <div ref={resultsRef} className="mx-auto max-w-content scroll-mt-24 px-5 py-10 sm:px-8">
+      <div ref={resultsRef} className="mx-auto max-w-content px-page scroll-mt-24 py-10">
         <div className="flex gap-8">
           {/* Sidebar desktop */}
           <aside className="hidden w-72 shrink-0 lg:block">
@@ -286,7 +335,7 @@ export default function ExplorerClient({
                 filters={filters}
                 setFilters={(f) => {
                   setFilters(f);
-                  setPage(1);
+                  resetPage();
                 }}
                 categories={categories}
                 cities={cities}
@@ -309,7 +358,7 @@ export default function ExplorerClient({
                   value={sort}
                   onChange={(e) => {
                     setSort(e.target.value);
-                    setPage(1);
+                    resetPage();
                   }}
                   className={`${selectCls} min-w-0 flex-1 sm:flex-none`}
                 >
@@ -429,42 +478,56 @@ export default function ExplorerClient({
                   ))}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination : flèches + 2 numéros + repère « Page X sur Y » */}
                 {totalPages > 1 && (
-                  <div className="mt-10 flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      aria-label="Page précédente"
-                      disabled={currentPage === 1}
-                      onClick={() => goToPage(currentPage - 1)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-plum transition-colors hover:bg-white disabled:opacity-40"
-                    >
-                      <ChevronLeft size={18} />
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => goToPage(p)}
-                        className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
-                          p === currentPage
-                            ? "bg-violet text-white"
-                            : "border border-black/10 text-plum hover:bg-white"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      aria-label="Page suivante"
-                      disabled={currentPage === totalPages}
-                      onClick={() => goToPage(currentPage + 1)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-plum transition-colors hover:bg-white disabled:opacity-40"
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
+                  <nav
+                    aria-label="Pagination des prestataires"
+                    className="mt-10 flex flex-col items-center gap-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      {currentPage > 1 ? (
+                        <button
+                          type="button"
+                          aria-label="Page précédente"
+                          onClick={() => goToPage(currentPage - 1)}
+                          className={`${pageBtnCls} ${pageIdleCls}`}
+                        >
+                          <ChevronLeft size={18} aria-hidden="true" />
+                        </button>
+                      ) : (
+                        <span aria-hidden="true" className="h-10 w-10 shrink-0" />
+                      )}
+                      {visiblePages.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          aria-label={`Page ${p}`}
+                          aria-current={p === currentPage ? "page" : undefined}
+                          onClick={() => p !== currentPage && goToPage(p)}
+                          className={`${pageBtnCls} text-sm font-semibold ${
+                            p === currentPage ? "bg-violet text-white" : pageIdleCls
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      {currentPage < totalPages ? (
+                        <button
+                          type="button"
+                          aria-label="Page suivante"
+                          onClick={() => goToPage(currentPage + 1)}
+                          className={`${pageBtnCls} ${pageIdleCls}`}
+                        >
+                          <ChevronRight size={18} aria-hidden="true" />
+                        </button>
+                      ) : (
+                        <span aria-hidden="true" className="h-10 w-10 shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-[13px] text-slate" aria-live="polite">
+                      Page {currentPage} sur {totalPages}
+                    </p>
+                  </nav>
                 )}
               </>
             )}
@@ -492,7 +555,7 @@ export default function ExplorerClient({
               filters={filters}
               setFilters={(f) => {
                 setFilters(f);
-                setPage(1);
+                resetPage();
               }}
               categories={categories}
               cities={cities}

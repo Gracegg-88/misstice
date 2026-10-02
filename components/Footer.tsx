@@ -23,7 +23,7 @@ const columns = [
 export default function Footer() {
   return (
     <footer className="border-t border-black/5 bg-white">
-      <div className="mx-auto max-w-content px-5 py-14 sm:px-8">
+      <div className="mx-auto max-w-content px-page py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           {/* Marque */}
           <div className="lg:col-span-2">

@@ -125,7 +125,7 @@ export default function EventsManagerClient({
                     {e.name}
                   </p>
                   {active && (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-violet px-2 py-0.5 text-[11px] font-semibold text-white">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-violet px-2 py-0.5 text-xs font-semibold text-white">
                       <Check size={12} />
                       Actif
                     </span>

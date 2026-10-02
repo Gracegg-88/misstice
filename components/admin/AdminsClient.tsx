@@ -266,7 +266,7 @@ export default function AdminsClient({
                               {a.full_name?.trim() || "Administrateur"}
                             </span>
                             {isSelf && (
-                              <span className="rounded-full bg-festif-soft px-2 py-0.5 text-[11px] font-semibold text-festif">
+                              <span className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
                                 Vous
                               </span>
                             )}

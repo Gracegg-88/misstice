@@ -10,13 +10,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Couleur-action / primaire (CTA, liens importants)
+        // Couleur principale unique : boutons, liens, élément actif.
         violet: {
           DEFAULT: "#6C3CE1",
           dark: "#5A2FC4",
           soft: "#F1ECFD", // fond léger pour badges / surfaces
         },
-        // Accent festif (réservé aux touches chaleureuses, jamais aux gros aplats)
+        // Accent festif : UN seul usage ponctuel par écran (ex. badge du hero).
+        // Jamais sur les titres, liens, icônes ou soulignements — c'est le rôle du violet.
         festif: {
           DEFAULT: "#FF8C42",
           soft: "#FFF1E6",
@@ -54,12 +55,19 @@ const config: Config = {
         "gradient-soft": "linear-gradient(135deg, #F1ECFD 0%, #FAFAF9 100%)",
       },
       fontFamily: {
-        // Titres éditoriaux (l'émotion)
-        display: ["var(--font-display)", "Georgia", "serif"],
-        // Corps de texte ultra-lisible (la machine)
+        // Titres éditoriaux (l'émotion) — `font-heading`, `font-display` gardé
+        // comme alias historique.
+        heading: ["var(--font-heading)", "Georgia", "serif"],
+        display: ["var(--font-heading)", "Georgia", "serif"],
+        // Corps de texte, menu, boutons, libellés (la machine)
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
-        // Repères, catégories et métadonnées — usage ponctuel pour donner du rythme.
-        label: ["var(--font-label)", "ui-monospace", "monospace"],
+      },
+      // Échelle éditoriale fluide (s'adapte seule au mobile via clamp()).
+      // Minimum absolu du site : 12px (text-xs) — jamais en dessous.
+      fontSize: {
+        hero: ["clamp(2.75rem, 5.5vw, 6rem)", { lineHeight: "1.05", letterSpacing: "-0.01em" }],
+        h2: ["clamp(2rem, 3.5vw, 3.25rem)", { lineHeight: "1.1", letterSpacing: "-0.01em" }],
+        h3: ["clamp(1.375rem, 2vw, 1.75rem)", { lineHeight: "1.15" }],
       },
       borderRadius: {
         xl: "12px",
@@ -67,7 +75,12 @@ const config: Config = {
         "3xl": "24px",
       },
       maxWidth: {
-        content: "1200px",
+        // Conteneur principal : toujours associé à `px-page`.
+        content: "1440px",
+      },
+      spacing: {
+        // Gouttière latérale fluide : 16px sur mobile → 64px sur grand écran.
+        page: "clamp(1rem, 4vw, 4rem)",
       },
       keyframes: {
         "fade-up": {

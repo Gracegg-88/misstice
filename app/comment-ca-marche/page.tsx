@@ -87,10 +87,10 @@ export default function CommentCaMarchePage() {
     <>
       <Header />
       <main className="bg-cream">
-        <div className="mx-auto max-w-content px-5 pb-16 pt-12 sm:px-8 sm:pt-16">
+        <div className="mx-auto max-w-content px-page pb-16 pt-12 sm:pt-16">
           <Reveal className="grid gap-8 lg:grid-cols-[1fr_.42fr] lg:items-end">
             <div>
-              <p className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-violet">Des méthodes qui restent proches de vous</p>
+              <p className="eyebrow text-violet">Des méthodes qui restent proches de vous</p>
               <h1 className="mt-4 max-w-[13ch] font-display text-4xl font-semibold leading-[.9] tracking-tight text-plum sm:text-5xl lg:text-6xl">Un guide pour chaque moment. Une même façon de <em className="font-normal text-violet">garder le fil.</em></h1>
               <p className="mt-5 max-w-xl text-base font-light leading-relaxed text-slate sm:text-lg">Budget, échéances, idées et prestataires : choisissez un point de départ adapté à ce que vous préparez.</p>
             </div>
@@ -123,7 +123,7 @@ export default function CommentCaMarchePage() {
           </div>
 
           <Reveal className="mt-16">
-            <p className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-violet">Par type d&apos;événement</p>
+            <p className="eyebrow text-violet">Par type d&apos;événement</p>
             <h2 className="mt-3 max-w-[14ch] font-display text-3xl font-semibold leading-[.95] tracking-tight text-plum sm:text-4xl">Choisissez le feuillet qui vous ressemble.</h2>
           </Reveal>
 
@@ -145,7 +145,7 @@ export default function CommentCaMarchePage() {
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className={`absolute inset-0 ${g.overlay}`} />
-                  <span className="relative font-label text-[10px] uppercase tracking-[0.15em] opacity-65">0{i + 1}</span>
+                  <span className="relative eyebrow opacity-65">0{i + 1}</span>
                   <Sparkles className="absolute bottom-6 right-6 opacity-60" size={22} />
                   <div className="relative mt-auto flex flex-1 flex-col">
                     <h3 className="max-w-[12ch] font-display text-3xl font-semibold leading-[.94]">

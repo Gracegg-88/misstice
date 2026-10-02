@@ -145,7 +145,7 @@ export default function TeamThread({
             <Fragment key={m.id}>
               {showSep && (
                 <div className="flex justify-center py-1">
-                  <span className="rounded-full bg-cream px-3 py-1 text-[11px] font-medium text-slate">
+                  <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-slate">
                     {dayLabel(m.created_at)}
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export default function TeamThread({
                   )}
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
                   <p
-                    className={`mt-1 text-[11px] ${
+                    className={`mt-1 text-xs ${
                       mine ? "text-white/70" : "text-slate"
                     }`}
                   >

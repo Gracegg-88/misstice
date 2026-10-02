@@ -95,7 +95,7 @@ export default function VendorCard({
             {vibeBadges.map((b) => (
               <span
                 key={b}
-                className="rounded-full bg-violet-soft px-2 py-0.5 text-[11px] font-medium text-violet"
+                className="rounded-full bg-violet-soft px-2 py-0.5 text-xs font-medium text-violet"
               >
                 {b}
               </span>

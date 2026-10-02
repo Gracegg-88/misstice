@@ -109,7 +109,7 @@ export default async function EvenementVillePage({
       <Header />
       <main className="min-h-screen bg-cream">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-        <section className="mx-auto max-w-content px-5 py-12 sm:px-8">
+        <section className="mx-auto max-w-content px-page py-12">
           <Breadcrumb
             items={[
               { label: "Accueil", href: "/" },

@@ -177,7 +177,7 @@ export default function DevenirPrestatairePage() {
         </section>
 
         {/* ── Tous types d'événements ── */}
-        <section className="mx-auto max-w-content px-5 py-14 sm:px-8">
+        <section className="mx-auto max-w-content px-page py-14">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
             Une plateforme pour tous vos événements, pas seulement les
             mariages
@@ -193,7 +193,7 @@ export default function DevenirPrestatairePage() {
 
         {/* ── Pourquoi rejoindre maintenant ── */}
         <section className="bg-white py-14">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="mx-auto max-w-content px-page">
             <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
               Pourquoi rejoindre Misstice maintenant
             </h2>
@@ -219,7 +219,7 @@ export default function DevenirPrestatairePage() {
         </section>
 
         {/* ── Comment ça marche ── */}
-        <section className="mx-auto max-w-content px-5 py-14 sm:px-8">
+        <section className="mx-auto max-w-content px-page py-14">
           <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
             Comment ça marche
           </h2>
@@ -264,7 +264,7 @@ export default function DevenirPrestatairePage() {
 
         {/* ── Comment fonctionne le paiement ── */}
         <section className="bg-white py-14">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="mx-auto max-w-content px-page">
             <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
               Comment fonctionne le paiement
             </h2>
@@ -306,7 +306,7 @@ export default function DevenirPrestatairePage() {
 
         {/* ── Ce qui différencie Misstice ── */}
         <section className="bg-ink py-14">
-          <div className="mx-auto max-w-content px-5 sm:px-8">
+          <div className="mx-auto max-w-content px-page">
             <h2 className="font-display text-2xl font-semibold tracking-tight text-cream sm:text-3xl">
               Ce qui différencie Misstice des autres plateformes
             </h2>
@@ -326,7 +326,7 @@ export default function DevenirPrestatairePage() {
         </section>
 
         {/* ── FAQ prestataires ── */}
-        <section className="mx-auto max-w-content px-5 py-14 sm:px-8">
+        <section className="mx-auto max-w-content px-page py-14">
           <div className="mx-auto max-w-2xl">
             <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
               Foire aux questions prestataires
@@ -352,7 +352,7 @@ export default function DevenirPrestatairePage() {
         </section>
 
         {/* ── CTA final ── */}
-        <section className="mx-auto max-w-content px-5 pb-16 sm:px-8">
+        <section className="mx-auto max-w-content px-page pb-16">
           <div className="rounded-[32px] bg-gradient-premium p-8 text-center sm:p-12">
             <p className="font-display text-2xl font-semibold text-cream sm:text-3xl">
               Prêt à développer votre activité ?

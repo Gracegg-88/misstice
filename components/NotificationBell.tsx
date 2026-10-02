@@ -105,7 +105,7 @@ export default function NotificationBell() {
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-festif px-1 text-[11px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-festif px-1 text-xs font-bold text-white">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -153,7 +153,7 @@ export default function NotificationBell() {
                           <span className="text-sm font-semibold text-plum">
                             {n.title}
                           </span>
-                          <span className="ml-auto text-[11px] text-slate">
+                          <span className="ml-auto text-xs text-slate">
                             {ago(n.created_at)}
                           </span>
                         </span>

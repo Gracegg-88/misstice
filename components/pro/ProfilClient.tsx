@@ -594,7 +594,7 @@ export default function ProfilClient({
             ] as const
           ).map((g) => (
             <div key={g.axis}>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate">
                 {g.label}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -762,7 +762,7 @@ export default function ProfilClient({
                 }`}
               >
                 {p.popular && (
-                  <span className="absolute -top-2.5 left-4 rounded-full bg-violet px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                  <span className="absolute -top-2.5 left-4 rounded-full bg-violet px-2.5 py-0.5 text-xs font-semibold text-white">
                     Le plus demandé
                   </span>
                 )}

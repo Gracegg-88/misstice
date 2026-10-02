@@ -57,7 +57,7 @@ export default function ConversationList({
                       <p className={`truncate ${t.unread > 0 ? "font-bold text-plum" : "font-semibold text-plum"}`}>
                         Équipe · {t.eventName}
                       </p>
-                      <span className="shrink-0 text-[11px] text-slate">
+                      <span className="shrink-0 text-xs text-slate">
                         {whenLabel(t.lastAt)}
                       </span>
                     </div>
@@ -66,7 +66,7 @@ export default function ConversationList({
                         {t.lastBody || "Discussion de groupe"}
                       </p>
                       {t.unread > 0 && (
-                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-violet px-1.5 text-[11px] font-semibold text-white">
+                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-violet px-1.5 text-xs font-semibold text-white">
                           {t.unread > 99 ? "99+" : t.unread}
                         </span>
                       )}
@@ -115,7 +115,7 @@ export default function ConversationList({
                       <p className={`truncate ${c.unread > 0 ? "font-bold text-plum" : "font-semibold text-plum"}`}>
                         {c.otherName}
                       </p>
-                      <span className="shrink-0 text-[11px] text-slate">
+                      <span className="shrink-0 text-xs text-slate">
                         {whenLabel(c.last_message_at)}
                       </span>
                     </div>
@@ -124,7 +124,7 @@ export default function ConversationList({
                         {c.last_message || c.subject || "Conversation"}
                       </p>
                       {c.unread > 0 && (
-                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-violet px-1.5 text-[11px] font-semibold text-white">
+                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-violet px-1.5 text-xs font-semibold text-white">
                           {c.unread > 99 ? "99+" : c.unread}
                         </span>
                       )}
