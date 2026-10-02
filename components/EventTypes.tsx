@@ -18,7 +18,7 @@ const types: {
 export default function EventTypes() {
   return (
     <section id="fonctionnalites" className="pt-10 pb-4 sm:pt-12 sm:pb-6">
-      <div className="mx-auto max-w-content px-5 sm:px-8">
+      <div className="mx-auto max-w-content px-page">
         <Reveal className="text-center">
           <p className="eyebrow text-violet">
             Types d&apos;événements
@@ -28,14 +28,18 @@ export default function EventTypes() {
           </h2>
         </Reveal>
 
-        <Reveal delay={60} className="mt-6 overflow-hidden bg-plum/5">
+        {/* Pas d'animation d'apparition sur la photo : la hauteur est réservée
+            par aspect-ratio, sans bloc vide pendant le chargement. */}
+        <div className="mt-6 aspect-[16/9] overflow-hidden rounded-3xl bg-plum/5 sm:aspect-[3/1] lg:aspect-[4/1]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/candlelit-dinner.jpg"
             alt="Proches préparant ensemble une célébration autour d’une table"
-            className="h-52 w-full object-cover object-center sm:h-64"
+            width={1600}
+            height={900}
+            className="h-full w-full object-cover object-center"
           />
-        </Reveal>
+        </div>
 
         <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
           {types.map((t, i) => (

@@ -41,7 +41,7 @@ export default async function PrestatairesPage() {
         />
 
         {cities.length > 0 && (
-          <section className="mx-auto max-w-content px-4 pb-16 sm:px-8">
+          <section className="mx-auto max-w-content px-page pb-16">
             <p className="text-sm font-semibold text-plum">Parcourir par ville</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {cities.map((c) => (

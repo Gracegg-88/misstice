@@ -20,13 +20,13 @@ export default function BecomeVendorCallout({
   ctaLabel?: string;
 }) {
   return (
-    <section className="mx-auto max-w-content px-5 py-6 sm:px-8">
+    <section className="mx-auto max-w-content px-page py-6">
       <Reveal>
         <div className="bg-violet-soft/35 px-6 py-8 text-center sm:px-10 sm:py-10">
           <span className="mx-auto flex h-11 w-11 items-center justify-center text-violet">
             <Heart size={19} strokeWidth={1.75} />
           </span>
-          <h2 className="mx-auto mt-4 max-w-xl font-display text-h2 font-medium text-plum">
+          <h2 className="mx-auto mt-4 max-w-3xl font-display text-h2 font-medium text-plum">
             {headline}
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-base leading-relaxed text-slate">

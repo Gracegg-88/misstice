@@ -32,7 +32,7 @@ const steps: {
 export default function HowItWorks() {
   return (
     <section id="comment-ca-marche" className="pt-4 pb-4 sm:pt-6 sm:pb-6">
-      <div className="mx-auto max-w-content px-5 sm:px-8">
+      <div className="mx-auto max-w-content px-page">
         <Reveal className="text-center">
           <p className="eyebrow text-violet">
             En 3 étapes

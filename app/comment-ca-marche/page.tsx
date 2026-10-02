@@ -87,7 +87,7 @@ export default function CommentCaMarchePage() {
     <>
       <Header />
       <main className="bg-cream">
-        <div className="mx-auto max-w-content px-5 pb-16 pt-12 sm:px-8 sm:pt-16">
+        <div className="mx-auto max-w-content px-page pb-16 pt-12 sm:pt-16">
           <Reveal className="grid gap-8 lg:grid-cols-[1fr_.42fr] lg:items-end">
             <div>
               <p className="eyebrow text-violet">Des méthodes qui restent proches de vous</p>

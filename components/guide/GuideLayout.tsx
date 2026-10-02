@@ -35,7 +35,7 @@ export default function GuideLayout({
       <Header />
       <main className="bg-cream">
         {breadcrumbSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />}
-        <section className="relative overflow-hidden px-5 pb-8 pt-12 sm:px-8 sm:pb-10 sm:pt-16">
+        <section className="relative overflow-hidden pb-8 pt-12 sm:pb-10 sm:pt-16">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImage}
@@ -44,7 +44,7 @@ export default function GuideLayout({
           />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-cream/60 via-cream/90 to-cream" />
           <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-festif/20 blur-3xl" />
-          <div className="relative mx-auto grid max-w-content gap-8 lg:grid-cols-[1fr_.38fr] lg:items-end">
+          <div className="relative mx-auto grid max-w-content px-page gap-8 lg:grid-cols-[1fr_.38fr] lg:items-end">
             <div className="max-w-4xl">
               <p className="eyebrow text-violet">Guide Misstice · à garder sous la main</p>
               <h1 className="mt-4 max-w-[15ch] font-display text-4xl font-semibold leading-[.93] tracking-tight text-plum sm:text-5xl lg:text-6xl">{title}</h1>
@@ -58,7 +58,7 @@ export default function GuideLayout({
           </div>
         </section>
 
-        <div className="mx-auto max-w-content px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mx-auto max-w-content px-page py-10 sm:py-14">
           {/* Sommaire mobile, replié par défaut. La version desktop (sticky) est plus bas. */}
           <details className="mt-2 bg-white/60 p-4 lg:hidden">
             <summary className="cursor-pointer list-none text-xs uppercase tracking-[0.1em] text-plum marker:hidden">

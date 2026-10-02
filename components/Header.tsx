@@ -38,7 +38,7 @@ export default function Header({ initialAccount = null }: { initialAccount?: Acc
   return (
     <>
       <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-md">
-        <div className="mx-auto flex min-h-16 max-w-content items-center justify-between gap-3 px-4 py-2 sm:px-8">
+        <div className="mx-auto flex min-h-16 max-w-content px-page items-center justify-between gap-3 py-2">
           <Logo />
           <nav className="hidden items-center gap-7 lg:flex" aria-label="Navigation principale">
             {navLinks.map((link) => <a key={link.href} href={link.href} className="text-sm font-medium text-plum/80 transition-colors hover:text-violet">{link.label}</a>)}

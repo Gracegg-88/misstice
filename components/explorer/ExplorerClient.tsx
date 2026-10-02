@@ -191,7 +191,7 @@ export default function ExplorerClient({
             style={{ objectPosition: "70% 30%" }}
           />
         </div>
-        <div className="relative mx-auto max-w-content px-5 py-8 sm:px-8 sm:py-14 lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-20">
+        <div className="relative mx-auto max-w-content px-page py-8 sm:py-14 lg:grid lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-20">
           <div className="max-w-xl">
             <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-plum sm:text-5xl">
               Trouvez le prestataire{" "}
@@ -220,7 +220,7 @@ export default function ExplorerClient({
       </section>
 
       {/* ── CARTES DE CONFIANCE ── */}
-      <div className="mx-auto max-w-content px-5 sm:px-8">
+      <div className="mx-auto max-w-content px-page">
         <div className="relative z-10 -mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PROMISES.map((p) => (
             <div
@@ -277,7 +277,7 @@ export default function ExplorerClient({
       </div>
 
       {/* ── RÉSULTATS ── */}
-      <div ref={resultsRef} className="mx-auto max-w-content scroll-mt-24 px-5 py-10 sm:px-8">
+      <div ref={resultsRef} className="mx-auto max-w-content px-page scroll-mt-24 py-10">
         <div className="flex gap-8">
           {/* Sidebar desktop */}
           <aside className="hidden w-72 shrink-0 lg:block">

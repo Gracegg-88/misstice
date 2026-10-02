@@ -149,7 +149,7 @@ export default function VendorProfile({
         style={{ backgroundImage: "url('/hero_details.png')" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
-        <div className="relative mx-auto max-w-content px-4 py-8 sm:px-8">
+        <div className="relative mx-auto max-w-content px-page py-8">
           <a
             href="/prestataires"
             className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-sm font-medium text-plum shadow-sm hover:bg-white"
@@ -264,7 +264,7 @@ export default function VendorProfile({
         </div>
       </div>
 
-      <div className="mx-auto max-w-content px-4 pt-8 sm:px-8">
+      <div className="mx-auto max-w-content px-page pt-8">
         {/* Stat cards */}
         <div
           className={`mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 ${

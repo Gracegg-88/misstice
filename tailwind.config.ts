@@ -74,7 +74,12 @@ const config: Config = {
         "3xl": "24px",
       },
       maxWidth: {
-        content: "1200px",
+        // Conteneur principal : toujours associé à `px-page`.
+        content: "1440px",
+      },
+      spacing: {
+        // Gouttière latérale fluide : 16px sur mobile → 64px sur grand écran.
+        page: "clamp(1rem, 4vw, 4rem)",
       },
       keyframes: {
         "fade-up": {

@@ -6,16 +6,16 @@ import { ArrowDownRight, CheckCircle2, Users } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-cream px-4 pb-8 pt-7 sm:px-8 sm:pb-10 sm:pt-10">
+    <section className="relative overflow-hidden bg-cream pb-8 pt-7 sm:pb-10 sm:pt-10 lg:flex lg:min-h-[85vh] lg:items-center lg:py-12">
       <div aria-hidden="true" className="absolute right-[9%] top-12 hidden h-[28rem] w-[28rem] rounded-full bg-festif/10 blur-3xl lg:block" />
       <div aria-hidden="true" className="absolute right-[21%] top-32 hidden h-4 w-4 rounded-full bg-festif lg:block" />
-      <div className="relative mx-auto grid max-w-content items-center gap-8 lg:grid-cols-[.95fr_1.05fr] lg:gap-12">
-        <div className="max-w-xl">
+      <div className="relative mx-auto grid w-full max-w-content px-page gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-stretch lg:gap-12">
+        <div className="flex flex-col justify-center lg:py-6">
           <p className="mb-5 eyebrow text-plum/70">Les moments qui comptent, bien entourés</p>
-          <h1 className="max-w-[14ch] font-display text-hero font-medium text-plum">
+          <h1 className="font-display text-hero font-medium text-plum">
             Votre fête commence par une <em className="font-normal text-violet">décision</em> simple.
           </h1>
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate sm:text-[17px]">
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-slate sm:text-[17px]">
             Misstice réunit votre projet, vos proches et des prestataires vérifiés pour comparer les devis et préparer chaque moment à votre rythme.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -32,7 +32,7 @@ export default function Hero() {
           </div>
         </div>
 
-        <div className="relative min-h-[18rem] sm:min-h-[22rem]">
+        <div className="relative min-h-[18rem] sm:min-h-[22rem] lg:min-h-[34rem]">
           <div className="absolute inset-0 overflow-hidden rounded-[2rem] bg-ink shadow-[0_24px_48px_rgba(18,60,51,0.14)] sm:left-7">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/wedding-crowd.jpg" alt="Famille et proches réunis pour célébrer un moment important" className="h-full w-full object-cover object-center opacity-80" />
@@ -43,7 +43,7 @@ export default function Hero() {
               <div className="mt-4 h-1 bg-plum/10"><span className="block h-full w-2/5 bg-violet" /></div>
             </div>
           </div>
-          <div className="absolute -left-3 top-12 grid h-24 w-24 place-items-center rounded-full bg-festif text-center font-display text-lg font-semibold leading-none text-plum sm:-left-4">à votre<br />rythme</div>
+          <div className="absolute -left-3 top-12 grid h-24 w-24 place-items-center rounded-full bg-festif text-center font-display text-lg font-medium leading-none text-plum sm:-left-4 lg:-left-6 lg:top-16 lg:h-32 lg:w-32 lg:text-2xl">à votre<br />rythme</div>
         </div>
       </div>
     </section>

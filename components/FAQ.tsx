@@ -22,7 +22,7 @@ const faqs = [
 export default function FAQ() {
   return (
     <section id="faq" className="py-8 sm:py-10">
-      <div className="mx-auto max-w-content px-5 sm:px-8">
+      <div className="mx-auto max-w-content px-page">
         <Reveal className="mx-auto max-w-2xl">
           <h2 className="eyebrow text-violet">À savoir avant de commencer</h2>
           <div className="mt-8 space-y-3">

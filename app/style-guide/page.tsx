@@ -180,7 +180,7 @@ function Swatch({ s }: { s: Swatch }) {
 export default function StyleGuidePage() {
   return (
     <main className="min-h-screen bg-cream pb-24">
-      <div className="mx-auto max-w-content px-4 py-14 sm:px-8">
+      <div className="mx-auto max-w-content px-page py-14">
         <span className="inline-flex items-center gap-2 rounded-full border border-violet/20 bg-violet-soft px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-violet">
           Interne — non indexé
         </span>

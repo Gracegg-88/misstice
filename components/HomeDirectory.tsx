@@ -30,12 +30,12 @@ const destinations = [
 
 export default function HomeDirectory() {
   return (
-    <section aria-labelledby="orienter-title" className="bg-cream px-4 py-14 sm:px-8 lg:py-20">
-      <div className="mx-auto max-w-content">
-        <div className="grid items-end gap-5 pb-8 lg:grid-cols-[1.15fr_.65fr]">
+    <section aria-labelledby="orienter-title" className="bg-cream py-14 lg:py-20">
+      <div className="mx-auto max-w-content px-page">
+        <div className="grid items-end gap-5 pb-8 lg:grid-cols-[3fr_2fr] lg:gap-12">
           <div>
             <p className="mb-3 eyebrow text-festif">Un point de départ, pas un tunnel</p>
-            <h2 id="orienter-title" className="max-w-[22ch] font-display text-h2 font-medium text-plum">
+            <h2 id="orienter-title" className="max-w-[24ch] font-display text-h2 font-medium text-plum">
               Choisissez la prochaine décision, nous gardons le reste en ordre.
             </h2>
           </div>
