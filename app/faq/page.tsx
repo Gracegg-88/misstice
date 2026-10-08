@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FAQ from "@/components/FAQ";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Questions fréquentes",
-  description: "Retrouvez les réponses aux questions les plus fréquentes sur l'organisation d'un événement et la mise en relation avec les prestataires Misstice.",
-  alternates: { canonical: "/faq" },
-  openGraph: {
-    title: "Questions fréquentes | Misstice",
-    description: "Retrouvez les réponses aux questions les plus fréquentes sur l'organisation d'un événement et la mise en relation avec les prestataires Misstice.",
-    type: "website",
-  },
-};
+  description:
+    "Retrouvez les réponses aux questions les plus fréquentes sur l'organisation d'un événement et la mise en relation avec les prestataires Misstice.",
+  path: "/faq",
+});
 
 const faqSchema = {
   "@context": "https://schema.org",

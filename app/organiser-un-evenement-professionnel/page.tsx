@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
@@ -13,18 +14,13 @@ import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
 import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Comment organiser un événement professionnel ou un gala",
   description:
     "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
-  alternates: { canonical: "/organiser-un-evenement-professionnel" },
-  openGraph: {
-    title: "Comment organiser un événement professionnel ou un gala",
-    description: "Guide complet pour organiser un gala, un séminaire ou un événement d'entreprise : budget, checklist et prestataires vérifiés.",
-    type: "article",
-  },
-  twitter: { card: "summary_large_image", title: "Organiser un événement professionnel — Guide Misstice" },
-};
+  path: "/organiser-un-evenement-professionnel",
+  type: "article",
+});
 
 const toc = [
   { id: "budget", label: "Budget moyen" },

@@ -1,0 +1,83 @@
+{
+  "publier": false,
+  "ville": "Grenoble",
+  "evenement": "baby-shower",
+  "derniere_mise_a_jour": "2026-10-08",
+  "angle_local": "Grenoble est une grande ville à la fois étudiante et familiale, entourée de montagnes. C'est un cadre agréable pour une baby shower à taille humaine : le plus souvent une quinzaine ou une vingtaine de proches réunis quelques semaines avant la naissance. Ce qui change d'une ville à l'autre, ce sont la saison, l'accès au lieu et ce que l'on peut servir de local. À Grenoble, ces trois points méritent d'être pensés dès le départ.",
+  "saison_et_meteo": "À Grenoble, les hivers sont froids et les étés chauds. En hiver, prévoyez un lieu intérieur bien chauffé, un coin pour les manteaux et une arrivée facile pour la future maman. En été, cherchez de l'ombre, beaucoup de boissons fraîches, et évitez les desserts à la crème qui supportent mal la chaleur. Le printemps et le début de l'automne sont généralement les plus confortables pour une fête en extérieur. Comme une baby shower se cale sur la date prévue d'accouchement plutôt que sur la météo, prévoyez dès le départ un plan B, intérieur ou extérieur selon la saison.",
+  "lieux": [
+    {
+      "nom": "À la maison ou chez un proche",
+      "type": "domicile",
+      "quartier": "",
+      "capacite": "selon le logement",
+      "fourchette_prix": "gratuit",
+      "convient_a": "petits groupes, ambiance intime, budget serré",
+      "conseil": "En été, un balcon ou un jardin ombragé peut suffire. En hiver, vérifiez que chacun peut s'asseoir confortablement et que la future maman n'a pas plusieurs étages à monter à pied."
+    },
+    {
+      "nom": "Salon de thé ou restaurant avec espace privatisable",
+      "type": "restaurant-salon-de-the",
+      "quartier": "",
+      "capacite": "",
+      "fourchette_prix": "",
+      "convient_a": "groupes d'une dizaine à une vingtaine de personnes qui ne veulent rien organiser côté cuisine",
+      "conseil": "Demandez si la privatisation est possible sur un après-midi, en dehors du service du déjeuner, s'il y a un minimum de consommation, et si vous pouvez apporter un gâteau ou une décoration."
+    },
+    {
+      "nom": "Salle de réception à louer",
+      "type": "salle",
+      "quartier": "",
+      "capacite": "selon les salles",
+      "fourchette_prix": "sur devis",
+      "convient_a": "groupes plus larges ou envie de décorer librement",
+      "conseil": "Pour 15 à 20 invités, une salle entière peut peser lourd dans le budget par rapport à une maison ou à un salon de thé. Vérifiez la durée comprise, le ménage, le matériel fourni et si le traiteur est libre ou imposé."
+    }
+  ],
+  "budget_local": "Pour une quinzaine à une vingtaine d'invités, notre guide situe une baby shower entre 300 et 1 000 €. À Grenoble comme ailleurs, c'est le lieu qui fait le plus varier la note : gratuit à la maison, variable dans un salon de thé ou un restaurant, plus élevé pour une salle de réception. Le traiteur et la décoration s'ajoutent. Pour comparer sans vous éparpiller, demandez deux ou trois devis sur la même base (nombre d'invités, durée, ce qui est inclus).",
+  "contraintes_pratiques": "Avant de réserver, vérifiez comment on accède au lieu. Dans le centre-ville de Grenoble, certaines rues sont piétonnes ou à accès limité, ce qui peut compliquer la livraison d'un gâteau, de matériel ou d'un buffet. Demandez à votre traiteur, votre décorateur ou votre pâtissier s'ils peuvent accéder au lieu et à quelle heure, prévoyez un point de dépose, et indiquez à vos invités comment venir (tram, vélo, parking à proximité).",
+  "specialites_locales": "La table grenobloise donne beaucoup d'idées de buffet. La noix de Grenoble, qui bénéficie d'une AOP, se glisse aussi bien dans une salade que dans un gâteau ou une tarte. Le gratin dauphinois, les ravioles (de petits raviolis au fromage) et le Saint-Marcellin conviennent à un buffet chaud ou à des verrines. Pensez à demander à la future maman ses envies et ses restrictions alimentaires avant de composer le menu, et à proposer de bonnes boissons sans alcool pour que tout le monde partage le même verre de fête.",
+  "faq_locale": [
+    {
+      "question": "Quelle est la meilleure saison pour une baby shower à Grenoble ?",
+      "reponse": "Le printemps et le début de l'automne sont généralement les plus confortables pour une fête en extérieur. En été, prévoyez de l'ombre et des boissons fraîches. En hiver, privilégiez un lieu intérieur chauffé et facile d'accès. La date dépend surtout de la naissance prévue : la fête se tient généralement quelques semaines avant."
+    },
+    {
+      "question": "Peut-on organiser une baby shower avec des produits grenoblois ?",
+      "reponse": "Oui : noix de Grenoble, ravioles, gratin dauphinois, Saint-Marcellin ou gâteau aux noix donnent un buffet avec une vraie identité locale. Adaptez le menu aux goûts et aux restrictions de la future maman, et demandez le détail des ingrédients à votre traiteur."
+    },
+    {
+      "question": "Faut-il louer une salle pour 15 à 20 personnes ?",
+      "reponse": "Pas forcément. Pour un petit groupe, une salle entière peut peser lourd dans le budget. La maison d'une proche ou un salon de thé qui privatise un espace sont souvent plus adaptés. Demandez des devis pour comparer."
+    },
+    {
+      "question": "Mon traiteur ou mon pâtissier peut-il accéder facilement au lieu ?",
+      "reponse": "Pas toujours : certaines rues du centre sont piétonnes ou à accès limité. Demandez au prestataire s'il peut accéder au lieu et à quelle heure avant de confirmer."
+    }
+  ],
+  "sources": [
+    {
+      "sujet": "AOP Noix de Grenoble",
+      "titre": "Cahier des charges de l'AOP Noix de Grenoble (INAO, ministère de l'Agriculture)",
+      "url": "https://info.agriculture.gouv.fr/gedei/site/bo-agri/document_administratif-63ab8f7d-4d7c-4fcc-a888-303e160ab096/telechargement",
+      "consulte_le": "2026-10-08"
+    },
+    {
+      "sujet": "Spécialités locales",
+      "titre": "Spécialités culinaires de Grenoble (ouigo.com)",
+      "url": "https://www.ouigo.com/blog/specialites-culinaires-de-grenoble",
+      "consulte_le": "2026-10-08"
+    },
+    {
+      "sujet": "Spécialités locales",
+      "titre": "Où manger à Grenoble : spécialités et bonnes adresses (l-itineraire.com)",
+      "url": "https://www.l-itineraire.com/idees-voyage/grenoble/ou-manger-a-grenoble",
+      "consulte_le": "2026-10-08"
+    }
+  ],
+  "notes_internes_a_ne_pas_afficher": [
+    "Version prudente : j'ai retiré les chiffres (habitants, températures, jours de canicule, prix de salles), le paragraphe sur la zone à faibles émissions, les noms de lieux et les conseils santé sur les fromages, car ils ne pouvaient pas être vérifiés localement.",
+    "Quand tu auras des devis réels de traiteurs ou de pâtissiers grenoblois, tu pourras compléter budget_local et le champ fourchette_prix du salon de thé ou restaurant.",
+    "Les formulations restantes sont générales. Relis une dernière fois la page rendue avant de passer publier à true."
+  ]
+}

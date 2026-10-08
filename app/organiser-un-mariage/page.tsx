@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
@@ -13,19 +14,13 @@ import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
 import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
-export const metadata: Metadata = {
-  title:
-    "Comment organiser un mariage en 2026 : budget, étapes et checklist complète",
+export const metadata: Metadata = pageMetadata({
+  title: "Comment organiser un mariage en 2026 : budget, étapes et checklist complète",
   description:
     "Guide complet pour organiser votre mariage, petit budget ou grand jour : checklist mois par mois, budget moyen par poste, et comment trouver des prestataires vérifiés sans passer par un wedding planner.",
-  alternates: { canonical: "/organiser-un-mariage" },
-  openGraph: {
-    title: "Comment organiser un mariage en 2026 : budget, étapes et checklist complète",
-    description: "Guide complet pour organiser votre mariage : checklist mois par mois, budget moyen par poste, prestataires vérifiés.",
-    type: "article",
-  },
-  twitter: { card: "summary_large_image", title: "Organiser un mariage — Guide Misstice 2026" },
-};
+  path: "/organiser-un-mariage",
+  type: "article",
+});
 
 const toc = [
   { id: "budget", label: "Budget moyen" },

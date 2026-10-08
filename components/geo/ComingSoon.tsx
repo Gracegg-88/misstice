@@ -15,6 +15,7 @@ export default function ComingSoon({
   cityLabel,
   categoryLabel,
   eventTypeLabel,
+  eventWithArticle,
 }: {
   cityName: string;
   /** Ex. "à Lyon" — déjà accordé, prêt à insérer dans une phrase. */
@@ -25,6 +26,8 @@ export default function ComingSoon({
    * confondre avec categoryLabel : "Pas encore de mariage vérifié" n'a pas
    * de sens, contrairement à "Pas encore de traiteur vérifié". */
   eventTypeLabel?: string;
+  /** Forme accordée pour la phrase, ex. « une baby shower » (voir eventGrammar). */
+  eventWithArticle?: string;
 }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -52,7 +55,7 @@ export default function ComingSoon({
         {categoryLabel
           ? `Pas encore de ${categoryLabel.toLowerCase()} vérifié ${cityLabel}`
           : eventTypeLabel
-            ? `Pas encore de prestataire vérifié pour un ${eventTypeLabel.toLowerCase()} ${cityLabel}`
+            ? `Pas encore de prestataire vérifié pour ${eventWithArticle ?? `un ${eventTypeLabel.toLowerCase()}`} ${cityLabel}`
             : `Bientôt disponible ${cityLabel}`}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-slate">

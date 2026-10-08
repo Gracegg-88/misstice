@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -20,22 +21,16 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const vendor = await getVendor(params.id);
-  if (!vendor) return { title: "Prestataire · Misstice" };
-  return {
-    title: `${vendor.name} · ${vendor.category} à ${vendor.city} · Misstice`,
-    description: vendor.tagline,
-    alternates: { canonical: `/prestataires/${vendor.id}` },
-    openGraph: {
-      title: `${vendor.name} · ${vendor.category} à ${vendor.city} · Misstice`,
-      description: vendor.tagline ?? `Découvrez ${vendor.name} sur Misstice, prestataire vérifié pour votre événement.`,
-      type: "profile",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${vendor.name} · ${vendor.category} à ${vendor.city}`,
-      description: vendor.tagline ?? `Prestataire vérifié sur Misstice.`,
-    },
-  };
+  if (!vendor) return { title: "Prestataire" };
+  return pageMetadata({
+    title: `${vendor.name}, ${vendor.category.toLowerCase()} à ${vendor.city}`,
+    // Jamais « prestataire vérifié » par défaut : la plupart des fiches sont
+    // des vitrines non réclamées.
+    description:
+      vendor.tagline || `Découvrez la fiche de ${vendor.name}, ${vendor.category.toLowerCase()} à ${vendor.city}, sur Misstice.`,
+    path: `/prestataires/${vendor.id}`,
+    type: "profile",
+  });
 }
 
 export default async function VendorPage({

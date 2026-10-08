@@ -3,6 +3,7 @@
  * Les fonctionnalités vivent dans leurs routes existantes; la page guide vers elles au lieu de les répliquer.
  */
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HomeDirectory from "@/components/HomeDirectory";
@@ -13,11 +14,12 @@ import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 import { getHeaderAccount } from "@/lib/header-account";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Organisez vos moments importants avec des prestataires vérifiés",
-  description: "Misstice réunit votre projet, vos proches et des prestataires vérifiés pour comparer des devis, protéger vos coordonnées et organiser sans vous éparpiller.",
-  alternates: { canonical: "/" },
-};
+  description:
+    "Misstice réunit votre projet, vos proches et des prestataires vérifiés pour comparer des devis, protéger vos coordonnées et organiser sans vous éparpiller.",
+  path: "/",
+});
 
 const websiteSchema = {
   "@context": "https://schema.org",

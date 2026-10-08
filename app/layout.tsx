@@ -3,6 +3,7 @@ import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import GuideMascot from "@/components/GuideMascot";
+import { SITE_URL } from "@/lib/seo";
 
 // Deux voix seulement, centralisées dans --font-heading / --font-body
 // (consommées par tailwind.config.ts et globals.css). Pour changer de duo
@@ -29,16 +30,17 @@ const bodyFont = DM_Sans({
 
 // SEO dès le jour 1 (principe 5)
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.misstice.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Misstice | Organisez votre événement et trouvez vos prestataires",
     template: "%s | Misstice",
   },
   description:
     "Budget, invités, checklist et prestataires vérifiés réunis sur une seule plateforme. Mariage, anniversaire, baptême, gala : organisez votre événement sans vous éparpiller.",
-  alternates: {
-    canonical: "/",
-  },
+  // Pas de canonical ici : un canonical déclaré dans le layout racine est
+  // hérité par toute page qui n'en déclare pas, et la ferait pointer vers
+  // l'accueil. Chaque page publique déclare la sienne via pageMetadata()
+  // (lib/seo.ts).
   openGraph: {
     title: "Misstice | Organisez votre événement et trouvez vos prestataires",
     description:

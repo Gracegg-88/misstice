@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -50,25 +51,15 @@ export async function generateMetadata({
   params: { ville: string; categorie: string };
 }): Promise<Metadata> {
   const city = await getCityBySlug(params.ville);
-  if (!city) return { title: "Prestataires — Misstice" };
+  if (!city) return { title: "Prestataires" };
   const knownCategories = await getKnownCategorySlugs();
   const categoryLabel = knownCategories.get(params.categorie);
-  if (!categoryLabel) return { title: "Prestataires — Misstice" };
-  return {
-    title: `${categoryLabel} à ${city.name} — Misstice`,
+  if (!categoryLabel) return { title: "Prestataires" };
+  return pageMetadata({
+    title: `${categoryLabel} à ${city.name}`,
     description: `Comparez les ${categoryLabel.toLowerCase()} vérifiés à ${city.name}. Devis gratuits, avis vérifiés, tout centralisé sur Misstice.`,
-    alternates: { canonical: `/prestataires/ville/${params.ville}/${params.categorie}` },
-    openGraph: {
-      title: `${categoryLabel} à ${city.name} — Misstice`,
-      description: `Comparez les ${categoryLabel.toLowerCase()} vérifiés à ${city.name}. Devis gratuits, avis vérifiés, tout centralisé sur Misstice.`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${categoryLabel} à ${city.name} — Misstice`,
-      description: `${categoryLabel} vérifiés à ${city.name} — devis gratuits sur Misstice.`,
-    },
-  };
+    path: `/prestataires/ville/${params.ville}/${params.categorie}`,
+  });
 }
 
 export default async function VilleCategoriePage({

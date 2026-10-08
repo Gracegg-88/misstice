@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { CalendarPlus, Users, Store, ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -6,12 +7,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 
-export const metadata: Metadata = {
-  title: "Comment organiser votre événement | Guides Misstice",
+export const metadata: Metadata = pageMetadata({
+  title: "Comment organiser votre événement : guides et étapes",
   description:
     "Découvrez comment Misstice simplifie l'organisation de votre événement, puis consultez le guide dédié à votre projet : mariage, anniversaire, baptême, événement professionnel ou baby shower.",
-  alternates: { canonical: "/comment-ca-marche" },
-};
+  path: "/comment-ca-marche",
+});
 
 const steps: {
   n: number;

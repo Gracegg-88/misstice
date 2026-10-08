@@ -427,3 +427,103 @@ export async function getCityEventPickCombos(): Promise<
   }
   return combos;
 }
+
+export type FeaturedVendor = {
+  vendor: Vendor;
+  role: string;
+  roleLabel: string;
+  /** Phrase « pourquoi » rédigée à la main ; vide pour une sélection automatique (rien d'inventé). */
+  pourquoi: string;
+  /** true = choisi automatiquement par les critères ci-dessous, false = choisi à la main. */
+  auto: boolean;
+  /** Formules déclarées par le prestataire sur Misstice (vide si aucune). */
+  services: string[];
+  /** Photo fournie par le prestataire sur Misstice, sinon null (icône de catégorie). */
+  photo: string | null;
+};
+
+/**
+ * Score de complétude d'une fiche, pour la sélection automatique : fiche
+ * vérifiée > réclamée > avec description > avec photo. Uniquement des
+ * données déjà présentes sur Misstice, jamais rien d'extérieur.
+ */
+function completeness(v: Vendor): number {
+  return (
+    (v.verified && v.userId ? 8 : 0) +
+    (v.claimStatus === "reclamee" && v.userId ? 4 : 0) +
+    (v.tagline.trim() ? 2 : 0) +
+    (v.img ? 1 : 0)
+  );
+}
+
+/**
+ * Prestataires de la section « 3 prestataires pour réussir votre <événement>
+ * à <ville> » : un par rôle essentiel.
+ * - Si le fichier de contenu désigne un prestataire pour ce rôle (champ
+ *   prestataires_mis_en_avant), il est retenu en priorité.
+ * - Sinon, sélection automatique parmi les fiches de l'annuaire public de la
+ *   ville : catégorie du rôle, n° SIRET renseigné (activité confirmée), puis
+ *   la fiche la plus complète (ordre de l'annuaire en cas d'égalité).
+ * Garde-fous : uniquement des fiches visibles dans l'annuaire public (une
+ * fiche retirée ou masquée n'y figure pas), ville et catégorie vérifiées.
+ * Un rôle sans prestataire n'est pas affiché.
+ */
+export async function getFeaturedVendors(
+  citySlug: string,
+  entries: { role: string; prestataire_id: string; rang: number; pourquoi: string }[],
+  roles: { role: string; label: string; categories: string[] }[]
+): Promise<FeaturedVendor[]> {
+  if (!roles.length) return [];
+  const cityVendors = await getVendorsForCity(citySlug);
+  if (!cityVendors.length) return [];
+  const byId = new Map(cityVendors.map((v) => [v.id, v]));
+
+  const picked: { vendor: Vendor; role: (typeof roles)[number]; pourquoi: string; auto: boolean }[] = [];
+  const used = new Set<string>();
+  for (const role of roles) {
+    const manual = entries
+      .filter((e) => e.role === role.role)
+      .sort((a, b) => a.rang - b.rang)
+      .map((e) => ({ e, v: byId.get(e.prestataire_id) }))
+      .find(({ v }) => !!v && role.categories.includes(v.category) && !used.has(v.id));
+    if (manual?.v) {
+      picked.push({ vendor: manual.v, role, pourquoi: manual.e.pourquoi, auto: false });
+      used.add(manual.v.id);
+      continue;
+    }
+    const auto = cityVendors
+      .map((v, index) => ({ v, index }))
+      .filter(({ v }) => role.categories.includes(v.category) && !!v.siret?.trim() && !used.has(v.id))
+      .sort((a, b) => completeness(b.v) - completeness(a.v) || a.index - b.index)[0];
+    if (auto) {
+      picked.push({ vendor: auto.v, role, pourquoi: "", auto: true });
+      used.add(auto.v.id);
+    }
+  }
+  if (!picked.length) return [];
+
+  // Services et photos : uniquement ce que le prestataire a lui-même saisi
+  // sur Misstice (vendor_packages / vendor_photos, liés à son compte).
+  const userIds = picked.map((p) => p.vendor.userId).filter((id): id is string => !!id);
+  const supabase = db();
+  const [{ data: pkgs }, { data: photos }] = userIds.length
+    ? await Promise.all([
+        supabase.from("vendor_packages").select("vendor_id, name, position").in("vendor_id", userIds).order("position"),
+        supabase.from("vendor_photos").select("vendor_id, url, position").in("vendor_id", userIds).order("position"),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  return picked.map(({ vendor, role, pourquoi, auto }) => ({
+    vendor,
+    role: role.role,
+    roleLabel: role.label,
+    pourquoi,
+    auto,
+    services: ((pkgs as { vendor_id: string; name: string }[] | null) ?? [])
+      .filter((p) => p.vendor_id === vendor.userId)
+      .map((p) => p.name),
+    photo:
+      ((photos as { vendor_id: string; url: string }[] | null) ?? []).find((p) => p.vendor_id === vendor.userId)?.url ??
+      null,
+  }));
+}

@@ -7,6 +7,18 @@ import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
 import PicksList from "@/components/geo/PicksList";
 import PicksMap from "@/components/geo/PicksMap";
+import CityEventSections, { CityEventSources } from "@/components/geo/CityEventSections";
+import FeaturedVendorsSection from "@/components/geo/FeaturedVendorsSection";
+import { pageMetadata } from "@/lib/seo";
+import {
+  ESSENTIAL_ROLES,
+  EVENT_GUIDES,
+  eventGrammar,
+  getCityEventContentFile,
+  getIndexableCityEventCombos,
+  isCityEventIndexable,
+  paragraphs,
+} from "@/lib/city-content";
 import {
   MIN_VERIFIED_VENDORS,
   getCityBySlug,
@@ -17,6 +29,7 @@ import {
   getCityEventPicks,
   getEventTypeBySlug,
   getEventTypes,
+  getFeaturedVendors,
   getIndexableCitySlugs,
   getVendorsForCity,
 } from "@/lib/geo";
@@ -35,8 +48,9 @@ export async function generateStaticParams() {
   const byVendors = eventTypes.flatMap((et) => indexableCitySlugs.map((ville) => ({ evenement: et.slug, ville })));
   const byContent = editorialContent.map((c) => ({ evenement: c.eventTypeSlug, ville: c.citySlug }));
   const byPicks = pickCombos.map((c) => ({ evenement: c.eventTypeSlug, ville: c.citySlug }));
+  const byFiles = getIndexableCityEventCombos().map((c) => ({ evenement: c.eventTypeSlug, ville: c.citySlug }));
   const seen = new Set<string>();
-  return [...byVendors, ...byContent, ...byPicks].filter((p) => {
+  return [...byVendors, ...byContent, ...byPicks, ...byFiles].filter((p) => {
     const key = `${p.evenement}::${p.ville}`;
     if (seen.has(key)) return false;
     seen.add(key);
@@ -53,22 +67,24 @@ export async function generateMetadata({
     getEventTypeBySlug(params.evenement),
     getCityBySlug(params.ville),
   ]);
-  if (!eventType || !city) return { title: "Misstice" };
-  return {
-    title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
-    description: `Prestataires vérifiés et organisation centralisée pour un ${eventType.name.toLowerCase()} à ${city.name} : budget, invités, checklist et devis, tout dans Misstice.`,
-    alternates: { canonical: `/${params.evenement}/${params.ville}` },
-    openGraph: {
-      title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
-      description: `Prestataires vérifiés et organisation centralisée pour un ${eventType.name.toLowerCase()} à ${city.name} : budget, invités, checklist et devis, tout dans Misstice.`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `Organiser un ${eventType.name.toLowerCase()} à ${city.name} — Misstice`,
-      description: `Prestataires vérifiés pour un ${eventType.name.toLowerCase()} à ${city.name}.`,
-    },
-  };
+  if (!eventType || !city) return { title: "Page introuvable" };
+  const content = getCityEventContentFile(city.slug, eventType.slug);
+  const { name, label, withArticle } = eventGrammar(eventType);
+  const indexable = isCityEventIndexable(content);
+  return pageMetadata({
+    // Nom de l'événement (« baby shower ») + ville dans le titre et la
+    // description. On n'annonce lieux/budget/conseils que si la fiche
+    // locale existe vraiment.
+    title: indexable
+      ? `${label} à ${city.name} : lieux, budget et conseils`
+      : `Organiser ${withArticle} à ${city.name}`,
+    description: indexable
+      ? `Organiser ${withArticle} à ${city.name} : lieux adaptés, saison, budget local et conseils pratiques pour préparer votre ${name} sereinement.`
+      : `Organiser ${withArticle} à ${city.name} avec Misstice : budget, invités, checklist et demandes de devis réunis au même endroit.`,
+    path: `/${eventType.slug}/${city.slug}`,
+    // Fiche ville absente ou incomplète → noindex (voir lib/city-content.ts).
+    noindex: !indexable,
+  });
 }
 
 export default async function EvenementVillePage({
@@ -92,15 +108,31 @@ export default async function EvenementVillePage({
     getCityEventImage(city.slug, eventType.slug),
     getCityEventPicks(city.slug, eventType.slug),
   ]);
+  const content = getCityEventContentFile(city.slug, eventType.slug);
+  // Formes accordées (« une baby shower », « ma baby shower ») pour tous les
+  // titres, boutons et encadrés de la page.
+  const { name, label, withArticle, possessive } = eventGrammar(eventType);
+  const guide = EVENT_GUIDES[eventType.slug];
+  const featured = await getFeaturedVendors(
+    city.slug,
+    content?.prestataires_mis_en_avant ?? [],
+    ESSENTIAL_ROLES[eventType.slug] ?? []
+  );
+  const localIntro = paragraphs(content?.angle_local);
   const verifiedCount = vendors.filter((v) => v.verified).length;
   const belowThreshold = verifiedCount < MIN_VERIFIED_VENDORS;
+  const featuredSection = <FeaturedVendorsSection featured={featured} eventName={name} cityName={city.name} />;
+  // Dès qu'au moins un prestataire est retenu, la section « 3 prestataires »
+  // prend la place de l'encadré « pas encore de prestataire vérifié » ; sans
+  // aucun prestataire dans la ville, l'encadré reste affiché.
+  const featuredInPlaceOfComingSoon = belowThreshold && picks.length === 0;
   const otherEventTypes = eventTypes.filter((et) => et.slug !== eventType.slug);
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.misstice.com/" },
-      { "@type": "ListItem", position: 2, name: `Organiser un ${eventType.name.toLowerCase()} à ${city.name}`, item: `https://www.misstice.com/${eventType.slug}/${city.slug}` },
+      { "@type": "ListItem", position: 2, name: `Organiser ${withArticle} à ${city.name}`, item: `https://www.misstice.com/${eventType.slug}/${city.slug}` },
     ],
   };
 
@@ -113,19 +145,27 @@ export default async function EvenementVillePage({
           <Breadcrumb
             items={[
               { label: "Accueil", href: "/" },
-              { label: eventType.name },
+              { label },
               { label: city.name },
             ]}
           />
 
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet">{city.region}</p>
           <h1 className="mt-2 max-w-2xl font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
-            Organiser un {eventType.name.toLowerCase()} à {city.name}
+            Organiser {withArticle} à {city.name}
           </h1>
-          <p className="mt-3 max-w-2xl leading-relaxed text-slate">
-            {introText ??
-              `Trouvez des prestataires vérifiés à ${city.name} et centralisez budget, invités, checklist et devis pour votre ${eventType.name.toLowerCase()}, du premier au dernier détail.`}
-          </p>
+          {localIntro.length > 0 ? (
+            localIntro.map((p, i) => (
+              <p key={i} className="mt-3 max-w-2xl leading-relaxed text-slate">
+                {p}
+              </p>
+            ))
+          ) : (
+            <p className="mt-3 max-w-2xl leading-relaxed text-slate">
+              {introText ??
+                `Trouvez des prestataires vérifiés à ${city.name} et centralisez budget, invités, checklist et devis pour votre ${name}, du premier au dernier détail.`}
+            </p>
+          )}
 
           {image && (
             <figure className="mt-6 overflow-hidden rounded-3xl">
@@ -145,7 +185,7 @@ export default async function EvenementVillePage({
               href={`/creer?type=${eventType.slug}&ville=${city.slug}`}
               className="inline-flex items-center justify-center rounded-2xl bg-violet px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet/25 transition-all hover:bg-violet-dark hover:shadow-xl"
             >
-              Créer mon {eventType.name.toLowerCase()} à {city.name}
+              Créer {possessive} à {city.name}
             </a>
             <a
               href={`/prestataires/ville/${city.slug}`}
@@ -154,6 +194,24 @@ export default async function EvenementVillePage({
               Voir tous les prestataires à {city.name}
             </a>
           </div>
+
+          {content && (
+            <CityEventSections content={content} cityName={city.name} eventLabel={withArticle} />
+          )}
+
+          {content && guide && (
+            <p className="mt-12 max-w-3xl leading-relaxed text-slate">
+              Pour les étapes générales (budget type, checklist, idées de décoration), consultez notre{" "}
+              <a href={guide.href} className="font-semibold text-violet hover:text-violet-dark">
+                {guide.anchor}
+              </a>
+              {eventType.slug === "baby-shower"
+                ? ` ; cette page se concentre sur ce qui change quand on prépare sa babyshower à ${city.name}.`
+                : ` ; cette page se concentre sur ce qui est propre à ${city.name}.`}
+            </p>
+          )}
+
+          {content && <CityEventSources content={content} />}
 
           {vendors.length > 0 && !belowThreshold && (
             <p className="mt-8 text-sm text-slate">
@@ -167,7 +225,7 @@ export default async function EvenementVillePage({
             picks.length ? (
               <div className="mt-8">
                 <p className="font-display text-xl font-semibold text-plum">
-                  {eventType.name} à {city.name}&nbsp;: notre sélection
+                  {label} à {city.name}&nbsp;: notre sélection
                 </p>
                 <div className="mt-5">
                   <PicksMap picks={picks} />
@@ -188,14 +246,23 @@ export default async function EvenementVillePage({
                   </a>
                 </div>
               </div>
+            ) : featured.length > 0 ? (
+              featuredSection
             ) : (
               <div className="mt-8">
-                <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} eventTypeLabel={eventType.name} />
+                <ComingSoon
+                  cityName={city.slug}
+                  cityLabel={`à ${city.name}`}
+                  eventTypeLabel={eventType.name}
+                  eventWithArticle={withArticle}
+                />
               </div>
             )
           ) : (
             <FeaturedVendorsGrid vendors={vendors} />
           )}
+
+          {!featuredInPlaceOfComingSoon && featuredSection}
 
           {otherEventTypes.length > 0 && (
             <div className="mt-12 border-t border-black/5 pt-8">
@@ -207,7 +274,7 @@ export default async function EvenementVillePage({
                     href={`/${et.slug}/${city.slug}`}
                     className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-plum transition-colors hover:border-violet/30 hover:text-violet"
                   >
-                    {et.name} à {city.name}
+                    {eventGrammar(et).label} à {city.name}
                   </a>
                 ))}
               </div>

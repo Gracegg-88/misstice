@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import {
   Rocket,
@@ -17,18 +18,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyButton from "@/components/CalendlyButton";
 
-export const metadata: Metadata = {
-  title: "Devenir prestataire mariage et événementiel sur Misstice | Inscription gratuite",
+export const metadata: Metadata = pageMetadata({
+  title: "Devenir prestataire mariage et événementiel : inscription gratuite",
   description:
     "Rejoignez Misstice, la plateforme qui connecte prestataires mariage et événementiel à des particuliers en France : mariage, anniversaire, baptême, gala, baby shower. Inscription gratuite, badge Vérifié.",
-  alternates: { canonical: "/devenir-prestataire" },
-  openGraph: {
-    title: "Devenir prestataire événementiel sur Misstice | Inscription gratuite",
-    description: "Rejoignez Misstice et connectez-vous à des familles qui organisent mariages, anniversaires, baptêmes et galas. Inscription gratuite, badge Vérifié.",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Devenir prestataire sur Misstice — Inscription gratuite" },
-};
+  path: "/devenir-prestataire",
+});
 
 const CTA_HREF = "/creer?type=pro";
 

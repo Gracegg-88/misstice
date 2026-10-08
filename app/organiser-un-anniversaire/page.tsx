@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
@@ -13,18 +14,13 @@ import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
 import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Comment organiser un anniversaire réussi : budget et checklist",
   description:
     "Guide complet pour organiser un anniversaire, entre amis ou en famille : budget moyen, checklist étape par étape, et comment trouver vos prestataires sans y passer des heures.",
-  alternates: { canonical: "/organiser-un-anniversaire" },
-  openGraph: {
-    title: "Comment organiser un anniversaire réussi : budget et checklist",
-    description: "Guide complet pour organiser un anniversaire : budget moyen, checklist étape par étape et prestataires vérifiés.",
-    type: "article",
-  },
-  twitter: { card: "summary_large_image", title: "Organiser un anniversaire — Guide Misstice" },
-};
+  path: "/organiser-un-anniversaire",
+  type: "article",
+});
 
 const toc = [
   { id: "budget", label: "Budget moyen" },
