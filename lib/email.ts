@@ -7,6 +7,7 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   text?: string;
+  headers?: Record<string, string>;
 }): Promise<void> {
   const login = process.env.BREVO_SMTP_LOGIN;
   const smtpKey = process.env.BREVO_SMTP_KEY;
@@ -38,6 +39,7 @@ export async function sendEmail(opts: {
     subject: oneLine(opts.subject),
     html: opts.html,
     text: opts.text,
+    headers: opts.headers,
   });
 }
 
