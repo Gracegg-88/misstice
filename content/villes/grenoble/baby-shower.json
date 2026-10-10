@@ -4,6 +4,22 @@
   "evenement": "baby-shower",
   "derniere_mise_a_jour": "2026-10-08",
   "angle_local": "Grenoble est une grande ville à la fois étudiante et familiale, entourée de montagnes. C'est un cadre agréable pour une baby shower à taille humaine : le plus souvent une quinzaine ou une vingtaine de proches réunis quelques semaines avant la naissance. Ce qui change d'une ville à l'autre, ce sont la saison, l'accès au lieu et ce que l'on peut servir de local. À Grenoble, ces trois points méritent d'être pensés dès le départ.",
+  "images": [
+    {
+      "fichier": "/villes/grenoble/grenoble-isere-telepherique.jpg",
+      "alt": "Les quais de l'Isère à Grenoble, avec les bulles du téléphérique et les montagnes enneigées en arrière-plan",
+      "largeur": 1024,
+      "hauteur": 683,
+      "credit": ""
+    },
+    {
+      "fichier": "/villes/grenoble/grenoble-quais-isere.jpg",
+      "alt": "L'Isère et ses façades colorées au pied de la colline de la Bastille, à Grenoble, en automne",
+      "largeur": 1600,
+      "hauteur": 1200,
+      "credit": ""
+    }
+  ],
   "saison_et_meteo": "À Grenoble, les hivers sont froids et les étés chauds. En hiver, prévoyez un lieu intérieur bien chauffé, un coin pour les manteaux et une arrivée facile pour la future maman. En été, cherchez de l'ombre, beaucoup de boissons fraîches, et évitez les desserts à la crème qui supportent mal la chaleur. Le printemps et le début de l'automne sont généralement les plus confortables pour une fête en extérieur. Comme une baby shower se cale sur la date prévue d'accouchement plutôt que sur la météo, prévoyez dès le départ un plan B, intérieur ou extérieur selon la saison.",
   "lieux": [
     {

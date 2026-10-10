@@ -18,6 +18,19 @@ export type Lieu = {
 };
 
 export type FaqLocale = { question: string; reponse: string };
+
+/**
+ * Photo d'une fiche ville : fichier dans public/ (ex. "/villes/grenoble/x.jpg").
+ * La 1re s'affiche sous le titre (et sert d'image de partage), la 2e après
+ * la section saison. `credit` s'affiche sous la photo s'il est renseigné.
+ */
+export type ImageVille = {
+  fichier: string;
+  alt: string;
+  largeur?: number;
+  hauteur?: number;
+  credit?: string;
+};
 export type Source = { url: string; titre?: string; sujet?: string; consulte_le?: string };
 
 /** Prestataire mis en avant à la main (section « 3 prestataires »). */
@@ -39,6 +52,7 @@ export type CityEventContentFile = {
   ville: string;
   evenement: string;
   angle_local?: string;
+  images?: ImageVille[];
   saison_et_meteo?: string;
   lieux?: Lieu[];
   budget_local?: string;
@@ -72,6 +86,7 @@ function clean(c: CityEventContentFile): CityEventContentFile {
     ...rest,
     ville: toSlug(c.ville),
     evenement: toSlug(c.evenement),
+    images: (c.images ?? []).filter((i) => filled(i.fichier) && filled(i.alt)),
     lieux: (c.lieux ?? []).filter((l) => filled(l.nom)),
     faq_locale: (c.faq_locale ?? []).filter((f) => filled(f.question) && filled(f.reponse)),
     sources: (c.sources ?? []).filter((s) => filled(s.url)),

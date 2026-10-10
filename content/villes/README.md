@@ -11,6 +11,7 @@ le modèle de page n'affiche que les sections remplies.
 | --- | --- |
 | `publier` | `true` / `false` — voir « Publication » ci-dessous. |
 | `angle_local` | Introduction propre à la ville (obligatoire pour l'indexation). Paragraphes séparés par une ligne vide (`\n\n`). |
+| `images` | Liste de `{ "fichier": "/villes/<ville>/<nom>.jpg", "alt": "", "largeur": 0, "hauteur": 0, "credit": "" }` (fichiers dans `public/villes/<ville>/`). La 1re s'affiche sous le titre et sert d'image de partage, la 2e après la section saison. `credit` s'affiche sous la photo s'il est rempli. N'utiliser que des photos dont on a les droits. |
 | `saison_et_meteo` | Texte rédigé. |
 | `lieux` | Liste de fiches : `nom`, `type`, `quartier`, `capacite`, `fourchette_prix`, `convient_a`, `conseil` (texte). |
 | `budget_local` | Texte rédigé. |
