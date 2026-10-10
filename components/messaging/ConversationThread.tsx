@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
+import { useContactInfoAlert } from "@/lib/contact-alert";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -60,6 +61,7 @@ export default function ConversationThread({
   // Dernière lecture de l'autre partie, mise à jour EN TEMPS RÉEL (accusé « Vu »).
   const [otherRead, setOtherRead] = useState<string | null>(otherLastReadAt);
   const [body, setBody] = useState("");
+  useContactInfoAlert(body);
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [sendError, setSendError] = useState("");

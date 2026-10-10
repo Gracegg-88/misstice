@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { CONTACT_ALERT_EVENT, CONTACT_ALERT_TEXT } from "@/lib/contact-alert";
 
 // Bulle d'aide contextuelle simple : texte statique pré-écrit selon la page,
 // PAS un chatbot IA — juste un petit personnage repris de l'étincelle du
@@ -89,6 +90,22 @@ export default function GuideMascot() {
   // devis précis (statut de paiement) — chargées uniquement sur les pages
   // concernées, jamais ailleurs, pour ne pas multiplier les requêtes.
   const [dynamicTip, setDynamicTip] = useState<string | null>(null);
+  // Avertissement ponctuel déclenché par un champ de message (coordonnées
+  // personnelles détectées, voir lib/contact-alert.ts) : ouvre la bulle.
+  const [alertTip, setAlertTip] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onAlert = () => {
+      setAlertTip(CONTACT_ALERT_TEXT);
+      setOpen(true);
+    };
+    window.addEventListener(CONTACT_ALERT_EVENT, onAlert);
+    return () => window.removeEventListener(CONTACT_ALERT_EVENT, onAlert);
+  }, []);
+
+  useEffect(() => {
+    setAlertTip(null);
+  }, [pathname]);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,16 +202,25 @@ export default function GuideMascot() {
   }, [pathname]);
 
   const staticTip = TIPS.find((t) => t.match(pathname))?.text;
-  const tip = dynamicTip ?? staticTip ?? DEFAULT_TIP;
+  const tip = alertTip ?? dynamicTip ?? staticTip ?? DEFAULT_TIP;
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <div
+      // Au-dessus des fenêtres modales (z-[75]) quand l'alerte est affichée,
+      // sinon elle serait masquée derrière le formulaire en cours de saisie.
+      className={`fixed bottom-5 right-5 flex flex-col items-end gap-3 ${
+        alertTip ? "z-[80]" : "z-40"
+      }`}
+    >
       {open && (
         <div className="ev-fade-in relative max-w-xs rounded-2xl border border-black/5 bg-white p-4 pr-8 text-sm text-plum shadow-xl">
           <button
             type="button"
             aria-label="Fermer l'aide"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setAlertTip(null);
+            }}
             className="absolute right-2 top-2 text-slate hover:text-plum"
           >
             <X size={16} />
