@@ -4,12 +4,15 @@ import {
   getCities,
   getCityCategoryContent,
   getCityCategoryPickCombos,
+  getCityEventContent,
+  getCityEventPickCombos,
   getCitySlugsWithVendors,
   getEventTypes,
   getIndexableCityCategoryCombos,
+  getIndexableCitySlugs,
   slugify,
 } from "@/lib/geo";
-import { getIndexableCityEventCombos } from "@/lib/city-content";
+import { getIndexableCityEventCombos, isUnpublishedCityEventFile } from "@/lib/city-content";
 
 import { SITE_URL as BASE_URL } from "@/lib/seo";
 
@@ -60,16 +63,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     citySlugsWithVendors,
     cities,
     cityCategoryCombos,
+    indexableCitySlugs,
     eventTypes,
+    editorialEventContent,
     editorialCategoryContent,
     categoryPickCombos,
+    eventPickCombos,
   ] = await Promise.all([
     getCitySlugsWithVendors(),
     getCities(),
     getIndexableCityCategoryCombos(),
+    getIndexableCitySlugs(),
     getEventTypes(),
+    getCityEventContent(),
     getCityCategoryContent(),
     getCityCategoryPickCombos(),
+    getCityEventPickCombos(),
   ]);
   const activeCitySlugs = new Set(citySlugsWithVendors);
   const cityBySlug = new Map(cities.map((c) => [c.slug, c]));
@@ -104,12 +113,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  // Pages ville×événement : uniquement celles dont la fiche de contenu est
-  // complète (les autres sont en noindex, voir lib/city-content.ts).
-  const eventCityEntries: MetadataRoute.Sitemap = getIndexableCityEventCombos()
-    .filter((c) => cityBySlug.has(c.citySlug) && eventTypes.some((et) => et.slug === c.eventTypeSlug))
-    .map((c) => ({
-      url: `${BASE_URL}/${c.eventTypeSlug}/${c.citySlug}`,
+  // Pages ville×événement : comme avant (assez de prestataires vérifiés,
+  // texte en base ou Top 10), plus les fiches content/villes publiées ; une
+  // fiche content/villes non publiée ("publier": false) en est exclue.
+  const eventCitySlugs = new Set([
+    ...indexableCitySlugs.flatMap((ville) => eventTypes.map((et) => `${et.slug}::${ville}`)),
+    ...editorialEventContent.map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
+    ...eventPickCombos.map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
+    ...getIndexableCityEventCombos().map((c) => `${c.eventTypeSlug}::${c.citySlug}`),
+  ]);
+  const eventCityEntries: MetadataRoute.Sitemap = Array.from(eventCitySlugs)
+    .map((key) => {
+      const [evenement, ville] = key.split("::");
+      return { evenement, ville };
+    })
+    .filter((p) => cityBySlug.has(p.ville) && !isUnpublishedCityEventFile(p.ville, p.evenement))
+    .map((p) => ({
+      url: `${BASE_URL}/${p.evenement}/${p.ville}`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.65,

@@ -122,6 +122,17 @@ export function isCityEventIndexable(c: CityEventContentFile | null): boolean {
   );
 }
 
+/**
+ * true si une fiche content/villes existe pour cette page mais n'est pas
+ * publiée : seule cette situation met une page ville × événement en noindex.
+ * Une page SANS fiche garde son comportement d'avant (indexée, au sitemap si
+ * elle a un texte ou un Top 10 en base).
+ */
+export function isUnpublishedCityEventFile(citySlug: string, eventTypeSlug: string): boolean {
+  const c = getCityEventContentFile(citySlug, eventTypeSlug);
+  return !!c && !isCityEventIndexable(c);
+}
+
 /** Combinaisons indexables (sitemap, liens depuis le guide et le hub ville). */
 export function getIndexableCityEventCombos(): { citySlug: string; eventTypeSlug: string }[] {
   return CITY_EVENT_CONTENT_FILES.map(clean)
