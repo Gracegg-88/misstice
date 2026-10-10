@@ -82,8 +82,9 @@ export async function generateMetadata({
       ? `Organiser ${withArticle} à ${city.name} : lieux adaptés, saison, budget local et conseils pratiques pour préparer votre ${name} sereinement.`
       : `Organiser ${withArticle} à ${city.name} avec Misstice : budget, invités, checklist et demandes de devis réunis au même endroit.`,
     path: `/${eventType.slug}/${city.slug}`,
-    // Fiche ville absente ou incomplète → noindex (voir lib/city-content.ts).
-    noindex: !indexable,
+    // noindex uniquement pour une fiche content/villes non publiée ; une page
+    // sans fiche reste indexée comme avant (voir lib/city-content.ts).
+    noindex: !!content && !indexable,
   });
 }
 
