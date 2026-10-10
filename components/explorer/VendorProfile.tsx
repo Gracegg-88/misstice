@@ -26,6 +26,7 @@ import { quoteFields, demandeItems, wantedPlaceholder } from "@/lib/quote-fields
 import { useFavorites } from "@/lib/useFavorites";
 import { vibesVisible } from "@/lib/vibes";
 import { formatPriceFrom } from "@/lib/price";
+import { useContactInfoAlert } from "@/lib/contact-alert";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -914,6 +915,7 @@ function QuoteForm({
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [message, setMessage] = useState("");
+  useContactInfoAlert(message);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
@@ -1270,6 +1272,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
   const [checking, setChecking] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  useContactInfoAlert(message);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
