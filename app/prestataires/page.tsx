@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ExplorerClient from "@/components/explorer/ExplorerClient";
@@ -6,12 +7,12 @@ import { getVendors } from "@/lib/vendors";
 import { getHeaderAccount } from "@/lib/header-account";
 import { getAllPicksByCombo, getCities, getKnownCategorySlugs } from "@/lib/geo";
 
-export const metadata: Metadata = {
-  title: "Explorer les prestataires · Misstice",
+export const metadata: Metadata = pageMetadata({
+  title: "Explorer les prestataires événementiels",
   description:
     "Comparez photographes, traiteurs, DJ, salles et wedding planners. Classement au mérite, avis vérifiés, prix affichés. Filtrez par ville, budget et note.",
-  alternates: { canonical: "/prestataires" },
-};
+  path: "/prestataires",
+});
 
 export default async function PrestatairesPage({
   searchParams,

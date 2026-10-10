@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { getIndexableCityEventCombos } from "@/lib/city-content";
+import { getCities } from "@/lib/geo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
@@ -13,18 +16,13 @@ import GuideFaq, { type FaqItem } from "@/components/guide/GuideFaq";
 import GuideCta from "@/components/guide/GuideCta";
 import GuideProductPreview from "@/components/guide/GuideProductPreview";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Comment organiser une baby shower réussie : idées et budget",
   description:
     "Guide complet pour organiser une baby shower : budget moyen, checklist, idées de décoration et comment trouver vos prestataires.",
-  alternates: { canonical: "/organiser-une-baby-shower" },
-  openGraph: {
-    title: "Comment organiser une baby shower réussie : idées et budget",
-    description: "Guide complet pour organiser une baby shower : budget, checklist, idées de décoration et prestataires vérifiés.",
-    type: "article",
-  },
-  twitter: { card: "summary_large_image", title: "Organiser une baby shower — Guide Misstice" },
-};
+  path: "/organiser-une-baby-shower",
+  type: "article",
+});
 
 const toc = [
   { id: "budget", label: "Budget moyen" },
@@ -83,7 +81,15 @@ const faqItems: FaqItem[] = [
   },
 ];
 
-export default function OrganiserUneBabyShowerPage() {
+export default async function OrganiserUneBabyShowerPage() {
+  // Pages ville dont la fiche locale est complète (donc indexées) : jamais
+  // de lien vers une page en noindex.
+  const cities = await getCities();
+  const cityPages = getIndexableCityEventCombos()
+    .filter((c) => c.eventTypeSlug === "baby-shower")
+    .map((c) => cities.find((city) => city.slug === c.citySlug))
+    .filter((c): c is NonNullable<typeof c> => !!c);
+
   return (
     <GuideLayout
       heroImage="/babyshower-photo.png"
@@ -162,6 +168,24 @@ export default function OrganiserUneBabyShowerPage() {
           Décorateur, pâtissier, photographe : tous vérifiés avant
           publication sur Misstice.
         </p>
+        {cityPages.length > 0 && (
+          <p className="mt-4 text-sm leading-relaxed text-slate sm:text-base">
+            Vous préparez la fête dans une ville précise ? Nos pages locales
+            détaillent lieux, saison, budget et contraintes pratiques :{" "}
+            {cityPages.map((city, i) => (
+              <span key={city.slug}>
+                {i > 0 && (i === cityPages.length - 1 ? " et " : ", ")}
+                <Link
+                  href={`/baby-shower/${city.slug}`}
+                  className="font-semibold text-violet hover:text-violet-dark"
+                >
+                  organiser une baby shower à {city.name}
+                </Link>
+              </span>
+            ))}
+            .
+          </p>
+        )}
         <p className="mt-4 text-sm leading-relaxed text-slate sm:text-base">
           <Link
             href="/confiance"

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation · Misstice",
+export const metadata: Metadata = pageMetadata({
+  title: "Conditions générales d'utilisation",
   description:
     "Conditions Générales d'Utilisation de la plateforme événementielle Misstice.",
-  alternates: { canonical: "/cgu" },
-};
+  path: "/cgu",
+});
 
 const sections = [
   {

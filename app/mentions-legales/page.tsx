@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-export const metadata: Metadata = {
-  title: "Mentions Légales · Misstice",
-  description: "Mentions légales de la plateforme événementielle Misstice.",
-  alternates: { canonical: "/mentions-legales" },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Mentions légales",
+  description:
+    "Mentions légales de la plateforme événementielle Misstice.",
+  path: "/mentions-legales",
+});
 
 const sections = [
   {

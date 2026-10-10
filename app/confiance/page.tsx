@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { Scale, ShieldCheck, Star, Lock, CircleUserRound } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyButton from "@/components/CalendlyButton";
 
-export const metadata: Metadata = {
-  title: "Prestataires vérifiés et avis authentiques | Confiance Misstice",
+export const metadata: Metadata = pageMetadata({
+  title: "Prestataires vérifiés et avis authentiques",
   description:
     "Découvrez comment Misstice vérifie chaque prestataire (SIRET), garantit des avis authentiques et ne biaise jamais son classement par un système payant. La confiance, expliquée simplement.",
-  alternates: { canonical: "/confiance" },
-  openGraph: {
-    title: "Prestataires vérifiés et avis authentiques | Confiance Misstice",
-    description: "Comment Misstice vérifie chaque prestataire (SIRET) et garantit des avis authentiques sans biais commercial.",
-    type: "website",
-  },
-  twitter: { card: "summary_large_image", title: "Confiance Misstice — Prestataires vérifiés" },
-};
+  path: "/confiance",
+});
 
 const points = [
   {

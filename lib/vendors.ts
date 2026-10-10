@@ -25,6 +25,7 @@ type Row = {
   image: string | null;
   user_id: string | null;
   claim_status: "reclamee" | "non_reclamee";
+  siret: string | null;
   moods: string[] | null;
   energies: string[] | null;
   lights: string[] | null;
@@ -56,6 +57,7 @@ function map(r: Row): Vendor {
     img: r.image ?? "",
     userId: r.user_id ?? null,
     claimStatus: r.claim_status,
+    siret: r.siret ?? null,
     moods: r.moods ?? [],
     energies: r.energies ?? [],
     lights: r.lights ?? [],

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+import { eventGrammar, getIndexableCityEventCombos } from "@/lib/city-content";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -37,22 +39,12 @@ export async function generateMetadata({
   params: { ville: string };
 }): Promise<Metadata> {
   const city = await getCityBySlug(params.ville);
-  if (!city) return { title: "Prestataires — Misstice" };
-  return {
-    title: `Prestataires événementiels à ${city.name} — Misstice`,
+  if (!city) return { title: "Prestataires" };
+  return pageMetadata({
+    title: `Prestataires événementiels à ${city.name}`,
     description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
-    alternates: { canonical: `/prestataires/ville/${params.ville}` },
-    openGraph: {
-      title: `Prestataires événementiels à ${city.name} — Misstice`,
-      description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `Prestataires événementiels à ${city.name} — Misstice`,
-      description: `Prestataires vérifiés à ${city.name} pour votre événement.`,
-    },
-  };
+    path: `/prestataires/ville/${params.ville}`,
+  });
 }
 
 export default async function VillePage({ params }: { params: { ville: string } }) {
@@ -84,6 +76,14 @@ export default async function VillePage({ params }: { params: { ville: string } 
   }
 
   const eventTypeName = new Map(eventTypes.map((et) => [et.slug, et.name]));
+  // Pages ville×événement dont la fiche locale est complète (indexées) :
+  // lien contextuel dans le texte, jamais vers une page en noindex.
+  const localGuides = getIndexableCityEventCombos()
+    .filter((c) => c.citySlug === city.slug && eventTypeName.has(c.eventTypeSlug))
+    .map((c) => ({
+      slug: c.eventTypeSlug,
+      label: eventGrammar({ slug: c.eventTypeSlug, name: eventTypeName.get(c.eventTypeSlug)! }).withArticle,
+    }));
   const eventTypesHere = eventContent
     .filter((c) => c.citySlug === city.slug)
     .map((c) => ({ slug: c.eventTypeSlug, name: eventTypeName.get(c.eventTypeSlug) ?? c.eventTypeSlug }));
@@ -111,6 +111,22 @@ export default async function VillePage({ params }: { params: { ville: string } 
               : `Misstice élargit son réseau de prestataires vérifiés à ${city.name}.`}
           </p>
 
+          {localGuides.length > 0 && (
+            <p className="mt-3 max-w-2xl leading-relaxed text-slate">
+              Pour préparer votre événement sur place, nos pages locales réunissent lieux, saison,
+              budget et conseils pratiques :{" "}
+              {localGuides.map((g, i) => (
+                <span key={g.slug}>
+                  {i > 0 && (i === localGuides.length - 1 ? " et " : ", ")}
+                  <a href={`/${g.slug}/${city.slug}`} className="font-semibold text-violet hover:text-violet-dark">
+                    organiser {g.label} à {city.name}
+                  </a>
+                </span>
+              ))}
+              .
+            </p>
+          )}
+
           {categoriesHere.size > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">
               {Array.from(categoriesHere.entries()).map(([categorySlug, category]) => (
@@ -133,7 +149,7 @@ export default async function VillePage({ params }: { params: { ville: string } 
                   href={`/${et.slug}/${city.slug}`}
                   className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-plum transition-colors hover:border-violet/30 hover:text-violet"
                 >
-                  Organiser un {et.name.toLowerCase()} à {city.name}
+                  Organiser {eventGrammar(et).withArticle} à {city.name}
                 </a>
               ))}
             </div>
