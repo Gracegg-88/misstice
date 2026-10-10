@@ -188,6 +188,10 @@ export default function ExplorerClient({
     });
 
     return [...list].sort((a, b) => {
+      // Les vrais prestataires inscrits (fiche réclamée) passent toujours
+      // devant les fiches vitrines importées, quel que soit le tri choisi :
+      // sans avis au départ, ils seraient sinon relégués en fin de liste.
+      if (a.claimStatus !== b.claimStatus) return a.claimStatus === "reclamee" ? -1 : 1;
       switch (sort) {
         case "note":
           return b.rating - a.rating;

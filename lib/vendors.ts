@@ -77,9 +77,10 @@ function map(r: Row): Vendor {
  * qui ne peut pas encore être payé en cas de réservation — OU s'il s'agit
  * d'une fiche vitrine importée (claim_status = 'non_reclamee', voir
  * supabase/vendor-import.sql) : sans ça, personne ne les voit jamais pour
- * les réclamer. `order by claim_status` fait naturellement passer les
- * fiches réclamées ("reclamee") avant les non réclamées (ordre alphabétique),
- * donc les vraies fiches actives restent toujours prioritaires. Statut
+ * les réclamer. Les vraies fiches (claim_status = "reclamee") passent
+ * toujours avant les fiches vitrines : tri DESCENDANT sur claim_status, car
+ * "non_reclamee" < "reclamee" dans l'ordre alphabétique. L'annuaire
+ * (ExplorerClient) réapplique cette priorité quel que soit le tri choisi. Statut
  * "en cours" affiché uniquement dans son propre tableau de bord (voir
  * app/pro/page.tsx), jamais dans l'annuaire.
  */
@@ -89,7 +90,7 @@ export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
     .from("vendors")
     .select("*")
     .or("and(verified.eq.true,payouts_enabled.eq.true),claim_status.eq.non_reclamee")
-    .order("claim_status", { ascending: true })
+    .order("claim_status", { ascending: false })
     .order("position", { ascending: true });
   return ((data as Row[]) ?? []).map(map);
 }
