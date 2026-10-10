@@ -7,7 +7,7 @@ import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
 import PicksList from "@/components/geo/PicksList";
 import PicksMap from "@/components/geo/PicksMap";
-import CityEventSections, { CityEventSources } from "@/components/geo/CityEventSections";
+import CityEventSections, { CityEventSources, CityPhoto } from "@/components/geo/CityEventSections";
 import FeaturedVendorsSection from "@/components/geo/FeaturedVendorsSection";
 import { pageMetadata } from "@/lib/seo";
 import {
@@ -82,6 +82,17 @@ export async function generateMetadata({
       ? `Organiser ${withArticle} à ${city.name} : lieux adaptés, saison, budget local et conseils pratiques pour préparer votre ${name} sereinement.`
       : `Organiser ${withArticle} à ${city.name} avec Misstice : budget, invités, checklist et demandes de devis réunis au même endroit.`,
     path: `/${eventType.slug}/${city.slug}`,
+    // Photo principale de la fiche ville comme image de partage, si présente.
+    images: content?.images?.[0]
+      ? [
+          {
+            url: content.images[0].fichier,
+            width: content.images[0].largeur,
+            height: content.images[0].hauteur,
+            alt: content.images[0].alt,
+          },
+        ]
+      : undefined,
     // noindex uniquement pour une fiche content/villes non publiée ; une page
     // sans fiche reste indexée comme avant (voir lib/city-content.ts).
     noindex: !!content && !indexable,
@@ -168,7 +179,9 @@ export default async function EvenementVillePage({
             </p>
           )}
 
-          {image && (
+          {content?.images?.[0] ? (
+            <CityPhoto image={content.images[0]} eager />
+          ) : image && (
             <figure className="mt-6 overflow-hidden rounded-3xl">
               <img
                 src={image.url}

@@ -1,5 +1,5 @@
 import GuideFaq from "@/components/guide/GuideFaq";
-import { lieuTypeLabel, paragraphs, type CityEventContentFile, type Lieu } from "@/lib/city-content";
+import { lieuTypeLabel, paragraphs, type CityEventContentFile, type ImageVille, type Lieu } from "@/lib/city-content";
 
 /**
  * Sections éditoriales d'une page ville × événement. Chaque section n'est
@@ -25,6 +25,35 @@ function Section({ id, title, children }: { id: string; title: string; children:
       <h2 className="font-display text-2xl font-semibold tracking-tight text-plum">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+/** Photo de la fiche ville, avec crédit éventuel en légende. */
+export function CityPhoto({
+  image,
+  className = "mt-6",
+  eager = false,
+}: {
+  image: ImageVille;
+  className?: string;
+  /** true pour la photo en haut de page (chargée tout de suite). */
+  eager?: boolean;
+}) {
+  return (
+    <figure className={`${className} overflow-hidden rounded-3xl`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={image.fichier}
+        alt={image.alt}
+        width={image.largeur}
+        height={image.hauteur}
+        loading={eager ? "eager" : "lazy"}
+        className="h-64 w-full rounded-3xl object-cover sm:h-96"
+      />
+      {image.credit?.trim() && (
+        <figcaption className="mt-2 text-xs text-slate">{image.credit}</figcaption>
+      )}
+    </figure>
   );
 }
 
@@ -74,6 +103,7 @@ export default function CityEventSections({
       {content.saison_et_meteo?.trim() && (
         <Section id="saison" title={`Quelle saison choisir à ${cityName}`}>
           <Prose text={content.saison_et_meteo} />
+          {content.images?.[1] && <CityPhoto image={content.images[1]} />}
         </Section>
       )}
 
