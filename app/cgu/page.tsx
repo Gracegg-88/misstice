@@ -110,6 +110,21 @@ const sections = [
               sur la conversation concernée, uniquement le temps nécessaire à
               la médiation.
             </li>
+            <li>
+              Médiation de la consommation : conformément à l&apos;article
+              L616-1 du Code de la consommation, si le litige n&apos;est pas
+              résolu après nous avoir sollicités, vous pouvez recourir
+              gratuitement à une procédure de médiation de la consommation
+              auprès de CM2C — 49 rue de Ponthieu, 75008 Paris — Tél. 01 89
+              47 00 14 —{" "}
+              <a
+                href="https://www.cm2c.net/declarer-un-litige.php"
+                className="font-semibold text-violet hover:text-violet-dark"
+              >
+                cm2c.net/declarer-un-litige.php
+              </a>{" "}
+              — litiges@cm2c.net.
+            </li>
           </ul>
         </div>
         <div>

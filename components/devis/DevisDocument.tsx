@@ -337,9 +337,18 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
                 Médiation de la consommation :
               </span>{" "}
               conformément à l&apos;article L616-1 du Code de la
-              consommation, [nom et coordonnées du médiateur à compléter]
-              peut être saisi en cas de litige non résolu directement avec
-              le prestataire.
+              consommation, après nous avoir sollicités et à défaut de
+              réponse satisfaisante, vous avez la possibilité de recourir
+              gratuitement à une procédure de médiation de la consommation
+              auprès de CM2C — 49 rue de Ponthieu, 75008 Paris — Tél. 01 89
+              47 00 14 —{" "}
+              <a
+                href="https://www.cm2c.net/declarer-un-litige.php"
+                className="text-violet underline"
+              >
+                cm2c.net/declarer-un-litige.php
+              </a>{" "}
+              — litiges@cm2c.net.
             </p>
           </div>
 
