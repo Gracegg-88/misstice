@@ -20,7 +20,7 @@ export type {
 } from "@/lib/pro-types";
 
 const QUOTE_COLS =
-  "id, prestataire_id, conversation_id, client_name, event_label, amount, status, created_at, quote_number, validity_days, intro_message, event_need, event_date, event_location, guests_count, client_email, client_phone, client_address, service_fee, tax_rate, items, presta_name, presta_category, presta_email, presta_phone, presta_address, presta_siret, presta_company_name, escrow_event_date, vendor_amount, commission_amount, dispute_reason, dispute_comment, dispute_filed_at, dispute_resolved_at";
+  "id, prestataire_id, conversation_id, client_name, event_label, amount, status, created_at, quote_number, validity_days, intro_message, event_need, event_date, event_location, guests_count, client_email, client_phone, client_address, service_fee, tax_rate, tva_franchise, items, presta_name, presta_category, presta_email, presta_phone, presta_address, presta_siret, presta_company_name, escrow_event_date, vendor_amount, commission_amount, dispute_reason, dispute_comment, dispute_filed_at, dispute_resolved_at";
 
 /** Le prestataire connecté : profil détaillé + fiche annuaire liée. */
 export async function getMyVendor(): Promise<ProVendor | null> {
@@ -105,6 +105,7 @@ function normalizeQuote(row: Record<string, unknown>): Quote {
     amount: Number(row.amount ?? 0),
     service_fee: Number(row.service_fee ?? 0),
     tax_rate: Number(row.tax_rate ?? 0),
+    tva_franchise: Boolean(row.tva_franchise),
     validity_days: Number(row.validity_days ?? 15),
   };
 }

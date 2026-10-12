@@ -61,6 +61,7 @@ export type Quote = {
   client_address: string | null;
   service_fee: number;
   tax_rate: number;
+  tva_franchise: boolean;
   items: QuoteItem[];
   presta_name: string | null;
   presta_category: string | null;

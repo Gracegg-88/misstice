@@ -361,11 +361,13 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
               <Row label="Frais de service" value={euro(t.fee)} />
               {quote.tax_rate ? (
                 <Row label={`TVA (${quote.tax_rate}%)`} value={euro(t.tax)} />
-              ) : (
+              ) : quote.tva_franchise ? (
                 <Row
                   label="TVA non applicable, art. 293 B du CGI"
                   value="—"
                 />
+              ) : (
+                <Row label="TVA non renseignée" value="—" />
               )}
             </dl>
             <div className="mt-4 border-t border-violet/20 pt-4">

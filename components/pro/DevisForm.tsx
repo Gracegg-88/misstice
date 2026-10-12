@@ -102,6 +102,10 @@ export default function DevisForm({
   const [validity, setValidity] = useState(15);
   const [serviceFee, setServiceFee] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
+  // Un taux à 0% ne veut pas forcément dire "franchise en base" — par
+  // défaut, un devis non rempli ne doit pas affirmer un statut fiscal non
+  // confirmé (voir DevisDocument.tsx). Coché explicitement par le prestataire.
+  const [tvaFranchise, setTvaFranchise] = useState(false);
 
   // Prestations pré-remplies par la demande du client (prix à compléter).
   const [items, setItems] = useState<QuoteItem[]>(
@@ -168,6 +172,7 @@ export default function DevisForm({
       client_address: clientAddress.trim() || null,
       service_fee: serviceFee,
       tax_rate: taxRate,
+      tva_franchise: taxRate === 0 && tvaFranchise,
       items: clean,
       presta_name: prestaName,
       presta_category: prestaCategory,
@@ -421,6 +426,19 @@ export default function DevisForm({
               className="mt-1 w-full rounded-xl border border-black/10 bg-cream px-3.5 py-2 text-sm text-plum outline-none focus:border-violet"
             />
           </label>
+          {taxRate === 0 && (
+            <label className="col-span-full -mt-1 flex items-start gap-2 text-xs text-slate">
+              <input
+                type="checkbox"
+                checked={tvaFranchise}
+                onChange={(e) => setTvaFranchise(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-black/20 accent-violet"
+              />
+              Je suis en franchise en base de TVA (art. 293 B du CGI) —
+              coché, cette mention apparaîtra sur le devis. Laissé vide,
+              aucun statut fiscal ne sera affirmé.
+            </label>
+          )}
         </div>
         <dl className="mt-4 space-y-1.5 rounded-2xl bg-violet-soft/50 px-5 py-4 text-sm">
           <div className="flex justify-between">
