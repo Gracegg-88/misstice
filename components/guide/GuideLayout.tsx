@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Breadcrumb from "@/components/geo/Breadcrumb";
 
 export type TocItem = { id: string; label: string };
 
@@ -20,22 +21,25 @@ export default function GuideLayout({
   path?: string;
   children: React.ReactNode;
 }) {
-  const breadcrumbSchema = path ? {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.misstice.com/" },
-      { "@type": "ListItem", position: 2, name: "Guides", item: "https://www.misstice.com/comment-ca-marche" },
-      { "@type": "ListItem", position: 3, name: title, item: `https://www.misstice.com${path}` },
-    ],
-  } : null;
-
   return (
     <>
       <Header />
       <main className="bg-cream">
-        {breadcrumbSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />}
         <section className="relative overflow-hidden pb-8 pt-12 sm:pb-10 sm:pt-16">
+          {/* Fil d'Ariane visible + BreadcrumbList schema.org en un seul
+              composant : un JSON-LD sans trace visible à l'écran (version
+              précédente) n'est pas conforme aux règles de Google. */}
+          {path && (
+            <div className="relative mx-auto max-w-content px-page">
+              <Breadcrumb
+                items={[
+                  { label: "Accueil", href: "/" },
+                  { label: "Guides", href: "/comment-ca-marche" },
+                  { label: title },
+                ]}
+              />
+            </div>
+          )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImage}

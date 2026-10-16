@@ -139,26 +139,20 @@ export default async function EvenementVillePage({
   // aucun prestataire dans la ville, l'encadré reste affiché.
   const featuredInPlaceOfComingSoon = belowThreshold && picks.length === 0;
   const otherEventTypes = eventTypes.filter((et) => et.slug !== eventType.slug);
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.misstice.com/" },
-      { "@type": "ListItem", position: 2, name: `Organiser ${withArticle} à ${city.name}`, item: `https://www.misstice.com/${eventType.slug}/${city.slug}` },
-    ],
-  };
 
   return (
     <>
       <Header />
       <main className="min-h-screen bg-cream">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
         <section className="mx-auto max-w-content px-page py-12">
+          {/* Un seul niveau intermédiaire : il n'existe pas de page dédiée à
+              l'événement seul (ex. /baby-shower), donc pas de lien pour ce
+              segment — évite une BreadcrumbList avec un ListItem sans
+              `item`, qui remontait comme problème dans Search Console. */}
           <Breadcrumb
             items={[
               { label: "Accueil", href: "/" },
-              { label },
-              { label: city.name },
+              { label: `Organiser ${withArticle} à ${city.name}` },
             ]}
           />
 
