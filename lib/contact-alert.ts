@@ -1,28 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { CONTACT_INFO_FORBIDDEN_MESSAGE, containsContactInfo } from "@/lib/contact-detection";
 
-// Détection de coordonnées personnelles dans un message en cours de saisie.
-// Ne bloque RIEN : sert uniquement à ouvrir la mascotte (GuideMascot) avec un
-// avertissement de prudence. Le paiement sécurisé + double validation reste
-// la vraie protection contre les échanges hors plateforme.
-
-const PATTERNS: RegExp[] = [
-  // Email, y compris les formes déguisées : « jean (at) gmail point com »
-  /[a-z0-9._%+-]+\s*(?:@|\(at\)|\[at\]|\sarobase\s)\s*[a-z0-9-]+(?:\s*(?:\.|\(dot\)|\[dot\]|\spoint\s)\s*[a-z0-9-]+)*\s*(?:\.|\(dot\)|\[dot\]|\spoint\s)\s*[a-z]{2,}/i,
-  // Téléphone français : 06 12 34 56 78, 06.12.34.56.78, +33 6 12 34 56 78
-  /(?:(?:\+|00)\s*33\s*\(?0?\)?\s*|\b0)[1-9](?:[\s.-]*\d{2}){4}\b/,
-  // Autre numéro international : +44 7911 123456…
-  /\+\s*\d{1,3}(?:[\s.-]*\d){8,}/,
-  // IBAN (paiement hors plateforme)
-  /\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4}){3,7}\b/,
-  // Messageries / moyens de paiement externes
-  /\b(?:whats\s?app|telegram|snap(?:chat)?|insta(?:gram)?|paypal|lydia|iban|rib)\b/i,
-];
-
-export function containsContactInfo(text: string): boolean {
-  return PATTERNS.some((re) => re.test(text));
-}
+// Avertissement de coordonnées personnelles dans un message en cours de
+// saisie. Ne bloque RIEN : sert uniquement à ouvrir la mascotte (GuideMascot)
+// avec un avertissement de prudence. Le paiement sécurisé + double validation
+// reste la vraie protection contre les échanges hors plateforme.
+// La détection elle-même est partagée avec la fiche prestataire, où elle
+// bloque l'enregistrement : voir lib/contact-detection.ts.
+export { CONTACT_INFO_FORBIDDEN_MESSAGE, containsContactInfo };
 
 export const CONTACT_ALERT_EVENT = "misstice:contact-alert";
 
