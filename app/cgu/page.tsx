@@ -78,6 +78,15 @@ const sections = [
               (montant total moins la commission Misstice) est remboursée au
               client ; la commission n&apos;est jamais remboursée (voir point 5).
             </li>
+            <li>
+              Une date limite de confirmation s&apos;applique (le plus tôt
+              entre 14 jours après le paiement et 7 jours avant la date de
+              l&apos;événement) : le client en est averti par email 3 jours
+              puis 1 jour avant cette date. Sans réponse de sa part, ou si la
+              date de l&apos;événement est dépassée, la réservation est
+              automatiquement confirmée et suit le cycle normal du
+              séquestre — le prestataire ne reste jamais sans réponse.
+            </li>
           </ul>
         </div>
         <div>

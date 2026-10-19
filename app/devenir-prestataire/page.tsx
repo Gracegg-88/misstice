@@ -126,7 +126,7 @@ const faqs = [
   },
   {
     q: "Quand suis-je payé ?",
-    a: "Le client règle l'intégralité du devis dès son acceptation, en sécurité chez Misstice (séquestre Stripe). Votre part est versée automatiquement sur votre compte 72h après la date de l'événement, sauf signalement du client pendant ce délai.",
+    a: "Le client règle l'intégralité du devis dès son acceptation, en sécurité chez Misstice (séquestre Stripe). Votre part est versée automatiquement sur votre compte 72h après la date de l'événement, sauf signalement du client pendant ce délai. Pour les catégories nécessitant une rencontre préalable (Traiteur, Robe & Tenue, Coiffure & Maquillage), la réservation est confirmée après cette rencontre — et automatiquement si le client ne répond pas avant la date limite, pour que vous ne restiez jamais sans réponse.",
   },
   {
     q: "Puis-je m'inscrire pour plusieurs types d'événements à la fois ?",
