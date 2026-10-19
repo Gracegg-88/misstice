@@ -138,7 +138,7 @@ export default function GuideMascot() {
           );
         } else if (data.stripe_onboarding_status !== "actif") {
           setDynamicTip(
-            "🔒 Dernière étape avant d'être visible : vérifie ton identité et tes informations bancaires via Stripe, notre partenaire de paiement sécurisé. Ça prend quelques minutes."
+            "🔒 Ton profil est visible ! Pour envoyer tes devis, active tes paiements : vérifie ton identité et tes informations bancaires via Stripe, notre partenaire de paiement sécurisé. Ça prend une dizaine de minutes."
           );
         } else if (!hasSeen("pro-profil-paiements")) {
           markSeen("pro-profil-paiements");

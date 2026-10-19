@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import DevisForm from "@/components/pro/DevisForm";
 import { getConversation, getMyConversations } from "@/lib/messaging";
-import { getMyVendor } from "@/lib/pro";
+import Link from "next/link";
+import ActivatePaymentsCallout from "@/components/pro/ActivatePaymentsCallout";
+import { getMyPaymentsStatus, getMyVendor } from "@/lib/pro";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NouveauDevisPage({
@@ -17,6 +19,24 @@ export default async function NouveauDevisPage({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/auth?next=/pro/devis/nouveau");
+
+  // Pas de devis sans paiements Stripe actifs : le client ne pourrait pas
+  // payer un prestataire incapable de recevoir les fonds. Le prestataire peut
+  // toujours répondre par message.
+  const payments = await getMyPaymentsStatus();
+  if (!payments.payoutsEnabled) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <ActivatePaymentsCallout status={payments.onboardingStatus} />
+        <Link
+          href={convId ? `/pro/messagerie/${convId}` : "/pro/demandes"}
+          className="mt-4 inline-flex text-sm font-semibold text-violet hover:text-violet-dark"
+        >
+          {convId ? "Répondre par message en attendant" : "Retour aux demandes"}
+        </Link>
+      </div>
+    );
+  }
 
   // Pré-remplissage des coordonnées : on récupère celles du dernier devis émis
   // (elles ne sont pas stockées ailleurs), pour éviter de les retaper à chaque fois.

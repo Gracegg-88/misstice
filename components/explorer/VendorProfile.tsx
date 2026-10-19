@@ -17,6 +17,7 @@ import {
   Euro,
   CalendarCheck,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { isVideoUrl } from "@/lib/media";
 import type { Vendor } from "./vendors";
@@ -203,6 +204,14 @@ export default function VendorProfile({
                       <span className="inline-flex items-center gap-1 font-medium text-violet">
                         <BadgeCheck size={15} />
                         Vérifié par Misstice
+                      </span>
+                    )}
+                    {/* Badge positif uniquement : rien n'est affiché au client
+                        tant que les paiements ne sont pas actifs. */}
+                    {vendor.payoutsEnabled && vendor.userId && (
+                      <span className="inline-flex items-center gap-1 font-medium text-emerald">
+                        <ShieldCheck size={15} />
+                        Paiement sécurisé activé
                       </span>
                     )}
                     {vendor.isNew && vendor.userId && (
@@ -1122,6 +1131,15 @@ function QuoteForm({
           .eq("id", exv.id);
       }
     }
+
+    // Prévient le prestataire par email s'il doit activer ses paiements pour
+    // répondre (sans bloquer la famille : un échec est rattrapé par le cron).
+    void fetch("/api/demandes/notify-vendor", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ conversationId: convId }),
+      keepalive: true,
+    }).catch(() => {});
 
     onDone();
     router.push(`/dashboard/messages/${convId}`);

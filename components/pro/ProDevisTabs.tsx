@@ -7,14 +7,18 @@ import DemandesClient from "@/components/pro/DemandesClient";
 import DevisClient from "@/components/pro/DevisClient";
 import type { ConversationListItem } from "@/lib/messaging-types";
 import type { Quote } from "@/lib/pro-types";
+import type { PaymentsStatus } from "@/lib/pro";
+import ActivatePaymentsCallout from "@/components/pro/ActivatePaymentsCallout";
 
 export default function ProDevisTabs({
   convs,
   quotes,
+  payments,
   initialTab = "demandes",
 }: {
   convs: ConversationListItem[];
   quotes: Quote[];
+  payments: PaymentsStatus;
   initialTab?: "demandes" | "devis";
 }) {
   const [tab, setTab] = useState<"demandes" | "devis">(initialTab);
@@ -36,14 +40,20 @@ export default function ProDevisTabs({
           </p>
         </div>
         {/* Rédiger un devis sans demande préalable (suite à un échange). */}
-        <Link
-          href="/pro/devis/nouveau"
-          className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-        >
-          <PenLine size={16} />
-          Rédiger un devis
-        </Link>
+        {payments.payoutsEnabled && (
+          <Link
+            href="/pro/devis/nouveau"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            <PenLine size={16} />
+            Rédiger un devis
+          </Link>
+        )}
       </div>
+
+      {!payments.payoutsEnabled && (
+        <ActivatePaymentsCallout status={payments.onboardingStatus} className="mt-5" />
+      )}
 
       {/* Onglets */}
       <div className="mt-5 inline-flex flex-wrap gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5">
@@ -74,7 +84,12 @@ export default function ProDevisTabs({
 
       <div className="mt-6">
         {tab === "demandes" ? (
-          <DemandesClient convs={convs} quotes={quotes} embedded />
+          <DemandesClient
+            convs={convs}
+            quotes={quotes}
+            canSendQuote={payments.payoutsEnabled}
+            embedded
+          />
         ) : (
           <DevisClient quotes={quotes} embedded />
         )}
