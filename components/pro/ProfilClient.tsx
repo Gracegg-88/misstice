@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import CategorySelect from "@/components/pro/CategorySelect";
+import { CONTACT_INFO_FORBIDDEN_MESSAGE, containsContactInfo } from "@/lib/contact-alert";
 import type { ProVendor, VendorPackage, VendorPhoto } from "@/lib/pro-types";
 import {
   isVideoUrl,
@@ -90,6 +91,12 @@ export default function ProfilClient({
   const [editFeatures, setEditFeatures] = useState<string[]>([]);
   const [editFeatureInput, setEditFeatureInput] = useState("");
 
+  // Coordonnées interdites sur la fiche publique (téléphone, email, site,
+  // réseaux, IBAN…) : bloqué ici, et de nouveau côté base
+  // (supabase/vendor-contact-guard.sql) pour ne pas être contournable.
+  const hasContactInfo = (...texts: (string | null | undefined)[]) =>
+    texts.some((t) => containsContactInfo(t));
+
   const withEuro = (raw: string): string | null => {
     const v = raw.trim();
     if (!v) return null;
@@ -109,6 +116,11 @@ export default function ProfilClient({
 
   const saveEdit = async () => {
     if (!editingId || !editDraft.name.trim()) return;
+    setError("");
+    if (hasContactInfo(editDraft.name, editDraft.price, ...editFeatures)) {
+      setError(CONTACT_INFO_FORBIDDEN_MESSAGE);
+      return;
+    }
     const supabase = createClient();
     const payload = {
       name: editDraft.name.trim(),
@@ -143,6 +155,9 @@ export default function ProfilClient({
   const ensureProfile = async (): Promise<string | null> => {
     if (!info.company.trim()) {
       return "Renseignez le nom de votre activité, puis « Enregistrer », avant d'ajouter une formule ou des photos.";
+    }
+    if (hasContactInfo(info.company, info.city, info.about)) {
+      return CONTACT_INFO_FORBIDDEN_MESSAGE;
     }
     const supabase = createClient();
     const { error: e } = await supabase.from("vendor_profiles").upsert({
@@ -196,6 +211,10 @@ export default function ProfilClient({
   const saveInfo = async () => {
     if (!info.company.trim()) {
       setError("Le nom de votre activité est obligatoire.");
+      return;
+    }
+    if (hasContactInfo(info.company, info.city, info.tagline, info.about, info.priceFrom)) {
+      setError(CONTACT_INFO_FORBIDDEN_MESSAGE);
       return;
     }
     setSaving(true);
@@ -277,8 +296,12 @@ export default function ProfilClient({
   const addPackage = async () => {
     const name = newPkg.name.trim();
     if (!name) return;
-    setAddingPkg(true);
     setError("");
+    if (hasContactInfo(name, newPkg.price, ...newFeatures)) {
+      setError(CONTACT_INFO_FORBIDDEN_MESSAGE);
+      return;
+    }
+    setAddingPkg(true);
     const profErr = await ensureProfile();
     if (profErr) {
       setAddingPkg(false);

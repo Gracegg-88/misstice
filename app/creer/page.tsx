@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import CategorySelect from "@/components/pro/CategorySelect";
 import TypeModal, { type TypeOption } from "@/components/creer/TypeModal";
 import { safeNext } from "@/lib/safe-next";
+import { CONTACT_INFO_FORBIDDEN_MESSAGE, containsContactInfo } from "@/lib/contact-alert";
 import { ArrowLeft, Check, Eye, EyeOff, PartyPopper } from "lucide-react";
 
 // Clé sessionStorage : le type d'événement choisi dans la modale doit
@@ -248,6 +249,11 @@ export default function CreerPage() {
 
   const finish = async () => {
     setError("");
+    // Le nom d'activité devient le nom public de la fiche : pas de coordonnées.
+    if (type === "professionnel" && (containsContactInfo(pro.company) || containsContactInfo(pro.city))) {
+      setError(CONTACT_INFO_FORBIDDEN_MESSAGE);
+      return;
+    }
     setLoading(true);
     const supabase = createClient();
     const role = type === "professionnel" ? "prestataire" : "particulier";

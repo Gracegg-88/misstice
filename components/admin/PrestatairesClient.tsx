@@ -32,6 +32,7 @@ type Vendor = {
   vuesFiche: number;
   tentativesContact: number;
   lastRelanceSentAt: string | null;
+  contactFields: string[];
 };
 
 // Filtres de statut proposés dans la liste déroulante.
@@ -46,6 +47,7 @@ const STATUS_FILTERS = [
   { v: "avec_email", l: "Avec email de contact" },
   { v: "sans_email", l: "Sans email de contact" },
   { v: "avec_contact", l: "Avec tentative de contact" },
+  { v: "coordonnees", l: "Coordonnées détectées" },
 ] as const;
 
 type StatusFilter = (typeof STATUS_FILTERS)[number]["v"];
@@ -74,6 +76,8 @@ function matchesStatus(v: Vendor, status: StatusFilter): boolean {
       return !v.contactEmail;
     case "avec_contact":
       return v.tentativesContact > 0;
+    case "coordonnees":
+      return v.contactFields.length > 0;
     default:
       return true;
   }
@@ -354,6 +358,14 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                       {v.claimStatus === "non_reclamee" && (
                         <span className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
                           Fiche non réclamée
+                        </span>
+                      )}
+                      {v.contactFields.length > 0 && (
+                        <span
+                          title="Coordonnées (téléphone, email, site, réseau…) visibles sur la fiche publique"
+                          className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif"
+                        >
+                          Coordonnées : {v.contactFields.join(", ")}
                         </span>
                       )}
                       {v.verified ? (
