@@ -52,6 +52,7 @@ const normalizeCity = (s: string) =>
 export function buildVendorPayoutsAlertEmail(opts: {
   base: string;
   vendorFirstName: string | null;
+  /** Prénom du client (« une famille » s'il est inconnu). */
   clientName: string;
 }) {
   const { base, vendorFirstName, clientName } = opts;
@@ -129,18 +130,23 @@ export async function sendVendorPayoutsAlert(
     .maybeSingle();
   if ((vp as { payouts_enabled: boolean } | null)?.payouts_enabled) return "skipped";
 
-  const [{ data: userRes }, { data: prof }] = await Promise.all([
+  const [{ data: userRes }, { data: prof }, { data: clientProf }] = await Promise.all([
     admin.auth.admin.getUserById(conv.prestataire_id),
     admin.from("profiles").select("full_name").eq("id", conv.prestataire_id).maybeSingle(),
+    admin.from("profiles").select("full_name").eq("id", conv.particulier_id).maybeSingle(),
   ]);
   const email = userRes?.user?.email;
   if (!email) return "skipped";
   const fullName = (prof as { full_name: string | null } | null)?.full_name ?? null;
+  // Prénom seulement (jamais le nom complet du client dans l'email).
+  const clientFirstName =
+    firstNameOf((clientProf as { full_name: string | null } | null)?.full_name) ??
+    firstNameOf(conv.particulier_name);
 
   const { subject, html, text } = buildVendorPayoutsAlertEmail({
     base,
     vendorFirstName: firstNameOf(fullName),
-    clientName: conv.particulier_name?.trim() || "une famille",
+    clientName: clientFirstName || "une famille",
   });
   await sendEmail({ to: email, toName: fullName?.trim() || undefined, subject, html, text });
 
@@ -181,6 +187,7 @@ export async function findSimilarVendors(
     .eq("category", src.category)
     .eq("claim_status", "reclamee")
     .eq("verified", true)
+    .is("retire_le", null)
     .not("user_id", "is", null)
     .neq("id", src.id)
     .order("payouts_enabled", { ascending: false })

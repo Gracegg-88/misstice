@@ -15,6 +15,7 @@ type Row = {
   reviews: number;
   verified: boolean;
   payouts_enabled: boolean | null;
+  retire_le: string | null;
   reviewed_at: string | null;
   response_hours: number;
   response_rate: number;
@@ -48,6 +49,7 @@ function map(r: Row): Vendor {
     reviews: r.reviews,
     verified: r.verified,
     payoutsEnabled: Boolean(r.payouts_enabled),
+    retired: Boolean(r.retire_le),
     isNew: !r.reviewed_at,
     responseHours: r.response_hours,
     responseRate: r.response_rate,
@@ -80,7 +82,10 @@ function map(r: Row): Vendor {
  * (côté pro) et le paiement (api/stripe/checkout/create) qui exigent
  * payouts_enabled. Les fiches vitrines importées (claim_status =
  * 'non_reclamee', voir supabase/vendor-import.sql) restent visibles pour
- * pouvoir être réclamées. Les vraies fiches (claim_status = "reclamee") passent
+ * pouvoir être réclamées. Une fiche retirée (retire_le non nul, voir
+ * supabase/vendor-removal.sql) n'est jamais publique : la politique RLS la
+ * masque déjà au public, mais pas à son propriétaire ni à l'admin, d'où le
+ * filtre explicite ici. Les vraies fiches (claim_status = "reclamee") passent
  * toujours avant les fiches vitrines : tri DESCENDANT sur claim_status, car
  * "non_reclamee" < "reclamee" dans l'ordre alphabétique. L'annuaire
  * (ExplorerClient) réapplique cette priorité quel que soit le tri choisi. Statut
@@ -90,8 +95,11 @@ function map(r: Row): Vendor {
 export const PUBLIC_VENDOR_FILTER =
   "and(claim_status.eq.reclamee,verified.eq.true),claim_status.eq.non_reclamee";
 
-/** Même règle que PUBLIC_VENDOR_FILTER, pour une fiche déjà chargée. */
-export function isPubliclyVisible(v: Pick<Vendor, "claimStatus" | "verified">): boolean {
+/** Même règle que getVendors(), pour une fiche déjà chargée. */
+export function isPubliclyVisible(
+  v: Pick<Vendor, "claimStatus" | "verified" | "retired">
+): boolean {
+  if (v.retired) return false;
   return v.claimStatus === "non_reclamee" || v.verified;
 }
 
@@ -101,6 +109,7 @@ export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
     .from("vendors")
     .select("*")
     .or(PUBLIC_VENDOR_FILTER)
+    .is("retire_le", null)
     .order("claim_status", { ascending: false })
     .order("position", { ascending: true });
   return ((data as Row[]) ?? []).map(map);
