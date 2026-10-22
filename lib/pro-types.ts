@@ -13,6 +13,9 @@ export type ProVendor = {
   verified: boolean;
   rating: number;
   reviews: number;
+  // Acompte : null = suit le défaut de la catégorie (voir
+  // lib/vendors.ts#getCategoryDefaultDepositPercent).
+  depositPercent: number | null;
   // Ambiance & Vibe
   moods: string[];
   energies: string[];
@@ -78,6 +81,15 @@ export type Quote = {
   dispute_comment: string | null;
   dispute_filed_at: string | null;
   dispute_resolved_at: string | null;
+  // Acompte prestataire
+  deposit_percent: number;
+  deposit_amount: number | null;
+  deposit_due_at: string | null;
+  deposit_paid_at: string | null;
+  // Dégustation (catégorie Traiteur)
+  tasting_option: "incluse" | "payante" | "non_proposee" | null;
+  tasting_price: number | null;
+  tasting_date: string | null;
 };
 
 export type VendorPackage = {

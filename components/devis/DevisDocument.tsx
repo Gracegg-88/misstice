@@ -16,6 +16,13 @@ import {
 import type { Quote } from "@/lib/pro-types";
 import { euro, quoteTotals } from "@/lib/quote-doc";
 import { categoryUsesGuests } from "@/lib/quote-fields";
+import { fmtDepositDate } from "@/lib/deposit";
+
+const TASTING_LABEL: Record<string, string> = {
+  incluse: "Incluse",
+  payante: "Payante",
+  non_proposee: "Non proposée",
+};
 
 const STATUS_LABEL: Record<Quote["status"], string> = {
   envoyé: "En attente",
@@ -96,6 +103,11 @@ function ContactLine({
 export default function DevisDocument({ quote }: { quote: Quote }) {
   const t = quoteTotals(quote.items, quote.service_fee, quote.tax_rate);
   const dash = "À définir";
+  const balanceReleaseDate = quote.escrow_event_date
+    ? new Date(
+        new Date(quote.escrow_event_date).getTime() + 72 * 3600 * 1000
+      ).toISOString()
+    : null;
   const showGuests = categoryUsesGuests(quote.presta_category);
   // Coordonnées (email, téléphone, adresse) masquées tant que le devis n'est
   // pas accepté par le client, pour éviter tout contact hors plateforme.
@@ -287,6 +299,26 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
           </table>
         </div>
 
+        {/* Dégustation (Traiteur) */}
+        {quote.tasting_option && quote.tasting_option !== "non_proposee" && (
+          <div className="mt-6 rounded-2xl border border-black/5 bg-cream/60 px-6 py-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-violet">
+              Dégustation
+            </h2>
+            <p className="mt-2 text-sm text-plum">
+              {TASTING_LABEL[quote.tasting_option]}
+              {quote.tasting_option === "payante" && quote.tasting_price != null && (
+                <> — {euro(quote.tasting_price)}</>
+              )}
+            </p>
+            {quote.tasting_date && (
+              <p className="mt-1 text-sm text-slate">
+                Date prévue : {fmtDepositDate(quote.tasting_date)}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Conditions + Récapitulatif */}
         <div className="mt-8 grid gap-6 sm:grid-cols-2">
           <div>
@@ -380,6 +412,46 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
                 </span>
               </div>
             </div>
+
+            {/* Acompte / solde — uniquement une fois le paiement effectué
+                (deposit_amount calculé par mark_quote_paid) et si un
+                acompte s'applique réellement à ce devis. */}
+            {quote.deposit_percent > 0 && quote.deposit_amount != null && (
+              <div className="mt-4 space-y-2 border-t border-violet/20 pt-4 text-sm">
+                <div className="flex items-end justify-between">
+                  <span className="font-semibold text-violet">
+                    Acompte prestataire ({quote.deposit_percent}%)
+                  </span>
+                  <span className="font-semibold text-plum">
+                    {euro(quote.deposit_amount)}
+                  </span>
+                </div>
+                <p className="text-xs text-slate">
+                  {quote.deposit_paid_at
+                    ? `Versé le ${fmtDepositDate(quote.deposit_paid_at)}.`
+                    : quote.deposit_due_at
+                    ? `Versement prévu le ${fmtDepositDate(quote.deposit_due_at)}.`
+                    : "Versé au prestataire à la confirmation après rencontre."}
+                </p>
+                {quote.vendor_amount != null && (
+                  <>
+                    <div className="mt-2 flex items-end justify-between">
+                      <span className="font-semibold text-violet">Solde</span>
+                      <span className="font-semibold text-plum">
+                        {euro(quote.vendor_amount - quote.deposit_amount)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate">
+                      Versé au prestataire 72h après l&apos;événement
+                      {balanceReleaseDate
+                        ? ` (à partir du ${fmtDepositDate(balanceReleaseDate)})`
+                        : ""}
+                      , sauf signalement pendant ce délai.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

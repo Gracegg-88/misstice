@@ -62,9 +62,14 @@ export async function POST(request: Request) {
     }
     try {
       const stripe = getStripe();
+      // reverse_transfer : sans effet en pratique ici (l'acompte n'est versé
+      // qu'à la confirmation, donc jamais avant une annulation après
+      // rencontre), mais sans risque à garder pour rester cohérent avec les
+      // autres remboursements et couvrir un futur changement de règle.
       await stripe.refunds.create({
         payment_intent: quote.stripe_payment_intent_id,
         amount: Math.round(Number(quote.vendor_amount) * 100),
+        reverse_transfer: true,
       });
     } catch (e) {
       console.error("trial-decide: échec remboursement Stripe", e);
