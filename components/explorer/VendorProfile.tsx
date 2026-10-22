@@ -27,6 +27,7 @@ import { useFavorites } from "@/lib/useFavorites";
 import { vibesVisible } from "@/lib/vibes";
 import { formatPriceFrom } from "@/lib/price";
 import { useContactInfoAlert } from "@/lib/contact-alert";
+import { removalHref } from "@/lib/vendor-removal";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -598,6 +599,25 @@ export default function VendorProfile({
           </aside>
         </div>
       </div>
+
+      {/* Fiche vitrine non réclamée : réclamation ou demande de retrait */}
+      {vendor.claimStatus === "non_reclamee" && (
+        <div className="mx-auto max-w-content px-page pt-10">
+          <div className="flex flex-col gap-2 border-t border-black/5 pt-6 text-xs text-slate sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Vous êtes ce professionnel ?{" "}
+              <a href="/devenir-prestataire" className="font-semibold text-violet hover:text-violet-dark">
+                Réclamez votre fiche
+              </a>
+            </p>
+            <p>
+              <a href={removalHref(vendor.name)} className="underline hover:text-violet">
+                Demander le retrait ou la rectification de cette fiche
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="h-16" />
 
