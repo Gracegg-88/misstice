@@ -8,6 +8,7 @@ import type { QuoteItem } from "@/lib/pro-types";
 import type { DemandeDetails } from "@/lib/messaging-types";
 import { euro, quoteTotals } from "@/lib/quote-doc";
 import { categoryUsesGuests } from "@/lib/quote-fields";
+import { estimateDeposit } from "@/lib/deposit";
 
 type Props = {
   // null → mode BROUILLON : le prestataire rédige sans demande et choisit le
@@ -25,6 +26,9 @@ type Props = {
   // Mention légale (SIRET vérifié) — null si non vérifié.
   prestaSiret?: string | null;
   prestaCompanyName?: string | null;
+  // Pré-rempli depuis le réglage du prestataire (profil), sinon le défaut de
+  // sa catégorie — ajustable pour ce devis précis.
+  defaultDepositPercent?: number;
   demande: DemandeDetails | null;
   // Conversations du prestataire (pour choisir le destinataire en brouillon).
   // subject/lastMessageAt : affichés à côté du nom pour éviter toute
@@ -72,6 +76,7 @@ export default function DevisForm({
   prestaAddress: prestaAddressDefault = "",
   prestaSiret = null,
   prestaCompanyName = null,
+  defaultDepositPercent = 0,
   demande,
   conversations = [],
 }: Props) {
@@ -106,6 +111,18 @@ export default function DevisForm({
   // défaut, un devis non rempli ne doit pas affirmer un statut fiscal non
   // confirmé (voir DevisDocument.tsx). Coché explicitement par le prestataire.
   const [tvaFranchise, setTvaFranchise] = useState(false);
+
+  // Acompte (0 à 50 %) — pré-rempli depuis le profil/catégorie, ajustable
+  // pour ce devis.
+  const [depositPercent, setDepositPercent] = useState(defaultDepositPercent);
+
+  // Dégustation (catégorie Traiteur uniquement).
+  const isTraiteur = prestaCategory === "Traiteur";
+  const [tastingOption, setTastingOption] = useState<
+    "incluse" | "payante" | "non_proposee"
+  >("non_proposee");
+  const [tastingPrice, setTastingPrice] = useState(0);
+  const [tastingDate, setTastingDate] = useState("");
 
   // Prestations pré-remplies par la demande du client (prix à compléter).
   const [items, setItems] = useState<QuoteItem[]>(
@@ -173,6 +190,10 @@ export default function DevisForm({
       service_fee: serviceFee,
       tax_rate: taxRate,
       tva_franchise: taxRate === 0 && tvaFranchise,
+      deposit_percent: depositPercent,
+      tasting_option: isTraiteur ? tastingOption : null,
+      tasting_price: isTraiteur && tastingOption === "payante" ? tastingPrice : null,
+      tasting_date: isTraiteur ? tastingDate.trim() || null : null,
       items: clean,
       presta_name: prestaName,
       presta_category: prestaCategory,
@@ -389,6 +410,61 @@ export default function DevisForm({
         </div>
       </Section>
 
+      {/* Dégustation (Traiteur uniquement) */}
+      {isTraiteur && (
+        <Section title="Dégustation">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="text-sm text-slate">
+              Dégustation
+              <select
+                value={tastingOption}
+                onChange={(e) =>
+                  setTastingOption(e.target.value as typeof tastingOption)
+                }
+                className="mt-1 w-full rounded-xl border border-black/10 bg-cream px-3.5 py-2 text-sm text-plum outline-none focus:border-violet"
+              >
+                <option value="non_proposee">Non proposée</option>
+                <option value="incluse">Incluse</option>
+                <option value="payante">Payante</option>
+              </select>
+            </label>
+            {tastingOption === "payante" && (
+              <label className="text-sm text-slate">
+                Montant de la dégustation (€)
+                <input
+                  type="number"
+                  min={0}
+                  value={tastingPrice}
+                  onChange={(e) =>
+                    setTastingPrice(Math.max(0, Number(e.target.value) || 0))
+                  }
+                  className="mt-1 w-full rounded-xl border border-black/10 bg-cream px-3.5 py-2 text-sm text-plum outline-none focus:border-violet"
+                />
+              </label>
+            )}
+            {tastingOption !== "non_proposee" && (
+              <label className="text-sm text-slate sm:col-span-2">
+                Date de dégustation prévue (facultatif)
+                <input
+                  type="date"
+                  value={tastingDate}
+                  onChange={(e) => setTastingDate(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-black/10 bg-cream px-3.5 py-2 text-sm text-plum outline-none focus:border-violet sm:w-60"
+                />
+              </label>
+            )}
+          </div>
+          {tastingOption === "payante" && (
+            <p className="mt-3 text-xs text-slate">
+              Si elle est payante, ajoutez la dégustation comme ligne dans le
+              détail des prestations ci-dessous : elle doit être réglée via
+              Misstice avec le reste, jamais payée directement en dehors de
+              la plateforme.
+            </p>
+          )}
+        </Section>
+      )}
+
       {/* Récapitulatif */}
       <Section title="Récapitulatif">
         <div className="grid gap-4 sm:grid-cols-3">
@@ -439,6 +515,26 @@ export default function DevisForm({
               aucun statut fiscal ne sera affirmé.
             </label>
           )}
+          <label className="col-span-full text-sm text-slate">
+            Acompte demandé à la réservation (0 à 50 %)
+            <input
+              type="number"
+              min={0}
+              max={50}
+              value={depositPercent}
+              onChange={(e) =>
+                setDepositPercent(Math.min(50, Math.max(0, Number(e.target.value) || 0)))
+              }
+              className="mt-1 w-full rounded-xl border border-black/10 bg-cream px-3.5 py-2 text-sm text-plum outline-none focus:border-violet sm:w-40"
+            />
+            <span className="mt-1 block text-xs text-slate">
+              {depositPercent > 0
+                ? `Estimation : ${euro(
+                    estimateDeposit(totals.total, depositPercent)
+                  )} versés après réservation, solde après l'événement.`
+                : "Aucun acompte : tout est versé après l'événement, comme aujourd'hui."}
+            </span>
+          </label>
         </div>
         <dl className="mt-4 space-y-1.5 rounded-2xl bg-violet-soft/50 px-5 py-4 text-sm">
           <div className="flex justify-between">

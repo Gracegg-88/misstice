@@ -6,13 +6,14 @@ import SiretVerification from "@/components/pro/SiretVerification";
 import StripeConnectStatus from "@/components/pro/StripeConnectStatus";
 import { getMyVendor, getMyPackages, getMyPhotos } from "@/lib/pro";
 import { getProfile } from "@/lib/queries";
-import { getCategories } from "@/lib/vendors";
+import { getCategories, getCategoryDepositDefaults } from "@/lib/vendors";
 import { createClient } from "@/lib/supabase/server";
 import type { ProVendor } from "@/lib/pro-types";
 
 export default async function ProProfilPage() {
   const vendor = await getMyVendor();
   const categories = await getCategories();
+  const categoryDepositDefaults = await getCategoryDepositDefaults();
 
   const supabase = createClient();
   const {
@@ -49,6 +50,7 @@ export default async function ProProfilPage() {
       priceFrom: "",
       image: null,
       verified: false,
+      depositPercent: null,
       rating: 0,
       reviews: 0,
       moods: [],
@@ -70,6 +72,7 @@ export default async function ProProfilPage() {
           packages={[]}
           photos={[]}
           categories={categories}
+          categoryDepositDefaults={categoryDepositDefaults}
         />
         {accountSection}
       </div>
@@ -101,6 +104,7 @@ export default async function ProProfilPage() {
         packages={packages}
         photos={photos}
         categories={categories}
+        categoryDepositDefaults={categoryDepositDefaults}
       />
       <div className="mx-auto max-w-3xl">
         <SiretVerification
