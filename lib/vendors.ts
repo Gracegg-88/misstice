@@ -14,6 +14,8 @@ type Row = {
   rating: number;
   reviews: number;
   verified: boolean;
+  payouts_enabled: boolean | null;
+  retire_le: string | null;
   reviewed_at: string | null;
   response_hours: number;
   response_rate: number;
@@ -46,6 +48,8 @@ function map(r: Row): Vendor {
     rating: Number(r.rating),
     reviews: r.reviews,
     verified: r.verified,
+    payoutsEnabled: Boolean(r.payouts_enabled),
+    retired: Boolean(r.retire_le),
     isNew: !r.reviewed_at,
     responseHours: r.response_hours,
     responseRate: r.response_rate,
@@ -72,24 +76,40 @@ function map(r: Row): Vendor {
  * client sans cookies (lib/supabase/static) quand l'appel vient de
  * generateStaticParams (build time, sans requête).
  *
- * Une fiche apparaît si le prestataire est à la fois vérifié (SIRET) et actif
- * côté paiement (Stripe Connect Express), pour ne jamais exposer un profil
- * qui ne peut pas encore être payé en cas de réservation — OU s'il s'agit
- * d'une fiche vitrine importée (claim_status = 'non_reclamee', voir
- * supabase/vendor-import.sql) : sans ça, personne ne les voit jamais pour
- * les réclamer. Les vraies fiches (claim_status = "reclamee") passent
+ * Règle de visibilité (voir PUBLIC_VENDOR_FILTER / isPubliclyVisible) :
+ * une fiche réclamée apparaît dès que le SIRET est vérifié, même si les
+ * paiements Stripe ne sont pas encore actifs — ce sont l'envoi de devis
+ * (côté pro) et le paiement (api/stripe/checkout/create) qui exigent
+ * payouts_enabled. Les fiches vitrines importées (claim_status =
+ * 'non_reclamee', voir supabase/vendor-import.sql) restent visibles pour
+ * pouvoir être réclamées. Une fiche retirée (retire_le non nul, voir
+ * supabase/vendor-removal.sql) n'est jamais publique : la politique RLS la
+ * masque déjà au public, mais pas à son propriétaire ni à l'admin, d'où le
+ * filtre explicite ici. Les vraies fiches (claim_status = "reclamee") passent
  * toujours avant les fiches vitrines : tri DESCENDANT sur claim_status, car
  * "non_reclamee" < "reclamee" dans l'ordre alphabétique. L'annuaire
  * (ExplorerClient) réapplique cette priorité quel que soit le tri choisi. Statut
  * "en cours" affiché uniquement dans son propre tableau de bord (voir
  * app/pro/page.tsx), jamais dans l'annuaire.
  */
+export const PUBLIC_VENDOR_FILTER =
+  "and(claim_status.eq.reclamee,verified.eq.true),claim_status.eq.non_reclamee";
+
+/** Même règle que getVendors(), pour une fiche déjà chargée. */
+export function isPubliclyVisible(
+  v: Pick<Vendor, "claimStatus" | "verified" | "retired">
+): boolean {
+  if (v.retired) return false;
+  return v.claimStatus === "non_reclamee" || v.verified;
+}
+
 export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
   const supabase = client ?? createClient();
   const { data } = await supabase
     .from("vendors")
     .select("*")
-    .or("and(verified.eq.true,payouts_enabled.eq.true),claim_status.eq.non_reclamee")
+    .or(PUBLIC_VENDOR_FILTER)
+    .is("retire_le", null)
     .order("claim_status", { ascending: false })
     .order("position", { ascending: true });
   return ((data as Row[]) ?? []).map(map);

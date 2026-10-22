@@ -68,10 +68,13 @@ function formatDate(iso: string) {
 export default function DemandesClient({
   convs,
   quotes,
+  canSendQuote = true,
   embedded = false,
 }: {
   convs: ConversationListItem[];
   quotes: Quote[];
+  /** false tant que les paiements Stripe ne sont pas actifs (pas de devis). */
+  canSendQuote?: boolean;
   embedded?: boolean;
 }) {
   // Index des devis par conversation (le plus récent d'abord).
@@ -183,7 +186,7 @@ export default function DemandesClient({
                   <MessageSquare size={15} />
                   Répondre
                 </Link>
-                {!quote && (
+                {!quote && canSendQuote && (
                   <Link
                     href={`/pro/devis/nouveau?conv=${c.id}`}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-violet px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
@@ -193,7 +196,7 @@ export default function DemandesClient({
                   </Link>
                 )}
               </div>
-              {quote && (
+              {quote && canSendQuote && (
                 <Link
                   href={`/pro/devis/nouveau?conv=${c.id}`}
                   className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-slate underline decoration-dotted hover:text-violet"
