@@ -89,6 +89,24 @@ export async function POST(request: Request) {
         typeof session.payment_intent === "string"
           ? session.payment_intent
           : session.payment_intent?.id ?? null;
+      // ID de la charge sous-jacente : nécessaire comme `source_transaction`
+      // pour les virements d'acompte (voir app/api/cron/deposit-payout) —
+      // permet à Stripe de prélever directement sur cette transaction même
+      // si les fonds ne sont pas encore "disponibles" sur le solde
+      // plateforme, et de la relier pour un remboursement avec
+      // `reverse_transfer` en cas de litige "prestataire_absent".
+      let chargeId: string | null = null;
+      if (paymentIntentId) {
+        try {
+          const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+          chargeId =
+            typeof pi.latest_charge === "string"
+              ? pi.latest_charge
+              : pi.latest_charge?.id ?? null;
+        } catch (e) {
+          console.error("stripe-webhook: récupération charge échouée", e);
+        }
+      }
       // Le split 85/15 est calculé sur le montant RÉELLEMENT encaissé par
       // Stripe (amount_total, en centimes) — jamais recalculé depuis
       // quotes.amount, qui n'est qu'une copie dénormalisée pouvant diverger.
@@ -99,6 +117,7 @@ export async function POST(request: Request) {
         p_quote: quoteId,
         p_session_id: session.id,
         p_payment_intent_id: paymentIntentId,
+        p_charge_id: chargeId,
         p_amount: session.amount_total / 100,
         p_event_date: eventDate,
       });

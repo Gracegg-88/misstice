@@ -20,7 +20,7 @@ export type {
 } from "@/lib/pro-types";
 
 const QUOTE_COLS =
-  "id, prestataire_id, conversation_id, client_name, event_label, amount, status, created_at, quote_number, validity_days, intro_message, event_need, event_date, event_location, guests_count, client_email, client_phone, client_address, service_fee, tax_rate, tva_franchise, items, presta_name, presta_category, presta_email, presta_phone, presta_address, presta_siret, presta_company_name, escrow_event_date, vendor_amount, commission_amount, dispute_reason, dispute_comment, dispute_filed_at, dispute_resolved_at";
+  "id, prestataire_id, conversation_id, client_name, event_label, amount, status, created_at, quote_number, validity_days, intro_message, event_need, event_date, event_location, guests_count, client_email, client_phone, client_address, service_fee, tax_rate, tva_franchise, items, presta_name, presta_category, presta_email, presta_phone, presta_address, presta_siret, presta_company_name, escrow_event_date, vendor_amount, commission_amount, dispute_reason, dispute_comment, dispute_filed_at, dispute_resolved_at, deposit_percent, deposit_amount, deposit_due_at, deposit_paid_at, tasting_option, tasting_price, tasting_date";
 
 /** Le prestataire connecté : profil détaillé + fiche annuaire liée. */
 export async function getMyVendor(): Promise<ProVendor | null> {
@@ -32,7 +32,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
 
   const { data: vp } = await supabase
     .from("vendor_profiles")
-    .select("id, company, category, city, about")
+    .select("id, company, category, city, about, deposit_percent")
     .eq("id", user.id)
     .maybeSingle();
   if (!vp) return null;
@@ -69,6 +69,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     category: string | null;
     city: string | null;
     about: string | null;
+    deposit_percent: number | null;
   };
 
   return {
@@ -78,6 +79,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     category: p.category,
     city: p.city,
     about: p.about,
+    depositPercent: p.deposit_percent == null ? null : Number(p.deposit_percent),
     tagline: vv?.tagline ?? null,
     priceFrom: vv?.price_from ?? null,
     image: vv?.image ?? null,
@@ -107,6 +109,9 @@ function normalizeQuote(row: Record<string, unknown>): Quote {
     tax_rate: Number(row.tax_rate ?? 0),
     tva_franchise: Boolean(row.tva_franchise),
     validity_days: Number(row.validity_days ?? 15),
+    deposit_percent: Number(row.deposit_percent ?? 0),
+    deposit_amount: row.deposit_amount == null ? null : Number(row.deposit_amount),
+    tasting_price: row.tasting_price == null ? null : Number(row.tasting_price),
   };
 }
 

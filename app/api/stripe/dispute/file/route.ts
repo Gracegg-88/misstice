@@ -88,9 +88,16 @@ export async function POST(request: Request) {
     }
     try {
       const stripe = getStripe();
+      // reverse_transfer : si un acompte a déjà été versé au prestataire sur
+      // ce paiement (source_transaction — voir app/api/cron/deposit-payout),
+      // Stripe le reprend automatiquement pour couvrir ce remboursement. Le
+      // client doit être intégralement remboursé même si l'acompte n'est
+      // normalement pas remboursable (ici le prestataire n'est pas venu, ce
+      // n'est pas une annulation du client).
       await stripe.refunds.create({
         payment_intent: quote.stripe_payment_intent_id,
         amount: Math.round(Number(quote.vendor_amount) * 100),
+        reverse_transfer: true,
       });
     } catch (e) {
       console.error("dispute-file: échec remboursement Stripe", e);

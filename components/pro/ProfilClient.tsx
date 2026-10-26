@@ -36,11 +36,16 @@ export default function ProfilClient({
   packages,
   photos,
   categories,
+  categoryDepositDefaults = {},
 }: {
   vendor: ProVendor;
   packages: VendorPackage[];
   photos: VendorPhoto[];
   categories: string[];
+  // Pourcentage d'acompte par défaut de chaque catégorie (vendor_categories.
+  // default_deposit_percent), pour l'afficher à titre indicatif quand le
+  // prestataire n'a pas réglé le sien.
+  categoryDepositDefaults?: Record<string, number>;
 }) {
   const router = useRouter();
 
@@ -53,6 +58,11 @@ export default function ProfilClient({
     tagline: vendor.tagline ?? "",
     priceFrom: vendor.priceFrom ?? "",
   });
+  // null = suit le défaut de la catégorie (champ laissé vide).
+  const [depositPercent, setDepositPercent] = useState<string>(
+    vendor.depositPercent == null ? "" : String(vendor.depositPercent)
+  );
+  const categoryDefaultDeposit = categoryDepositDefaults[info.category] ?? 0;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -217,6 +227,15 @@ export default function ProfilClient({
       setError(CONTACT_INFO_FORBIDDEN_MESSAGE);
       return;
     }
+    const depositTrim = depositPercent.trim();
+    if (depositTrim !== "") {
+      const n = Number(depositTrim);
+      if (!Number.isFinite(n) || n < 0 || n > 50) {
+        setError("L'acompte doit être un nombre entre 0 et 50.");
+        return;
+      }
+    }
+
     setSaving(true);
     setError("");
     setSaved(false);
@@ -229,6 +248,7 @@ export default function ProfilClient({
       category: info.category || null,
       city: info.city || null,
       about: info.about || null,
+      deposit_percent: depositTrim === "" ? null : Number(depositTrim),
     });
     if (pErr) {
       setSaving(false);
@@ -558,6 +578,25 @@ export default function ProfilClient({
               className={`mt-1.5 ${inputCls}`}
             />
           </div>
+        </div>
+        <div className="mt-4">
+          <label className="text-sm font-medium text-plum">
+            Acompte demandé à la réservation (0 à 50 %)
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={50}
+            value={depositPercent}
+            onChange={(e) => setDepositPercent(e.target.value)}
+            placeholder={`Défaut de votre catégorie : ${categoryDefaultDeposit}%`}
+            className={`mt-1.5 ${inputCls} sm:w-56`}
+          />
+          <p className="mt-1 text-xs text-slate">
+            Laissez vide pour suivre le défaut de votre catégorie (
+            {categoryDefaultDeposit}% actuellement). Réglable aussi au cas
+            par cas sur chaque devis.
+          </p>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
