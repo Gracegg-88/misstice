@@ -2,20 +2,13 @@ import { BadgeCheck, CakeSlice, Lock, PartyPopper, Store, UtensilsCrossed } from
 import type { LucideIcon } from "lucide-react";
 import type { FeaturedVendor } from "@/lib/geo";
 import { SITE_URL } from "@/lib/seo";
+import { removalHref } from "@/lib/vendor-removal";
 
 const ROLE_ICONS: Record<string, LucideIcon> = {
   traiteur: UtensilsCrossed,
   patissier: CakeSlice,
   decorateur: PartyPopper,
 };
-
-// Adresse déjà publiée dans les mentions légales.
-const CONTACT_EMAIL = "contact@misstice.com";
-
-function removalHref(vendorName: string): string {
-  const subject = `Retrait ou rectification de fiche : ${vendorName}`;
-  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
-}
 
 /**
  * Section « 3 prestataires pour réussir votre <événement> à <ville> ».
