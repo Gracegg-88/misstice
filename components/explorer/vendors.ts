@@ -9,6 +9,7 @@ export type Vendor = {
   rating: number;
   reviews: number;
   verified: boolean; // vérifié par Misstice
+  googlePlaceId?: string | null; // fiche Google VALIDÉE par l'admin (note affichée par le Places UI Kit, jamais stockée)
   isNew: boolean; // pas encore relu manuellement par l'admin
   responseHours: number;
   responseRate: number;
