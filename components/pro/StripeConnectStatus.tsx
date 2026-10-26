@@ -15,11 +15,11 @@ export default function StripeConnectStatus({
       {status === "non_demarre" && (
         <>
           <p className="mt-1 text-sm text-slate">
-            Dernière étape avant d&apos;être visible auprès des familles :
-            vérifiez votre identité et vos informations bancaires via Stripe,
-            notre partenaire de paiement sécurisé. Ça prend quelques minutes,
-            et c&apos;est ce qui vous permet d&apos;être payé automatiquement
-            après chaque événement.
+            Indispensable pour envoyer vos devis : vérifiez votre identité et
+            vos informations bancaires via Stripe, notre partenaire de paiement
+            sécurisé. Ça prend une dizaine de minutes, et c&apos;est ce qui
+            vous permet d&apos;être payé automatiquement après chaque
+            événement.
           </p>
           <a
             href="/api/stripe/connect/onboard"

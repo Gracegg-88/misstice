@@ -1,15 +1,16 @@
 import ProDevisTabs from "@/components/pro/ProDevisTabs";
 import { getMyConversations } from "@/lib/messaging";
-import { getMyQuotes } from "@/lib/pro";
+import { getMyPaymentsStatus, getMyQuotes } from "@/lib/pro";
 
 export default async function ProDemandesPage({
   searchParams,
 }: {
   searchParams: { tab?: string };
 }) {
-  const [convsAll, quotes] = await Promise.all([
+  const [convsAll, quotes, payments] = await Promise.all([
     getMyConversations(),
     getMyQuotes(),
+    getMyPaymentsStatus(),
   ]);
 
   // « Demandes & devis » ne montre que les conversations qui sont VRAIMENT une
@@ -27,6 +28,7 @@ export default async function ProDemandesPage({
     <ProDevisTabs
       convs={convs}
       quotes={quotes}
+      payments={payments}
       initialTab={searchParams.tab === "devis" ? "devis" : "demandes"}
     />
   );
