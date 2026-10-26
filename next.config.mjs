@@ -1,15 +1,16 @@
 /** @type {import('next').NextConfig} */
 // Content-Security-Policy. 'unsafe-inline' reste nécessaire (styles inline +
 // scripts d'hydratation Next.js sans nonce) ; le reste est restreint aux
-// origines réellement utilisées (Supabase, Cloudinary, tuiles OSM).
+// origines réellement utilisées (Supabase, Cloudinary, tuiles OSM, et Google
+// Maps pour le Places UI Kit — note Google des fiches prestataires).
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.iubenda.com https://assets.calendly.com",
-  "style-src 'self' 'unsafe-inline' https://cdn.iubenda.com https://assets.calendly.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.iubenda.com https://assets.calendly.com https://maps.googleapis.com https://maps.gstatic.com",
+  "style-src 'self' 'unsafe-inline' https://cdn.iubenda.com https://assets.calendly.com https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.iubenda.com https://www.iubenda.com https://calendly.com https://*.calendly.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://cdn.iubenda.com https://www.iubenda.com https://calendly.com https://*.calendly.com https://maps.googleapis.com https://places.googleapis.com",
   "frame-src 'self' https://calendly.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",

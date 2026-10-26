@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import GooglePlaceLinker from "@/components/google/GooglePlaceLinker";
 
 type Vendor = {
   id: string;
@@ -33,6 +34,8 @@ type Vendor = {
   tentativesContact: number;
   lastRelanceSentAt: string | null;
   contactFields: string[];
+  googlePlaceId: string | null;
+  googlePlaceStatus: "a_valider" | "valide" | null;
 };
 
 // Filtres de statut proposés dans la liste déroulante.
@@ -48,6 +51,8 @@ const STATUS_FILTERS = [
   { v: "sans_email", l: "Sans email de contact" },
   { v: "avec_contact", l: "Avec tentative de contact" },
   { v: "coordonnees", l: "Coordonnées détectées" },
+  { v: "google_a_valider", l: "Fiche Google à valider" },
+  { v: "google_valide", l: "Fiche Google liée" },
 ] as const;
 
 type StatusFilter = (typeof STATUS_FILTERS)[number]["v"];
@@ -78,6 +83,10 @@ function matchesStatus(v: Vendor, status: StatusFilter): boolean {
       return v.tentativesContact > 0;
     case "coordonnees":
       return v.contactFields.length > 0;
+    case "google_a_valider":
+      return v.googlePlaceStatus === "a_valider";
+    case "google_valide":
+      return v.googlePlaceStatus === "valide";
     default:
       return true;
   }
@@ -97,6 +106,8 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
   const [category, setCategory] = useState("all");
   const [city, setCity] = useState("all");
   const [status, setStatus] = useState<StatusFilter>("all");
+  // Fiche dont le panneau « Fiche Google » est ouvert.
+  const [googleOpen, setGoogleOpen] = useState<string | null>(null);
 
   const categories = useMemo(
     () =>
@@ -406,6 +417,20 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                         {v.verified ? <ShieldOff size={14} /> : <ShieldCheck size={14} />}
                         {v.verified ? "Retirer" : "Vérifier"}
                       </button>
+                      <button
+                        type="button"
+                        aria-expanded={googleOpen === v.id}
+                        onClick={() => setGoogleOpen((cur) => (cur === v.id ? null : v.id))}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          v.googlePlaceStatus === "a_valider"
+                            ? "border-violet bg-violet-soft text-violet"
+                            : "border-black/10 text-plum hover:border-violet/40"
+                        }`}
+                      >
+                        Google
+                        {v.googlePlaceStatus === "valide" && <BadgeCheck size={13} />}
+                        {v.googlePlaceStatus === "a_valider" && " · à valider"}
+                      </button>
                       {!v.reviewed_at && (
                         <button
                           type="button"
@@ -429,6 +454,22 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                     </div>
                   </td>
                 </tr>
+                {googleOpen === v.id && (
+                  <tr className="border-b border-black/5 bg-violet-soft/30 last:border-0">
+                    <td colSpan={5} className="px-5 py-4">
+                      <p className="mb-3 text-sm font-semibold text-plum">
+                        Fiche Google de {v.name}
+                      </p>
+                      <GooglePlaceLinker
+                        mode="admin"
+                        vendorId={v.id}
+                        defaultQuery={`${v.name} ${v.city ?? ""}`.trim()}
+                        placeId={v.googlePlaceId}
+                        status={v.googlePlaceStatus}
+                      />
+                    </td>
+                  </tr>
+                )}
                 {v.claimStatus === "non_reclamee" && (
                   <tr className="border-b border-black/5 bg-cream/60 last:border-0">
                     <td colSpan={5} className="px-5 py-3">

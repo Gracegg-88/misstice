@@ -28,6 +28,10 @@ import { vibesVisible } from "@/lib/vibes";
 import { formatPriceFrom } from "@/lib/price";
 import { useContactInfoAlert } from "@/lib/contact-alert";
 import { removalHref } from "@/lib/vendor-removal";
+import GooglePlaceCard, {
+  googleMapsUrl,
+  googlePlacesEnabled,
+} from "@/components/google/GooglePlaceCard";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -490,10 +494,36 @@ export default function VendorProfile({
               )}
             </section>
 
-            {/* Avis */}
+            {/* Note Google — bloc séparé des avis Misstice : affichée en
+                direct par le composant officiel Google (rien n'est stocké ni
+                compté dans vendors.rating / vendors.reviews). */}
+            {vendor.googlePlaceId && googlePlacesEnabled && (
+              <section aria-labelledby="note-google">
+                <h2 id="note-google" className="font-display text-2xl font-semibold text-plum">
+                  Note Google
+                </h2>
+                <p className="mt-1 text-sm text-slate">
+                  Note et avis publiés sur Google, affichés par Google. Ils ne
+                  sont pas comptés dans les avis Misstice.
+                </p>
+                <div className="mt-4 rounded-2xl border border-black/5 bg-white p-4">
+                  <GooglePlaceCard placeId={vendor.googlePlaceId} variant="rating" />
+                  <a
+                    href={googleMapsUrl(vendor.googlePlaceId, vendor.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex text-sm font-semibold text-violet hover:text-violet-dark"
+                  >
+                    Voir les avis sur Google Maps
+                  </a>
+                </div>
+              </section>
+            )}
+
+            {/* Avis Misstice */}
             <section>
               <h2 className="font-display text-2xl font-semibold text-plum">
-                Avis{vendor.reviews > 0 ? ` (${vendor.reviews})` : ""}
+                Avis Misstice{vendor.reviews > 0 ? ` (${vendor.reviews})` : ""}
               </h2>
 
               {vendor.reviews > 0 ? (

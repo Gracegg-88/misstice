@@ -14,6 +14,8 @@ type Row = {
   rating: number;
   reviews: number;
   verified: boolean;
+  google_place_id?: string | null;
+  google_place_status?: string | null;
   reviewed_at: string | null;
   response_hours: number;
   response_rate: number;
@@ -46,6 +48,8 @@ function map(r: Row): Vendor {
     rating: Number(r.rating),
     reviews: r.reviews,
     verified: r.verified,
+    // Seul un lien validé par l'admin est public (voir supabase/google-places.sql).
+    googlePlaceId: r.google_place_status === "valide" ? r.google_place_id ?? null : null,
     isNew: !r.reviewed_at,
     responseHours: r.response_hours,
     responseRate: r.response_rate,

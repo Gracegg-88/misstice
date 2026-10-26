@@ -17,6 +17,8 @@ type Vendor = {
   lastRelanceSentAt: string | null;
   /** Champs publics de la fiche où des coordonnées ont été détectées. */
   contactFields: string[];
+  googlePlaceId: string | null;
+  googlePlaceStatus: "a_valider" | "valide" | null;
 };
 
 export default async function AdminPrestataires() {
@@ -27,6 +29,21 @@ export default async function AdminPrestataires() {
       "id, name, category, city, verified, reviewed_at, user_id, claim_status, contact_email, vues_fiche, tentatives_contact, last_relance_sent_at, tagline, price_from"
     )
     .order("position", { ascending: true });
+
+  // Lien Google (supabase/google-places.sql) : requête séparée et tolérante,
+  // pour que la page reste fonctionnelle tant que le script n'est pas exécuté.
+  const { data: googleData, error: googleErr } = await supabase
+    .from("vendors")
+    .select("id, google_place_id, google_place_status");
+  const googleById = new Map(
+    googleErr
+      ? []
+      : (
+          (googleData as
+            | { id: string; google_place_id: string | null; google_place_status: "a_valider" | "valide" | null }[]
+            | null) ?? []
+        ).map((g) => [g.id, g])
+  );
 
   const rows = (
     (data as {
@@ -89,6 +106,8 @@ export default async function AdminPrestataires() {
         tentativesContact: tentatives_contact,
         lastRelanceSentAt: last_relance_sent_at,
         contactFields: fields.filter(([, texts]) => texts.some((t) => containsContactInfo(t))).map(([label]) => label),
+        googlePlaceId: googleById.get(v.id)?.google_place_id ?? null,
+        googlePlaceStatus: googleById.get(v.id)?.google_place_status ?? null,
       };
     }
   );
