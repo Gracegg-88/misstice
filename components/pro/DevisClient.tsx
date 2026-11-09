@@ -209,6 +209,16 @@ export default function DevisClient({
                   {q.event_label ? `${q.event_label} · ` : ""}envoyé le{" "}
                   {formatDate(q.created_at)}
                 </p>
+                {q.deposit_percent > 0 && q.deposit_amount != null && (
+                  <p className="mt-0.5 text-xs font-medium text-violet">
+                    Acompte {q.deposit_amount.toLocaleString("fr-FR")}€
+                    {q.deposit_paid_at
+                      ? " · versé"
+                      : q.deposit_due_at
+                      ? ` · prévu le ${formatDate(q.deposit_due_at)}`
+                      : " · à la confirmation"}
+                  </p>
+                )}
               </Link>
               <div className="flex items-center gap-3">
                 <span className="font-display text-lg font-semibold text-plum">

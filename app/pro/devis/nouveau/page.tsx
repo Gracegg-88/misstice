@@ -4,6 +4,8 @@ import { getConversation, getMyConversations } from "@/lib/messaging";
 import Link from "next/link";
 import ActivatePaymentsCallout from "@/components/pro/ActivatePaymentsCallout";
 import { getMyPaymentsStatus, getMyVendor } from "@/lib/pro";
+import { getCategoryDefaultDepositPercent } from "@/lib/vendors";
+import { resolveDepositPercent } from "@/lib/deposit";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NouveauDevisPage({
@@ -59,6 +61,10 @@ export default async function NouveauDevisPage({
     | { siret: string | null; siret_verified_at: string | null; siret_company_name: string | null }
     | null;
 
+  const categoryDefaultDeposit = await getCategoryDefaultDepositPercent(
+    vendor?.category ?? null
+  );
+
   const common = {
     prestataireId: user.id,
     prestaName: vendor?.company ?? "Prestataire",
@@ -69,6 +75,12 @@ export default async function NouveauDevisPage({
       (lastQuote as { presta_address: string | null } | null)?.presta_address ?? "",
     prestaSiret: siret?.siret_verified_at ? siret.siret : null,
     prestaCompanyName: siret?.siret_verified_at ? siret.siret_company_name : null,
+    // Défaut pré-rempli dans le devis, ajustable ligne à ligne par le
+    // prestataire : son réglage de profil, sinon celui de sa catégorie.
+    defaultDepositPercent: resolveDepositPercent(
+      vendor?.depositPercent ?? null,
+      categoryDefaultDeposit
+    ),
   };
 
   // Mode ciblé : devis lié à une conversation précise (depuis « Rédiger » d'une

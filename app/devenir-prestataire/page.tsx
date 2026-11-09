@@ -129,6 +129,10 @@ const faqs = [
     a: "Le client règle l'intégralité du devis dès son acceptation, en sécurité chez Misstice (séquestre Stripe). Votre part est versée automatiquement sur votre compte 72h après la date de l'événement, sauf signalement du client pendant ce délai. Pour les catégories nécessitant une rencontre préalable (Traiteur, Robe & Tenue, Coiffure & Maquillage), la réservation est confirmée après cette rencontre — et automatiquement si le client ne répond pas avant la date limite, pour que vous ne restiez jamais sans réponse.",
   },
   {
+    q: "Puis-je demander un acompte à la réservation ?",
+    a: "Oui. Depuis votre profil, choisissez un pourcentage d'acompte (jusqu'à 50 % de votre part), avec une valeur pré-remplie selon votre métier (par exemple 50 % pour un traiteur) — ajustable à tout moment, et modifiable aussi au cas par cas sur chaque devis. Il est versé sur votre compte 5 jours après le paiement du client (ou à la confirmation après rencontre pour les métiers concernés), le solde suivant la règle habituelle (72h après l'événement).",
+  },
+  {
     q: "Puis-je m'inscrire pour plusieurs types d'événements à la fois ?",
     a: "Oui. Vous choisissez librement les types d'événements que vous couvrez (mariage, anniversaire, baptême, gala, baby shower…) et vous pouvez modifier cette liste à tout moment depuis votre profil.",
   },
