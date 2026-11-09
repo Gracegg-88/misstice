@@ -105,6 +105,31 @@ export async function getCategories(): Promise<string[]> {
   return ((data as { name: string }[]) ?? []).map((c) => c.name);
 }
 
+/** Pourcentage d'acompte par défaut d'une catégorie (0 si non renseignée/inconnue). */
+export async function getCategoryDefaultDepositPercent(
+  category: string | null
+): Promise<number> {
+  if (!category) return 0;
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("vendor_categories")
+    .select("default_deposit_percent")
+    .eq("name", category)
+    .maybeSingle();
+  return Number((data as { default_deposit_percent: number } | null)?.default_deposit_percent ?? 0);
+}
+
+/** Pourcentage d'acompte par défaut de TOUTES les catégories (nom → %), pour
+ *  l'affichage indicatif côté profil prestataire (ProfilClient). */
+export async function getCategoryDepositDefaults(): Promise<Record<string, number>> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("vendor_categories")
+    .select("name, default_deposit_percent");
+  const rows = (data as { name: string; default_deposit_percent: number }[]) ?? [];
+  return Object.fromEntries(rows.map((r) => [r.name, Number(r.default_deposit_percent ?? 0)]));
+}
+
 /** Formules réelles d'un prestataire inscrit (pour sa fiche publique). */
 export async function getPublicPackages(userId: string): Promise<Pkg[]> {
   const supabase = createClient();

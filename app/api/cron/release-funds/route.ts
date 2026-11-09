@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     (eligible as {
       id: string;
       prestataire_id: string;
-      vendor_amount: number;
+      amount_due: number;
       presta_name: string | null;
     }[]) ?? [];
 
@@ -74,7 +74,7 @@ export async function GET(request: Request) {
       }
 
       const transfer = await stripe.transfers.create({
-        amount: Math.round(Number(row.vendor_amount) * 100),
+        amount: Math.round(Number(row.amount_due) * 100),
         currency: "eur",
         destination: profile.stripe_account_id,
         transfer_group: row.id,
@@ -94,20 +94,24 @@ export async function GET(request: Request) {
         );
         const to = authUser?.user?.email;
         if (to) {
-          const amount = euro(Number(row.vendor_amount));
+          // amount_due = le solde restant (déjà net de l'acompte éventuel,
+          // déjà versé séparément — voir app/api/cron/deposit-payout) : on
+          // ne répète pas "votre part" pour ne pas laisser croire que ce
+          // virement couvre toute la prestation si un acompte est déjà parti.
+          const amount = euro(Number(row.amount_due));
           const html = emailShell(`
             <h1 style="margin:0 0 8px;font-size:20px;color:#1A1A2E">Fonds libérés ✔</h1>
             <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#6B7280">
               La prestation "${escapeHtml(
                 row.presta_name || "votre devis"
-              )}" est confirmée réalisée sans signalement : votre part de
-              <strong>${amount}</strong> a été transférée sur votre compte Stripe.
+              )}" est confirmée réalisée sans signalement : le solde de
+              <strong>${amount}</strong> a été transféré sur votre compte Stripe.
             </p>`);
           await sendEmail({
             to,
             subject: "Misstice — Fonds libérés",
             html,
-            text: `Votre part de ${amount} pour "${row.presta_name || "votre devis"}" a été transférée sur votre compte Stripe.`,
+            text: `Le solde de ${amount} pour "${row.presta_name || "votre devis"}" a été transféré sur votre compte Stripe.`,
           });
         }
       } catch (e) {

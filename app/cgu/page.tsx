@@ -59,6 +59,19 @@ const sections = [
               date de l&apos;événement, sauf signalement du client pendant ce
               délai (voir point 4).
             </li>
+            <li>
+              Certains prestataires demandent un acompte (jusqu&apos;à 50 %
+              de leur part), versé plus tôt — 5 jours après le paiement pour
+              la plupart des prestations, ou à la confirmation après
+              rencontre pour celles qui en nécessitent une (voir point 3).
+              Le solde restant suit la règle habituelle (72h après
+              l&apos;événement). Le pourcentage d&apos;acompte, son montant
+              et ses dates prévues sont indiqués sur le devis. Un acompte
+              déjà versé au prestataire n&apos;est pas remboursable en cas
+              d&apos;annulation du client — c&apos;est le principe même d&apos;un
+              acompte (sauf absence du prestataire le jour J, voir point 4,
+              qui reste intégralement remboursé dans tous les cas).
+            </li>
           </ul>
         </div>
         <div>
@@ -71,7 +84,9 @@ const sections = [
               Maquillage, le paiement reste immédiat à l&apos;acceptation du
               devis, mais la réservation n&apos;est définitivement confirmée
               qu&apos;après la rencontre (dégustation, essayage...), via le
-              bouton « Confirmer après rencontre ».
+              bouton « Confirmer après rencontre ». L&apos;éventuel acompte
+              n&apos;est versé au prestataire qu&apos;à cette confirmation,
+              jamais avant.
             </li>
             <li>
               En cas d&apos;« Annuler après rencontre », la part du prestataire
@@ -106,7 +121,8 @@ const sections = [
             </li>
             <li>
               « Prestataire absent le jour J » : remboursement automatique et
-              immédiat de la part du prestataire.
+              immédiat de la part du prestataire, y compris l&apos;acompte
+              s&apos;il avait déjà été versé.
             </li>
             <li>
               « Insatisfaction sur la qualité » : pas de remboursement
