@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
 import { quoteTotals } from "@/lib/quote-doc";
 import { getCurrentEvent } from "@/lib/queries";
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
   const { data: quote } = await supabase
     .from("quotes")
     .select(
-      "id, conversation_id, status, presta_name, items, service_fee, tax_rate"
+      "id, prestataire_id, conversation_id, status, presta_name, items, service_fee, tax_rate"
     )
     .eq("id", quoteId)
     .maybeSingle();
@@ -56,6 +57,31 @@ export async function POST(request: Request) {
   // prestataire) peut accepter et payer un devis.
   if (!conversation || conversation.particulier_id !== user.id) {
     return NextResponse.json({ error: "Action non autorisée." }, { status: 403 });
+  }
+
+  // Jamais de paiement vers un prestataire qui ne peut pas recevoir les fonds
+  // (paiements Stripe non activés). Vérifié AVANT d'accepter le devis, pour
+  // ne pas laisser un devis « accepté » impossible à régler. Lecture via le
+  // service role : le profil de paiement du prestataire n'est pas lisible
+  // par la famille.
+  let payoutsEnabled = false;
+  try {
+    const { data: payee } = await createAdminClient()
+      .from("vendor_profiles")
+      .select("payouts_enabled, stripe_account_id")
+      .eq("id", quote.prestataire_id)
+      .maybeSingle();
+    payoutsEnabled = Boolean(payee?.payouts_enabled && payee?.stripe_account_id);
+  } catch (e) {
+    console.error("checkout-create: lecture du profil de paiement impossible", e);
+  }
+  if (!payoutsEnabled) {
+    return NextResponse.json(
+      {
+        error: `${quote.presta_name ?? "Ce prestataire"} n'a pas encore activé les paiements sécurisés : le paiement en ligne n'est pas possible pour le moment et aucun montant n'a été débité. Écrivez-lui dans la messagerie, ou comparez avec d'autres prestataires.`,
+      },
+      { status: 409 }
+    );
   }
 
   // eventId et eventDate sont TOUJOURS résolus ensemble, depuis la même

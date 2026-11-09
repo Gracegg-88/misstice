@@ -10,6 +10,8 @@ export type Vendor = {
   reviews: number;
   verified: boolean; // vérifié par Misstice
   googlePlaceId?: string | null; // fiche Google VALIDÉE par l'admin (note affichée par le Places UI Kit, jamais stockée)
+  payoutsEnabled?: boolean; // paiements Stripe Connect actifs (badge « Paiement sécurisé activé »)
+  retired?: boolean; // retirée à la demande de l'entreprise (vendors.retire_le non nul) : jamais publique
   isNew: boolean; // pas encore relu manuellement par l'admin
   responseHours: number;
   responseRate: number;

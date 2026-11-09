@@ -16,6 +16,8 @@ type Row = {
   verified: boolean;
   google_place_id?: string | null;
   google_place_status?: string | null;
+  payouts_enabled: boolean | null;
+  retire_le: string | null;
   reviewed_at: string | null;
   response_hours: number;
   response_rate: number;
@@ -50,6 +52,8 @@ function map(r: Row): Vendor {
     verified: r.verified,
     // Seul un lien validé par l'admin est public (voir supabase/google-places.sql).
     googlePlaceId: r.google_place_status === "valide" ? r.google_place_id ?? null : null,
+    payoutsEnabled: Boolean(r.payouts_enabled),
+    retired: Boolean(r.retire_le),
     isNew: !r.reviewed_at,
     responseHours: r.response_hours,
     responseRate: r.response_rate,
@@ -76,24 +80,40 @@ function map(r: Row): Vendor {
  * client sans cookies (lib/supabase/static) quand l'appel vient de
  * generateStaticParams (build time, sans requête).
  *
- * Une fiche apparaît si le prestataire est à la fois vérifié (SIRET) et actif
- * côté paiement (Stripe Connect Express), pour ne jamais exposer un profil
- * qui ne peut pas encore être payé en cas de réservation — OU s'il s'agit
- * d'une fiche vitrine importée (claim_status = 'non_reclamee', voir
- * supabase/vendor-import.sql) : sans ça, personne ne les voit jamais pour
- * les réclamer. Les vraies fiches (claim_status = "reclamee") passent
+ * Règle de visibilité (voir PUBLIC_VENDOR_FILTER / isPubliclyVisible) :
+ * une fiche réclamée apparaît dès que le SIRET est vérifié, même si les
+ * paiements Stripe ne sont pas encore actifs — ce sont l'envoi de devis
+ * (côté pro) et le paiement (api/stripe/checkout/create) qui exigent
+ * payouts_enabled. Les fiches vitrines importées (claim_status =
+ * 'non_reclamee', voir supabase/vendor-import.sql) restent visibles pour
+ * pouvoir être réclamées. Une fiche retirée (retire_le non nul, voir
+ * supabase/vendor-removal.sql) n'est jamais publique : la politique RLS la
+ * masque déjà au public, mais pas à son propriétaire ni à l'admin, d'où le
+ * filtre explicite ici. Les vraies fiches (claim_status = "reclamee") passent
  * toujours avant les fiches vitrines : tri DESCENDANT sur claim_status, car
  * "non_reclamee" < "reclamee" dans l'ordre alphabétique. L'annuaire
  * (ExplorerClient) réapplique cette priorité quel que soit le tri choisi. Statut
  * "en cours" affiché uniquement dans son propre tableau de bord (voir
  * app/pro/page.tsx), jamais dans l'annuaire.
  */
+export const PUBLIC_VENDOR_FILTER =
+  "and(claim_status.eq.reclamee,verified.eq.true),claim_status.eq.non_reclamee";
+
+/** Même règle que getVendors(), pour une fiche déjà chargée. */
+export function isPubliclyVisible(
+  v: Pick<Vendor, "claimStatus" | "verified" | "retired">
+): boolean {
+  if (v.retired) return false;
+  return v.claimStatus === "non_reclamee" || v.verified;
+}
+
 export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
   const supabase = client ?? createClient();
   const { data } = await supabase
     .from("vendors")
     .select("*")
-    .or("and(verified.eq.true,payouts_enabled.eq.true),claim_status.eq.non_reclamee")
+    .or(PUBLIC_VENDOR_FILTER)
+    .is("retire_le", null)
     .order("claim_status", { ascending: false })
     .order("position", { ascending: true });
   return ((data as Row[]) ?? []).map(map);
@@ -107,6 +127,31 @@ export async function getCategories(): Promise<string[]> {
     .select("name")
     .order("position", { ascending: true });
   return ((data as { name: string }[]) ?? []).map((c) => c.name);
+}
+
+/** Pourcentage d'acompte par défaut d'une catégorie (0 si non renseignée/inconnue). */
+export async function getCategoryDefaultDepositPercent(
+  category: string | null
+): Promise<number> {
+  if (!category) return 0;
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("vendor_categories")
+    .select("default_deposit_percent")
+    .eq("name", category)
+    .maybeSingle();
+  return Number((data as { default_deposit_percent: number } | null)?.default_deposit_percent ?? 0);
+}
+
+/** Pourcentage d'acompte par défaut de TOUTES les catégories (nom → %), pour
+ *  l'affichage indicatif côté profil prestataire (ProfilClient). */
+export async function getCategoryDepositDefaults(): Promise<Record<string, number>> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("vendor_categories")
+    .select("name, default_deposit_percent");
+  const rows = (data as { name: string; default_deposit_percent: number }[]) ?? [];
+  return Object.fromEntries(rows.map((r) => [r.name, Number(r.default_deposit_percent ?? 0)]));
 }
 
 /** Formules réelles d'un prestataire inscrit (pour sa fiche publique). */

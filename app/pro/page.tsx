@@ -1,3 +1,4 @@
+import ActivatePaymentsCallout from "@/components/pro/ActivatePaymentsCallout";
 import Link from "next/link";
 import {
   Inbox,
@@ -73,7 +74,10 @@ export default async function ProOverviewPage() {
   const stripeStatus =
     (stripeRow as { stripe_onboarding_status?: "non_demarre" | "en_attente" | "actif" } | null)
       ?.stripe_onboarding_status ?? "non_demarre";
-  const isPubliclyVisible = Boolean(vendor?.verified) && stripeStatus === "actif";
+  // Visible dans l'annuaire dès que le SIRET est vérifié (voir lib/vendors.ts) ;
+  // les paiements Stripe ne conditionnent que l'envoi de devis.
+  const isPubliclyVisible = Boolean(vendor?.verified);
+  const paymentsActive = stripeStatus === "actif";
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(todayMid);
@@ -214,34 +218,33 @@ export default async function ProOverviewPage() {
         {tip}
       </p>
 
-      {/* Bandeau de visibilité — tant que SIRET + Stripe ne sont pas tous les deux
-          actifs, la fiche n'apparaît pas dans l'annuaire public (voir
-          lib/vendors.ts). On explique où en est le prestataire et l'action
-          suivante, sans jamais afficher les deux étapes comme optionnelles. */}
+      {/* Bandeau de visibilité — tant que le SIRET n'est pas vérifié, la fiche
+          n'apparaît pas dans l'annuaire public (voir lib/vendors.ts). */}
       {vendor && !isPubliclyVisible && (
-        <div className="mt-5 rounded-3xl border border-festif/20 bg-festif-soft/50 p-5">
+        <div className="mt-5 rounded-3xl border border-violet/20 bg-violet-soft/50 p-5">
           <div className="flex items-center gap-2">
-            <Eye size={18} className="text-festif" />
+            <Eye size={18} className="text-violet" />
             <p className="font-display text-lg font-semibold text-plum">
               Votre profil n&apos;est pas encore visible par les familles
             </p>
           </div>
           <p className="mt-2 text-sm text-slate">
-            {!vendor.verified
-              ? "Étape en cours : vérification de votre SIRET. Il vous restera ensuite à configurer vos informations de paiement via Stripe."
-              : stripeStatus === "en_attente"
-                ? "Vérification SIRET validée. Étape en cours : votre dossier Stripe est en cours de vérification — rien à faire de votre côté pour l'instant."
-                : "Vérification SIRET validée. Dernière étape : configurez vos informations de paiement via Stripe pour devenir visible."}
+            Étape en cours : vérification de votre SIRET. Dès qu&apos;elle est
+            validée, votre fiche apparaît dans l&apos;annuaire.
           </p>
-          {(!vendor.verified || stripeStatus === "non_demarre") && (
-            <Link
-              href="/pro/profil"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
-            >
-              {!vendor.verified ? "Vérifier mon SIRET" : "Configurer mes informations de paiement"}
-            </Link>
-          )}
+          <Link
+            href="/pro/profil"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-dark"
+          >
+            Vérifier mon SIRET
+          </Link>
         </div>
+      )}
+
+      {/* Paiements non actifs : la fiche est visible mais l'envoi de devis
+          reste bloqué tant que Stripe n'est pas finalisé. */}
+      {vendor && isPubliclyVisible && !paymentsActive && (
+        <ActivatePaymentsCallout status={stripeStatus} className="mt-5" />
       )}
 
       {/* Bandeau de complétion — persiste tant que le profil n'est pas complet. */}
