@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VendorProfile from "@/components/explorer/VendorProfile";
+import { createClient } from "@/lib/supabase/server";
 import {
   getVendor,
+  isPubliclyVisible,
   getPublicPackages,
   getPublicPhotos,
   getVendorReviews,
@@ -21,7 +23,7 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const vendor = await getVendor(params.id);
-  if (!vendor) return { title: "Prestataire" };
+  if (!vendor || !isPubliclyVisible(vendor)) return { title: "Prestataire" };
   return pageMetadata({
     title: `${vendor.name}, ${vendor.category.toLowerCase()} à ${vendor.city}`,
     // Jamais « prestataire vérifié » par défaut : la plupart des fiches sont
@@ -42,6 +44,10 @@ export default async function VendorPage({
 }) {
   const vendor = await getVendor(params.id);
   if (!vendor) notFound();
+  // Même règle que l'annuaire : une fiche réclamée non vérifiée n'est pas
+  // publique. Seuls son propriétaire (aperçu depuis l'espace pro) et un admin
+  // peuvent l'ouvrir.
+  if (!isPubliclyVisible(vendor) && !(await canPreview(vendor.userId ?? null))) notFound();
 
   // Formules & book réels si le prestataire est inscrit, sinon démo.
   const [realPackages, photos, reviews, stats, currentEvent, nextAvailability] =
@@ -117,4 +123,16 @@ export default async function VendorPage({
       <Footer />
     </>
   );
+}
+
+/** Le visiteur est-il le propriétaire de la fiche ou un admin ? */
+async function canPreview(ownerId: string | null): Promise<boolean> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+  if (ownerId && user.id === ownerId) return true;
+  const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  return (data as { role?: string } | null)?.role === "admin";
 }

@@ -9,6 +9,8 @@ export type Vendor = {
   rating: number;
   reviews: number;
   verified: boolean; // vérifié par Misstice
+  payoutsEnabled?: boolean; // paiements Stripe Connect actifs (badge « Paiement sécurisé activé »)
+  retired?: boolean; // retirée à la demande de l'entreprise (vendors.retire_le non nul) : jamais publique
   isNew: boolean; // pas encore relu manuellement par l'admin
   responseHours: number;
   responseRate: number;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, BadgeCheck, MapPin, Heart, Sparkles, Lock } from "lucide-react";
+import { Star, BadgeCheck, MapPin, Heart, Sparkles, Lock, ShieldCheck } from "lucide-react";
 import type { Vendor } from "./vendors";
 import { vibesVisible } from "@/lib/vibes";
 import { priceFromLabel } from "@/lib/price";
@@ -58,6 +58,12 @@ export default function VendorCard({
               <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-violet shadow-sm">
                 <BadgeCheck size={14} />
                 Vérifié par Misstice
+              </span>
+            )}
+            {vendor.payoutsEnabled && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-emerald shadow-sm">
+                <ShieldCheck size={14} />
+                Paiement sécurisé activé
               </span>
             )}
             {vendor.isNew && (
