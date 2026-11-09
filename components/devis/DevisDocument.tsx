@@ -413,6 +413,20 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
               </div>
             </div>
 
+            {/* Commission Misstice — uniquement une fois le paiement
+                effectué (commission_amount calculé par mark_quote_paid) :
+                rend explicite l'écart entre le total payé par le client et
+                ce que le prestataire reçoit réellement (acompte + solde
+                ci-dessous), pour une transparence totale côté prestataire. */}
+            {quote.commission_amount != null && (
+              <div className="mt-3 flex items-end justify-between text-sm">
+                <span className="text-slate">Commission Misstice (15%)</span>
+                <span className="font-medium text-slate">
+                  -{euro(quote.commission_amount)}
+                </span>
+              </div>
+            )}
+
             {/* Acompte / solde — uniquement une fois le paiement effectué
                 (deposit_amount calculé par mark_quote_paid) et si un
                 acompte s'applique réellement à ce devis. */}
