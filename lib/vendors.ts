@@ -14,6 +14,8 @@ type Row = {
   rating: number;
   reviews: number;
   verified: boolean;
+  google_place_id?: string | null;
+  google_place_status?: string | null;
   payouts_enabled: boolean | null;
   retire_le: string | null;
   reviewed_at: string | null;
@@ -48,6 +50,8 @@ function map(r: Row): Vendor {
     rating: Number(r.rating),
     reviews: r.reviews,
     verified: r.verified,
+    // Seul un lien validé par l'admin est public (voir supabase/google-places.sql).
+    googlePlaceId: r.google_place_status === "valide" ? r.google_place_id ?? null : null,
     payoutsEnabled: Boolean(r.payouts_enabled),
     retired: Boolean(r.retire_le),
     isNew: !r.reviewed_at,

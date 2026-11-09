@@ -25,6 +25,10 @@
       "schedule": "0 6 * * *"
     },
     {
+      "path": "/api/cron/google-place-ids",
+      "schedule": "0 7 1 * *"
+    },
+    {
       "path": "/api/cron/stalled-requests",
       "schedule": "0 9 * * *"
     }
