@@ -11,6 +11,8 @@ declare module "react" {
   namespace JSX {
     interface IntrinsicElements {
       "gmp-place-details-compact": GmpElement;
+      "gmp-place-details": GmpElement;
+      "gmp-place-reviews": GmpElement;
       "gmp-place-details-place-request": GmpElement;
       "gmp-place-name": GmpElement;
       "gmp-place-address": GmpElement;

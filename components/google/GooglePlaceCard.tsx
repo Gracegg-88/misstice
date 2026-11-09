@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Affiche une fiche Google via le « Places UI Kit » officiel
- * (<gmp-place-details-compact>) : c'est Google qui récupère et affiche la
- * note, le nombre d'avis et l'attribution, en direct. Rien n'est stocké chez
+ * (<gmp-place-details> pour les avis, <gmp-place-details-compact> pour les
+ * aperçus) : c'est Google qui récupère et affiche la note, les avis et
+ * l'attribution, en direct. Rien n'est stocké chez
  * nous hormis le place_id (conformité Google Maps Platform, comptes EEE :
  * voir docs/google-places.md).
  *
@@ -57,23 +58,19 @@ function loadPlacesUiKit(): Promise<void> {
   return loader;
 }
 
-/** Lien officiel vers la fiche Google Maps (format d'URL documenté par Google). */
-export function googleMapsUrl(placeId: string, name: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    name
-  )}&query_place_id=${encodeURIComponent(placeId)}`;
-}
-
 export const googlePlacesEnabled = Boolean(BROWSER_KEY);
 
 export default function GooglePlaceCard({
   placeId,
-  variant = "rating",
+  variant = "reviews",
   className = "",
 }: {
   placeId: string;
-  /** "rating" : nom + note (fiche publique). "preview" : + adresse et type (validation). */
-  variant?: "rating" | "preview";
+  /**
+   * "reviews" : nom, note et avis Google (fiche publique) ;
+   * "preview" : nom, adresse, note et type (validation admin / pro).
+   */
+  variant?: "reviews" | "preview";
   className?: string;
 }) {
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "error">("waiting");
@@ -125,14 +122,33 @@ export default function GooglePlaceCard({
     );
   }
 
+  if (variant === "reviews") {
+    // Élément complet (avis inclus), même tarif que le compact. Contenu
+    // volontairement limité au nom, à la note et aux avis : ni téléphone, ni
+    // site web, ni horaires, pour ne pas faire sortir le client de Misstice.
+    // Les liens d'attribution que Google place dans les avis (auteur, source)
+    // sont obligatoires et ne peuvent pas être retirés.
+    return (
+      <div className={`h-[560px] w-full max-w-[400px] ${className}`}>
+        <gmp-place-details style={{ height: "100%", display: "block" }}>
+          <gmp-place-details-place-request place={placeId}></gmp-place-details-place-request>
+          <gmp-place-name></gmp-place-name>
+          <gmp-place-rating></gmp-place-rating>
+          <gmp-place-reviews></gmp-place-reviews>
+          <gmp-place-attribution light-scheme-color="gray"></gmp-place-attribution>
+        </gmp-place-details>
+      </div>
+    );
+  }
+
   return (
     <div className={className}>
       <gmp-place-details-compact orientation="horizontal">
         <gmp-place-details-place-request place={placeId}></gmp-place-details-place-request>
         <gmp-place-name></gmp-place-name>
-        {variant === "preview" && <gmp-place-address></gmp-place-address>}
+        <gmp-place-address></gmp-place-address>
         <gmp-place-rating></gmp-place-rating>
-        {variant === "preview" && <gmp-place-type></gmp-place-type>}
+        <gmp-place-type></gmp-place-type>
         <gmp-place-attribution light-scheme-color="gray"></gmp-place-attribution>
       </gmp-place-details-compact>
     </div>

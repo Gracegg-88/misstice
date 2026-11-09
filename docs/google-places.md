@@ -3,10 +3,17 @@
 ## Ce qui est affiché
 
 Sur la fiche publique d'un prestataire dont la fiche Google a été **validée par
-un admin**, un encadré « Note Google » montre le nom, la note et le nombre
-d'avis Google, avec l'attribution Google, plus un lien « Voir les avis sur
-Google Maps ». Il est séparé de la section « Avis Misstice ». Les avis Google
-ne sont jamais comptés dans `vendors.rating` / `vendors.reviews`.
+un admin**, un encadré « Avis Google » montre le nom, la note, le nombre
+d'avis et **les avis Google eux-mêmes**, avec l'attribution Google
+(composant `<gmp-place-details>` du Places UI Kit). Il est séparé de la
+section « Avis Misstice ». Les avis Google ne sont jamais comptés dans
+`vendors.rating` / `vendors.reviews`.
+
+Pour garder le client sur Misstice : aucun lien « Voir sur Google Maps » de
+notre part, et le composant n'affiche ni téléphone, ni site web, ni
+horaires (contenu limité au nom, à la note, aux avis et à l'attribution).
+Seuls restent les liens d'attribution que Google place lui-même dans les
+avis (auteur, source) : ils sont obligatoires et ne peuvent pas être retirés.
 
 ## Pourquoi pas de colonnes `google_rating` / `google_reviews_count`
 
@@ -29,7 +36,7 @@ D'où l'architecture :
 | Étape | Outil Google | Ce qui transite chez Misstice | Coût |
 | --- | --- | --- | --- |
 | Trouver la fiche Google (admin / pro) | Text Search (New), masque `places.id` | `place_id` uniquement | Gratuit, illimité (SKU « Text Search Essentials (IDs Only) ») |
-| Aperçu avant validation + affichage public | Places UI Kit, `<gmp-place-details-compact>` | Rien (affiché par Google dans le navigateur) | SKU « Places UI Kit Query » |
+| Aperçu avant validation (`<gmp-place-details-compact>`) + avis publics (`<gmp-place-details>`) | Places UI Kit | Rien (affiché par Google dans le navigateur) | SKU « Places UI Kit Query » |
 | Vérification mensuelle des `place_id` (cron) | Place Details (New), masque `id` | `place_id` uniquement | Gratuit, illimité (SKU « Place Details Essentials (IDs Only) ») |
 
 Seuls sont stockés : `google_place_id`, `google_place_status`
@@ -69,7 +76,7 @@ n'apparaissent pas (aucune erreur visible).
 ## Estimation du coût mensuel (400 fiches)
 
 Le coût ne dépend pas du nombre de fiches mais du **nombre d'affichages** de
-l'encadré Google (chargé seulement quand le visiteur fait défiler la page
+l'encadré « Avis Google » (même tarif que la note seule) (chargé seulement quand le visiteur fait défiler la page
 jusqu'à lui). Tarif « Places UI Kit Query » (grille Google d'octobre 2026) :
 **10 000 affichages gratuits par mois**, puis **1 $ les 1 000** (dégressif
 au-delà de 100 000).
