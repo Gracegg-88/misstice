@@ -443,12 +443,13 @@ export type FeaturedVendor = {
 };
 
 /**
- * Score de complétude d'une fiche, pour la sélection automatique : fiche
- * vérifiée > réclamée > avec description > avec photo. Uniquement des
+ * Score de complétude d'une fiche, pour la sélection automatique : paiements
+ * Stripe actifs > fiche vérifiée > réclamée > avec description > avec photo. Uniquement des
  * données déjà présentes sur Misstice, jamais rien d'extérieur.
  */
 function completeness(v: Vendor): number {
   return (
+    (v.verified && v.userId && v.payoutsEnabled ? 16 : 0) +
     (v.verified && v.userId ? 8 : 0) +
     (v.claimStatus === "reclamee" && v.userId ? 4 : 0) +
     (v.tagline.trim() ? 2 : 0) +
