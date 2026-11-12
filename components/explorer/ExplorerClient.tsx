@@ -15,6 +15,7 @@ import {
   MailX,
 } from "lucide-react";
 import type { Vendor } from "./vendors";
+import { vendorTier } from "@/lib/vendor-tier";
 import VendorCard from "./VendorCard";
 import FilterPanel, { type Filters } from "./FilterPanel";
 import { useFavorites } from "@/lib/useFavorites";
@@ -188,10 +189,12 @@ export default function ExplorerClient({
     });
 
     return [...list].sort((a, b) => {
-      // Les vrais prestataires inscrits (fiche réclamée) passent toujours
-      // devant les fiches vitrines importées, quel que soit le tri choisi :
-      // sans avis au départ, ils seraient sinon relégués en fin de liste.
-      if (a.claimStatus !== b.claimStatus) return a.claimStatus === "reclamee" ? -1 : 1;
+      // Quel que soit le tri choisi : d'abord les prestataires inscrits avec
+      // paiements Stripe actifs, puis les inscrits sans Stripe, puis les
+      // fiches vitrines importées (voir vendorTier). Sans avis au départ, les
+      // inscrits seraient sinon relégués en fin de liste.
+      const tier = vendorTier(a) - vendorTier(b);
+      if (tier !== 0) return tier;
       switch (sort) {
         case "note":
           return b.rating - a.rating;

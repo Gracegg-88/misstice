@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import type { Vendor } from "@/components/explorer/vendors";
 import type { Pkg, Review } from "@/components/explorer/profileData";
+import { vendorTier } from "@/lib/vendor-tier";
 
 type Row = {
   id: string;
@@ -89,10 +90,9 @@ function map(r: Row): Vendor {
  * pouvoir être réclamées. Une fiche retirée (retire_le non nul, voir
  * supabase/vendor-removal.sql) n'est jamais publique : la politique RLS la
  * masque déjà au public, mais pas à son propriétaire ni à l'admin, d'où le
- * filtre explicite ici. Les vraies fiches (claim_status = "reclamee") passent
- * toujours avant les fiches vitrines : tri DESCENDANT sur claim_status, car
- * "non_reclamee" < "reclamee" dans l'ordre alphabétique. L'annuaire
- * (ExplorerClient) réapplique cette priorité quel que soit le tri choisi. Statut
+ * filtre explicite ici. Ordre : voir vendorTier (Stripe actif, puis
+ * réclamée sans Stripe, puis fiches vitrines). L'annuaire (ExplorerClient)
+ * réapplique cette priorité quel que soit le tri choisi. Statut
  * "en cours" affiché uniquement dans son propre tableau de bord (voir
  * app/pro/page.tsx), jamais dans l'annuaire.
  */
@@ -116,7 +116,8 @@ export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
     .is("retire_le", null)
     .order("claim_status", { ascending: false })
     .order("position", { ascending: true });
-  return ((data as Row[]) ?? []).map(map);
+  // Tri stable : l'ordre par position est conservé à l'intérieur d'un niveau.
+  return ((data as Row[]) ?? []).map(map).sort((a, b) => vendorTier(a) - vendorTier(b));
 }
 
 /** Catégories de prestataire (gérées depuis l'admin). */
