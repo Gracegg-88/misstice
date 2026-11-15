@@ -85,6 +85,8 @@ export default function VendorProfile({
   // vitrine importée depuis SIRENE (claimStatus="non_reclamee", vraie
   // entreprise réelle) → on n'invente rien, on affiche des états vides.
   const isDemo = !vendor.userId && vendor.claimStatus !== "non_reclamee";
+  // Avis Google affichés à côté des avis Misstice (fiche Google validée + clé configurée).
+  const showGoogleReviews = Boolean(vendor.googlePlaceId) && googlePlacesEnabled;
   // Disponibilité formatée, en se prémunissant d'une date invalide.
   const availabilityLabel = (() => {
     if (!nextAvailability) return null;
@@ -500,107 +502,111 @@ export default function VendorProfile({
               )}
             </section>
 
-            {/* Avis Google — bloc séparé des avis Misstice : affichés en
-                direct par le composant officiel Google (rien n'est stocké ni
-                compté dans vendors.rating / vendors.reviews). Pas de lien
-                vers Google Maps de notre part, pour garder le client ici. */}
-            {vendor.googlePlaceId && googlePlacesEnabled && (
-              <section aria-labelledby="avis-google">
-                <h2 id="avis-google" className="font-display text-2xl font-semibold text-plum">
-                  Avis Google
+            {/* Avis : Misstice à gauche, Google à droite (même rangée sur
+                écran large, empilés sur mobile dans le même ordre). */}
+            <div className={showGoogleReviews ? "grid gap-8 md:grid-cols-2 md:items-start" : ""}>
+              {/* Avis Misstice */}
+              <section>
+                <h2 className="font-display text-2xl font-semibold text-plum">
+                  Avis Misstice{vendor.reviews > 0 ? ` (${vendor.reviews})` : ""}
                 </h2>
-                <p className="mt-1 text-sm text-slate">
-                  Note et avis publiés sur Google, affichés par Google. Ils ne
-                  sont pas comptés dans les avis Misstice.
-                </p>
-                <GooglePlaceCard
-                  placeId={vendor.googlePlaceId}
-                  variant="reviews"
-                  className="mt-4"
-                />
-              </section>
-            )}
 
-            {/* Avis Misstice */}
-            <section>
-              <h2 className="font-display text-2xl font-semibold text-plum">
-                Avis Misstice{vendor.reviews > 0 ? ` (${vendor.reviews})` : ""}
-              </h2>
-
-              {vendor.reviews > 0 ? (
-                <>
-                  {/* Résumé + répartition */}
-                  <div className="mt-4 flex flex-col gap-6 rounded-2xl border border-black/5 bg-white p-5 sm:flex-row sm:items-center sm:p-6">
-                    <div className="text-center sm:w-40 sm:shrink-0">
-                      <p className="font-display text-5xl font-semibold text-plum">
-                        {vendor.rating.toFixed(1)}
-                      </p>
-                      <Stars value={vendor.rating} />
-                      <p className="mt-1 text-sm text-slate">
-                        {vendor.reviews} avis
-                      </p>
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      {breakdown.map((b) => (
-                        <div key={b.stars} className="flex items-center gap-2">
-                          <span className="w-3 text-sm text-slate">
-                            {b.stars}
-                          </span>
-                          <Star size={13} className="fill-festif text-festif" />
-                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-cream">
-                            <div
-                              className="h-full rounded-full bg-festif"
-                              style={{ width: `${b.pct}%` }}
-                            />
+                {vendor.reviews > 0 ? (
+                  <>
+                    {/* Résumé + répartition */}
+                    <div className={`mt-4 flex flex-col gap-6 rounded-2xl border border-black/5 bg-white p-5 ${showGoogleReviews ? "" : "sm:flex-row sm:items-center sm:p-6"}`}>
+                      <div className={`text-center ${showGoogleReviews ? "" : "sm:w-40 sm:shrink-0"}`}>
+                        <p className="font-display text-5xl font-semibold text-plum">
+                          {vendor.rating.toFixed(1)}
+                        </p>
+                        <Stars value={vendor.rating} />
+                        <p className="mt-1 text-sm text-slate">
+                          {vendor.reviews} avis
+                        </p>
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        {breakdown.map((b) => (
+                          <div key={b.stars} className="flex items-center gap-2">
+                            <span className="w-3 text-sm text-slate">
+                              {b.stars}
+                            </span>
+                            <Star size={13} className="fill-festif text-festif" />
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-cream">
+                              <div
+                                className="h-full rounded-full bg-festif"
+                                style={{ width: `${b.pct}%` }}
+                              />
+                            </div>
+                            <span className="w-9 text-right text-xs text-slate">
+                              {b.pct}%
+                            </span>
                           </div>
-                          <span className="w-9 text-right text-xs text-slate">
-                            {b.pct}%
-                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Liste des avis */}
+                    <div className={`mt-5 grid gap-4 ${showGoogleReviews ? "" : "sm:grid-cols-2"}`}>
+                      {reviews.map((r) => (
+                        <div
+                          key={r.id}
+                          className="rounded-2xl border border-black/5 bg-white p-4"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5">
+                              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-soft text-sm font-semibold text-violet">
+                                {r.initial}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-plum">
+                                  {r.author}
+                                </p>
+                                <p className="text-xs text-slate">
+                                  {r.event} · {r.date}
+                                </p>
+                              </div>
+                            </div>
+                            <Stars value={r.rating} size={13} />
+                          </div>
+                          <p className="mt-2 text-sm leading-relaxed text-slate">
+                            {r.text}
+                          </p>
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </>
+                ) : (
+                  <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-white p-6 text-center text-sm text-slate">
+                    Aucun avis pour l&apos;instant. Soyez le premier à partager
+                    votre expérience&nbsp;!
+                  </p>
+                )}
 
-                  {/* Liste des avis */}
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                    {reviews.map((r) => (
-                      <div
-                        key={r.id}
-                        className="rounded-2xl border border-black/5 bg-white p-4"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2.5">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-soft text-sm font-semibold text-violet">
-                              {r.initial}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-plum">
-                                {r.author}
-                              </p>
-                              <p className="text-xs text-slate">
-                                {r.event} · {r.date}
-                              </p>
-                            </div>
-                          </div>
-                          <Stars value={r.rating} size={13} />
-                        </div>
-                        <p className="mt-2 text-sm leading-relaxed text-slate">
-                          {r.text}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-white p-6 text-center text-sm text-slate">
-                  Aucun avis pour l&apos;instant. Soyez le premier à partager
-                  votre expérience&nbsp;!
-                </p>
+                {/* Laisser un avis (particuliers uniquement) */}
+                <ReviewForm vendorId={vendor.id} />
+              </section>
+
+              {/* Avis Google — bloc séparé des avis Misstice : affichés en
+                  direct par le composant officiel Google (rien n'est stocké ni
+                  compté dans vendors.rating / vendors.reviews). Pas de lien
+                  vers Google Maps de notre part, pour garder le client ici. */}
+              {showGoogleReviews && vendor.googlePlaceId && (
+                <section aria-labelledby="avis-google">
+                  <h2 id="avis-google" className="font-display text-2xl font-semibold text-plum">
+                    Avis Google
+                  </h2>
+                  <p className="mt-1 text-sm text-slate">
+                    Note et avis publiés sur Google, affichés par Google. Ils ne
+                    sont pas comptés dans les avis Misstice.
+                  </p>
+                  <GooglePlaceCard
+                    placeId={vendor.googlePlaceId}
+                    variant="reviews"
+                    className="mt-4"
+                  />
+                </section>
               )}
-
-              {/* Laisser un avis (particuliers uniquement) */}
-              <ReviewForm vendorId={vendor.id} />
-            </section>
+            </div>
           </div>
 
           {/* Aside sticky */}
