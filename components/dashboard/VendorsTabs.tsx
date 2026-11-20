@@ -10,7 +10,7 @@ import type { EventVendor, ReceivedQuote } from "@/lib/dashboard-types";
 const QUOTE_STYLE: Record<string, string> = {
   accepté: "bg-emerald-soft text-emerald",
   envoyé: "bg-violet-soft text-violet",
-  refusé: "bg-festif-soft text-festif",
+  refusé: "bg-garnet-soft text-garnet",
   expiré: "bg-black/5 text-slate",
 };
 

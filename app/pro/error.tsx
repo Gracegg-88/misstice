@@ -16,7 +16,7 @@ export default function ProError({
 
   return (
     <div className="mx-auto flex min-h-[40vh] max-w-md flex-col items-center justify-center text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-festif-soft text-festif">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-garnet-soft text-garnet">
         <AlertTriangle size={24} />
       </div>
       <h1 className="mt-4 font-display text-xl font-semibold text-plum">

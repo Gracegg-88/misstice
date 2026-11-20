@@ -97,7 +97,7 @@ const differentiators = [
       <>
         <Link
           href="/confiance"
-          className="font-semibold text-festif underline decoration-festif/40 underline-offset-2 hover:decoration-festif"
+          className="font-semibold text-cream underline decoration-cream/40 underline-offset-2 hover:decoration-cream"
         >
           Vérification réelle de votre SIRET
         </Link>
@@ -312,7 +312,7 @@ export default function DevenirPrestatairePage() {
             <div className="mt-8 grid gap-5 sm:grid-cols-3">
               {differentiators.map((d, i) => (
                 <div key={i} className="flex items-start gap-3.5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cream/10 text-festif">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cream/10 text-garnet">
                     <d.icon size={19} strokeWidth={1.75} />
                   </span>
                   <p className="text-sm leading-relaxed text-cream/85">

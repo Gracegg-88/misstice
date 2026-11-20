@@ -66,7 +66,7 @@ export default function ProTopbar({
                   className="h-7 w-7 rounded-lg object-cover"
                 />
               ) : (
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet to-festif text-sm font-semibold text-white">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet to-garnet text-sm font-semibold text-white">
                   {initial}
                 </span>
               )}

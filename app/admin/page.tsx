@@ -61,16 +61,16 @@ export default async function AdminOverview() {
 
   const statCards = [
     { icon: Users, label: "Utilisateurs", value: s.users, sub: `+${sum(usersSpark)} cette semaine`, tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: usersSpark },
-    { icon: PartyPopper, label: "Familles", value: s.families, sub: `+${sum(familiesSpark)} cette semaine`, tint: "bg-festif-soft text-festif", color: "#FF8C42", spark: familiesSpark },
+    { icon: PartyPopper, label: "Familles", value: s.families, sub: `+${sum(familiesSpark)} cette semaine`, tint: "bg-garnet-soft text-garnet", color: "#A13B4A", spark: familiesSpark },
     { icon: Store, label: "Prestataires", value: s.vendors, sub: `${s.pendingVerification} en attente`, tint: "bg-emerald-soft text-emerald", color: "#10B981", spark: vendorsSpark },
     { icon: CalendarDays, label: "Événements", value: s.events, sub: s.events > 0 ? `${s.events} actif${s.events > 1 ? "s" : ""}` : "Aucun événement actif", tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: eventsSpark },
   ];
 
   const repTotal = s.families + s.vendors + s.events;
-  // Couleurs alignées sur les cartes (Familles=festif, Prestataires=emerald,
+  // Couleurs alignées sur les cartes (Familles=garnet, Prestataires=emerald,
   // Événements=violet) pour ne pas dérouter (avant : donut permuté).
   const repartition = [
-    { label: "Familles", value: s.families, color: "#FF8C42" },
+    { label: "Familles", value: s.families, color: "#A13B4A" },
     { label: "Prestataires", value: s.vendors, color: "#10B981" },
     { label: "Événements", value: s.events, color: "#6C3CE1" },
   ];

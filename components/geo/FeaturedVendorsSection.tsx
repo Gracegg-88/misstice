@@ -81,7 +81,7 @@ export default function FeaturedVendorsSection({
                     <BadgeCheck size={14} /> Vérifié
                   </span>
                 ) : unclaimed ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2.5 py-1 text-xs font-medium text-festif">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-garnet-soft px-2.5 py-1 text-xs font-medium text-garnet">
                     <Lock size={12} /> Fiche non réclamée
                   </span>
                 ) : null}

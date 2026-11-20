@@ -20,9 +20,9 @@ const STYLE: Record<QuoteStatus, string> = {
   envoyé: "bg-violet-soft text-violet",
   accepté: "bg-emerald-soft text-emerald",
   refusé: "bg-black/5 text-slate",
-  expiré: "bg-festif-soft text-festif",
+  expiré: "bg-garnet-soft text-garnet",
   annulé: "bg-black/5 text-slate",
-  "en litige": "bg-festif-soft text-festif",
+  "en litige": "bg-garnet-soft text-garnet",
   payé: "bg-emerald-soft text-emerald",
   "en attente de confirmation": "bg-emerald-soft text-emerald",
   "en attente de réalisation": "bg-emerald-soft text-emerald",
@@ -191,7 +191,7 @@ export default function DevisClient({
         ))}
       </div>
 
-      {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-3 text-sm text-garnet">{error}</p>}
 
       <div className="mt-4 overflow-hidden rounded-3xl border border-black/5 bg-white">
         <ul className="divide-y divide-black/5">
@@ -247,7 +247,7 @@ export default function DevisClient({
                   type="button"
                   onClick={() => setConfirmId(q.id)}
                   aria-label="Supprimer le devis"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-festif-soft hover:text-festif"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-garnet-soft hover:text-garnet"
                 >
                   <Trash2 size={15} />
                 </button>

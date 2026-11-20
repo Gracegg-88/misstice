@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { PlanningMoment } from "@/lib/dashboard-types";
 import ReadOnlyBanner from "@/components/dashboard/ReadOnlyBanner";
 
-const PALETTE = ["#6C3CE1", "#FF8C42", "#10B981", "#EC4899", "#3B82F6"];
+const PALETTE = ["#6C3CE1", "#D9B25F", "#10B981", "#EC4899", "#3B82F6"];
 
 function sortMoments(list: PlanningMoment[]): PlanningMoment[] {
   return [...list].sort((a, b) => {
@@ -262,7 +262,7 @@ export default function PlanningClient({
                     type="button"
                     onClick={() => setConfirmId(m.id)}
                     aria-label="Supprimer ce moment"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-lg text-slate opacity-100 transition hover:bg-cream hover:text-festif lg:opacity-0 lg:group-hover:opacity-100"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center self-start rounded-lg text-slate opacity-100 transition hover:bg-cream hover:text-garnet lg:opacity-0 lg:group-hover:opacity-100"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -413,7 +413,7 @@ export default function PlanningClient({
                   />
                 </div>
               </div>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={saving}

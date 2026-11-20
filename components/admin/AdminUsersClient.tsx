@@ -18,7 +18,7 @@ export type AdminUser = {
 const ROLE_STYLE: Record<string, string> = {
   admin: "bg-violet-soft text-violet",
   prestataire: "bg-emerald-soft text-emerald",
-  particulier: "bg-festif-soft text-festif",
+  particulier: "bg-garnet-soft text-garnet",
 };
 
 const ROLE_LABEL: Record<string, string> = {
@@ -231,7 +231,7 @@ export default function AdminUsersClient({
         )}
       </div>
       {error && (
-        <p className="mt-3 rounded-xl bg-festif-soft px-4 py-2 text-sm font-medium text-festif">
+        <p className="mt-3 rounded-xl bg-garnet-soft px-4 py-2 text-sm font-medium text-garnet">
           {error}
         </p>
       )}
@@ -316,7 +316,7 @@ export default function AdminUsersClient({
                             disabled={busy === u.id}
                             onClick={() => setConfirmDel(u)}
                             title="Supprimer le compte"
-                            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-festif-soft hover:text-festif"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-garnet-soft hover:text-garnet"
                           >
                             <Trash2 size={15} />
                           </button>

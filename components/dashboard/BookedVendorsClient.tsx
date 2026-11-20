@@ -30,7 +30,7 @@ const LABEL: Record<Status, string> = {
 
 const STYLE: Record<Status, string> = {
   confirmé: "bg-emerald-soft text-emerald",
-  "en attente": "bg-festif-soft text-festif",
+  "en attente": "bg-garnet-soft text-garnet",
   refusé: "bg-black/5 text-slate",
 };
 
@@ -43,12 +43,12 @@ const FILTERS: { key: "Tous" | Status; label: string }[] = [
 
 // Dégradés dérivés de façon déterministe (pas de colonne « gradient » en base).
 const GRADIENTS = [
-  "from-violet to-festif",
+  "from-violet to-garnet",
   "from-emerald to-violet",
-  "from-festif to-emerald",
+  "from-garnet to-emerald",
   "from-violet to-emerald",
-  "from-festif to-violet",
-  "from-emerald to-festif",
+  "from-garnet to-violet",
+  "from-emerald to-garnet",
 ];
 
 function gradientFor(v: EventVendor, index: number): string {
@@ -419,7 +419,7 @@ export default function BookedVendorsClient({
                   placeholder="ex. 4000"
                 />
               </div>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={saving}

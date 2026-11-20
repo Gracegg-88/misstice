@@ -10,7 +10,7 @@ const STATUS_STYLE: Record<Quote["status"], string> = {
   refusé: "bg-black/5 text-slate",
   expiré: "bg-cream text-slate",
   annulé: "bg-black/5 text-slate",
-  "en litige": "bg-festif-soft text-festif",
+  "en litige": "bg-garnet-soft text-garnet",
   payé: "bg-emerald-soft text-emerald",
   "en attente de confirmation": "bg-emerald-soft text-emerald",
   "en attente de réalisation": "bg-emerald-soft text-emerald",
@@ -41,7 +41,7 @@ export default async function AdminDevisPage() {
       <p className="mt-1 text-sm text-slate">
         {quotes.length} devis au total
         {disputed.length > 0 && (
-          <span className="ml-2 font-semibold text-festif">
+          <span className="ml-2 font-semibold text-garnet">
             · {disputed.length} en litige
           </span>
         )}
@@ -55,7 +55,7 @@ export default async function AdminDevisPage() {
             <li
               key={q.id}
               className={`flex flex-wrap items-center justify-between gap-3 px-5 py-4 ${
-                q.status === "en litige" ? "bg-festif-soft/40" : ""
+                q.status === "en litige" ? "bg-garnet-soft/40" : ""
               }`}
             >
               <div className="min-w-0">

@@ -9,7 +9,7 @@ export default function GuideCta({
 }: {
   href: string;
   label: string;
-  /** Liseré festif pulsant — réservé au CTA de conversion principal de la page. */
+  /** Liseré garnet pulsant — réservé au CTA de conversion principal de la page. */
   accent?: boolean;
 }) {
   return (

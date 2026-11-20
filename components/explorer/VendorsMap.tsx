@@ -64,11 +64,11 @@ export default function VendorsMap({ vendors }: { vendors: Vendor[] }) {
         const title = document.createElement("p");
         title.textContent = v.name;
         title.style.cssText =
-          "font-family:'Playfair Display',serif;font-weight:600;font-size:16px;color:#1A1A2E;margin:0";
+          "font-family:'Playfair Display',serif;font-weight:600;font-size:16px;color:#1E1240;margin:0";
         const cat = document.createElement("p");
         cat.textContent = v.category;
         cat.style.cssText =
-          "font-size:12px;color:#FF8C42;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 10px";
+          "font-size:12px;color:#6C3CE1;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin:2px 0 10px";
         const link = document.createElement("a");
         link.textContent = "Voir le profil";
         link.setAttribute("href", `/prestataires/${encodeURIComponent(v.id)}`);

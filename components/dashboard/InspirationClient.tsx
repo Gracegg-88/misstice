@@ -20,10 +20,10 @@ const DEFAULT_CATS = [
 ];
 
 const GRADS = [
-  "from-emerald-soft to-festif-soft",
-  "from-festif-soft to-violet-soft",
-  "from-festif-soft to-emerald-soft",
-  "from-violet-soft to-festif-soft",
+  "from-emerald-soft to-garnet-soft",
+  "from-garnet-soft to-violet-soft",
+  "from-garnet-soft to-emerald-soft",
+  "from-violet-soft to-garnet-soft",
   "from-violet-soft to-emerald-soft",
   "from-emerald-soft to-violet-soft",
 ];
@@ -368,7 +368,7 @@ export default function InspirationClient({
                     aria-label={i.liked ? "Retirer du moodboard" : "Sauvegarder"}
                     onClick={() => toggleLike(i.id)}
                     className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-                      i.liked ? "bg-festif text-white" : "bg-white/90 text-slate hover:text-festif"
+                      i.liked ? "bg-garnet text-white" : "bg-white/90 text-slate hover:text-garnet"
                     }`}
                   >
                     <Heart size={15} className={i.liked ? "fill-white" : ""} />
@@ -377,7 +377,7 @@ export default function InspirationClient({
                     type="button"
                     aria-label="Supprimer l'idée"
                     onClick={() => deleteIdea(i.id)}
-                    className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate opacity-0 transition-opacity hover:text-festif group-hover:opacity-100"
+                    className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate opacity-0 transition-opacity hover:text-garnet group-hover:opacity-100"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -532,7 +532,7 @@ export default function InspirationClient({
                 Envoi en cours…
               </p>
             )}
-            {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+            {error && <p className="mt-3 text-sm text-garnet">{error}</p>}
           </div>
         </div>
       )}

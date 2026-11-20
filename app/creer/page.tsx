@@ -18,26 +18,26 @@ const PENDING_EVENT_TYPE_KEY = "misstice_pending_event_type";
 // Libellés alignés sur les catégories réelles (vendor_categories) pour que
 // la présélection corresponde à une vraie option du menu déroulant.
 const PRESTA_TYPES: TypeOption[] = [
-  { value: "Traiteur", label: "Traiteur", emoji: "🍽️", tint: "bg-festif-soft" },
+  { value: "Traiteur", label: "Traiteur", emoji: "🍽️", tint: "bg-garnet-soft" },
   { value: "Photographe", label: "Photographe", emoji: "📸", tint: "bg-violet-soft" },
   { value: "DJ & Sono", label: "DJ / Animation musicale", emoji: "🎧", tint: "bg-emerald-soft" },
-  { value: "Décoration", label: "Décoration", emoji: "🎈", tint: "bg-navy-soft" },
-  { value: "Salle de réception", label: "Salle de réception", emoji: "🏛️", tint: "bg-festif-soft" },
+  { value: "Décoration", label: "Décoration", emoji: "🎈", tint: "bg-gold-soft" },
+  { value: "Salle de réception", label: "Salle de réception", emoji: "🏛️", tint: "bg-garnet-soft" },
   { value: "Fleuriste", label: "Fleuriste", emoji: "💐", tint: "bg-violet-soft" },
   { value: "Wedding planner", label: "Wedding / Event planner", emoji: "📋", tint: "bg-emerald-soft" },
   // "Autre" reste une catégorie littérale (modifiable ensuite depuis le
   // profil) : laisser le champ vide bloquerait l'étape suivante, qui exige
   // une catégorie non vide.
-  { value: "Autre", label: "Autre", emoji: "✨", tint: "bg-navy-soft" },
+  { value: "Autre", label: "Autre", emoji: "✨", tint: "bg-gold-soft" },
 ];
 
 // Libellés alignés sur EVENT_TYPES de /dashboard/nouveau.
 const EVENT_TYPES: TypeOption[] = [
   { value: "Mariage", label: "Mariage", emoji: "💍", tint: "bg-violet-soft" },
-  { value: "Anniversaire", label: "Anniversaire", emoji: "🎂", tint: "bg-festif-soft" },
+  { value: "Anniversaire", label: "Anniversaire", emoji: "🎂", tint: "bg-garnet-soft" },
   { value: "Baptême", label: "Baptême", emoji: "👶", tint: "bg-emerald-soft" },
-  { value: "Gala", label: "Gala", emoji: "🥂", tint: "bg-navy-soft" },
-  { value: "Baby Shower", label: "Baby Shower", emoji: "🍼", tint: "bg-festif-soft" },
+  { value: "Gala", label: "Gala", emoji: "🥂", tint: "bg-gold-soft" },
+  { value: "Baby Shower", label: "Baby Shower", emoji: "🍼", tint: "bg-garnet-soft" },
   { value: "Autre", label: "Autre", emoji: "✨", tint: "bg-violet-soft" },
 ];
 
@@ -650,7 +650,7 @@ export default function CreerPage() {
             )}
 
             {error && (
-              <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+              <p className="mt-4 rounded-xl bg-garnet-soft px-4 py-3 text-sm text-garnet">
                 {error}
               </p>
             )}

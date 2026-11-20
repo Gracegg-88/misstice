@@ -206,7 +206,7 @@ export default function NouvelEvenementPage() {
         </div>
 
         {error && (
-          <p className="mt-3 rounded-xl bg-festif-soft px-4 py-2.5 text-sm text-festif">
+          <p className="mt-3 rounded-xl bg-garnet-soft px-4 py-2.5 text-sm text-garnet">
             {error}
           </p>
         )}

@@ -201,7 +201,7 @@ export default function PhoneVerification({
         </>
       )}
       {error && (
-        <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+        <p className="mt-4 rounded-xl bg-garnet-soft px-4 py-3 text-sm text-garnet">
           {error}
         </p>
       )}

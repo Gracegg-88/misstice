@@ -47,7 +47,7 @@ export default function GuideLayout({
             className="absolute inset-0 h-full w-full object-cover opacity-25"
           />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-cream/60 via-cream/90 to-cream" />
-          <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-festif/20 blur-3xl" />
+          <div aria-hidden="true" className="absolute right-[8%] top-0 h-72 w-72 rounded-full bg-garnet/20 blur-3xl" />
           <div className="relative mx-auto grid max-w-content px-page gap-8 lg:grid-cols-[1fr_.38fr] lg:items-end">
             <div className="max-w-4xl">
               <p className="eyebrow text-violet">Guide Misstice · à garder sous la main</p>
@@ -55,7 +55,7 @@ export default function GuideLayout({
               {subtitle && <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-slate sm:text-lg">{subtitle}</p>}
             </div>
             <div className="bg-ink p-5 text-cream">
-              <p className="eyebrow text-festif">Dans ce guide</p>
+              <p className="eyebrow text-garnet">Dans ce guide</p>
               <p className="mt-3 font-display text-2xl font-semibold leading-none">Des repères concrets, puis la liberté de les adapter.</p>
               <p className="mt-4 text-sm font-light leading-relaxed text-cream/75">Budget, étapes, idées et prestataires : allez directement à ce qui vous aide maintenant.</p>
             </div>

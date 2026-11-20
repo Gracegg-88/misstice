@@ -234,7 +234,7 @@ export default function EquipeClient({
                     </span>
                   ) : (
                     <>
-                      <span className="rounded-full bg-festif-soft px-2.5 py-1 text-xs font-medium text-festif">
+                      <span className="rounded-full bg-garnet-soft px-2.5 py-1 text-xs font-medium text-garnet">
                         Invité
                       </span>
                       {isOwner && (
@@ -258,7 +258,7 @@ export default function EquipeClient({
                       type="button"
                       onClick={() => setConfirmId(m.id)}
                       aria-label="Retirer ce membre"
-                      className="flex h-9 w-9 items-center justify-center rounded-xl text-slate hover:bg-cream hover:text-festif"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl text-slate hover:bg-cream hover:text-garnet"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -286,7 +286,7 @@ export default function EquipeClient({
             </div>
             <div className="flex items-center justify-between rounded-2xl bg-cream px-4 py-3">
               <span className="text-sm text-slate">Invitations en attente</span>
-              <span className="font-display text-xl font-semibold text-festif">
+              <span className="font-display text-xl font-semibold text-garnet">
                 {pending}
               </span>
             </div>
@@ -366,7 +366,7 @@ export default function EquipeClient({
               Aucune section cochée = accès en <strong>lecture seule</strong>.
             </p>
           </div>
-          {error && <p className="text-sm text-festif">{error}</p>}
+          {error && <p className="text-sm text-garnet">{error}</p>}
           <button
             type="submit"
             disabled={sending}

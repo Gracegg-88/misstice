@@ -38,12 +38,12 @@ const STATUS_LABEL: Record<Quote["status"], string> = {
 };
 
 const STATUS_STYLE: Record<Quote["status"], string> = {
-  envoyé: "bg-festif-soft text-festif",
+  envoyé: "bg-garnet-soft text-garnet",
   accepté: "bg-emerald-soft text-emerald",
   refusé: "bg-black/10 text-slate",
   expiré: "bg-black/10 text-slate",
   annulé: "bg-black/10 text-slate",
-  "en litige": "bg-festif-soft text-festif",
+  "en litige": "bg-garnet-soft text-garnet",
   payé: "bg-emerald-soft text-emerald",
   "en attente de confirmation": "bg-emerald-soft text-emerald",
   "en attente de réalisation": "bg-emerald-soft text-emerald",
@@ -231,8 +231,8 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
 
         {/* Message d'intro */}
         {quote.intro_message?.trim() && (
-          <div className="mt-6 flex gap-4 rounded-2xl bg-festif-soft/50 px-6 py-5">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-festif-soft text-festif">
+          <div className="mt-6 flex gap-4 rounded-2xl bg-garnet-soft/50 px-6 py-5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-garnet-soft text-garnet">
               <QuoteIcon size={20} />
             </span>
             <div>
@@ -473,7 +473,7 @@ export default function DevisDocument({ quote }: { quote: Quote }) {
       {/* Pied de page */}
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-black/5 bg-cream px-8 py-5 text-sm text-slate">
         <span className="flex items-center gap-1.5 font-display font-semibold text-violet">
-          <span className="text-festif">✦</span> Misstice
+          <span className="text-garnet">✦</span> Misstice
         </span>
         {revealed && quote.presta_phone && (
           <ContactLine icon={Phone}>{quote.presta_phone}</ContactLine>

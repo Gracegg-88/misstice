@@ -21,7 +21,7 @@ const ALL_STATUSES: DemandeStatus[] = [
 ];
 
 const STYLE: Record<DemandeStatus, string> = {
-  Nouvelle: "bg-festif-soft text-festif",
+  Nouvelle: "bg-garnet-soft text-garnet",
   "Devis envoyé": "bg-violet-soft text-violet",
   Acceptée: "bg-emerald-soft text-emerald",
   Refusée: "bg-black/5 text-slate",

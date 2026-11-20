@@ -22,7 +22,7 @@ export default function RootError({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-5 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-festif-soft text-festif">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-garnet-soft text-garnet">
         <AlertTriangle size={26} />
       </div>
       <h1 className="mt-5 font-display text-2xl font-semibold text-plum">

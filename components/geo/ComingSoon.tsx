@@ -91,7 +91,7 @@ export default function ComingSoon({
         </form>
       )}
       {status === "error" && (
-        <p className="mt-3 text-xs text-festif">Une erreur est survenue, réessayez.</p>
+        <p className="mt-3 text-xs text-garnet">Une erreur est survenue, réessayez.</p>
       )}
 
       <a href="/creer" className="mt-6 inline-block text-sm font-semibold text-violet hover:text-violet-dark">

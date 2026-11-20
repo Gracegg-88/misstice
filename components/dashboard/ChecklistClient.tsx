@@ -299,7 +299,7 @@ export default function ChecklistClient({
                 <button
                   onClick={() => remove(t.id)}
                   aria-label={`Supprimer ${t.label}`}
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate opacity-0 transition-opacity hover:bg-cream hover:text-festif group-hover:opacity-100"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate opacity-0 transition-opacity hover:bg-cream hover:text-garnet group-hover:opacity-100"
                 >
                   <X size={15} />
                 </button>

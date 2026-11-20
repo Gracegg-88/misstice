@@ -18,10 +18,10 @@ import { Sparkline, Donut, LineChart } from "@/components/admin/charts";
 const QUOTE_BADGE: Record<string, string> = {
   accepté: "bg-emerald-soft text-emerald",
   envoyé: "bg-violet-soft text-violet",
-  refusé: "bg-festif-soft text-festif",
+  refusé: "bg-garnet-soft text-garnet",
   expiré: "bg-cream text-slate",
   annulé: "bg-cream text-slate",
-  "en litige": "bg-festif-soft text-festif",
+  "en litige": "bg-garnet-soft text-garnet",
 };
 
 export default async function ProOverviewPage() {
@@ -128,7 +128,7 @@ export default async function ProOverviewPage() {
 
   const statCards = [
     { icon: Inbox, label: "Demandes reçues", value: stats.demandes, sub: `+${sum(demandesSpark)} cette semaine`, tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: demandesSpark },
-    { icon: FileText, label: "Devis envoyés", value: stats.quotesSent, sub: `+${sum(devisSpark)} cette semaine`, tint: "bg-festif-soft text-festif", color: "#FF8C42", spark: devisSpark },
+    { icon: FileText, label: "Devis envoyés", value: stats.quotesSent, sub: `+${sum(devisSpark)} cette semaine`, tint: "bg-garnet-soft text-garnet", color: "#A13B4A", spark: devisSpark },
     { icon: BadgeCheck, label: "Devis acceptés", value: stats.quotesAccepted, sub: `${stats.quotesSent ? Math.round((stats.quotesAccepted / stats.quotesSent) * 100) : 0}% de conversion`, tint: "bg-emerald-soft text-emerald", color: "#10B981", spark: acceptSpark },
     { icon: TrendingUp, label: "Revenu estimé", value: stats.revenue, sub: "Devis acceptés", tint: "bg-violet-soft text-violet", color: "#6C3CE1", spark: revenueSpark, euro: true },
   ];
@@ -138,7 +138,7 @@ export default async function ProOverviewPage() {
   const repartition = [
     { label: "Acceptés", value: byStatus("accepté"), color: "#10B981" },
     { label: "Envoyés", value: byStatus("envoyé"), color: "#6C3CE1" },
-    { label: "Refusés", value: byStatus("refusé") + byStatus("expiré"), color: "#FF8C42" },
+    { label: "Refusés", value: byStatus("refusé") + byStatus("expiré"), color: "#A13B4A" },
   ];
   const repTotal = repartition.reduce((s, r) => s + r.value, 0);
   const pct = (v: number) => (repTotal ? Math.round((v / repTotal) * 100) : 0);
@@ -263,7 +263,7 @@ export default async function ProOverviewPage() {
           </div>
           <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-violet to-festif transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-violet to-garnet transition-all"
               style={{ width: `${completion}%` }}
             />
           </div>
@@ -422,7 +422,7 @@ export default async function ProOverviewPage() {
           </p>
           {recentQuotes.length === 0 ? (
             <div className="flex flex-col items-center py-6 text-center">
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-festif-soft text-festif">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-garnet-soft text-garnet">
                 <FileText size={22} />
               </span>
               <p className="mt-3 text-sm font-semibold text-plum">Aucun devis</p>

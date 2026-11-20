@@ -47,7 +47,7 @@ export default function DeleteAccountButton() {
         Supprimer mon compte
       </button>
 
-      {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-3 text-sm text-garnet">{error}</p>}
 
       <ConfirmDialog
         open={open}

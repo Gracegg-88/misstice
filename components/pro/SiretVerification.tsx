@@ -74,9 +74,9 @@ export default function SiretVerification({
           router.refresh() ci-dessus) — aucun statut ni palier supplémentaire
           en base, purement informatif. */}
       {!siret && !verifiedAt && (
-        <div className="mt-4 rounded-2xl border border-festif/20 bg-festif-soft px-5 py-4">
+        <div className="mt-4 rounded-2xl border border-garnet/20 bg-garnet-soft px-5 py-4">
           <p className="flex items-center gap-2 text-sm font-semibold text-plum">
-            <Lightbulb size={17} className="text-festif" />
+            <Lightbulb size={17} className="text-garnet" />
             Pas encore de SIRET ?
           </p>
           <p className="mt-1.5 text-sm leading-relaxed text-slate">
@@ -115,7 +115,7 @@ export default function SiretVerification({
       </div>
 
       {error && (
-        <p className="mt-3 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+        <p className="mt-3 rounded-xl bg-garnet-soft px-4 py-3 text-sm text-garnet">
           {error}
         </p>
       )}

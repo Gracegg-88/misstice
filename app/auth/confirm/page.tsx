@@ -77,7 +77,7 @@ export default function ConfirmPage() {
             {loading ? "Vérification…" : "Continuer"}
           </button>
           {!ready && (
-            <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+            <p className="mt-4 rounded-xl bg-garnet-soft px-4 py-3 text-sm text-garnet">
               Lien incomplet ou invalide.{" "}
               <a href="/auth" className="font-semibold underline">
                 Retour à la connexion
@@ -85,7 +85,7 @@ export default function ConfirmPage() {
             </p>
           )}
           {error && (
-            <p className="mt-4 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+            <p className="mt-4 rounded-xl bg-garnet-soft px-4 py-3 text-sm text-garnet">
               {error}{" "}
               <a href="/auth" className="font-semibold underline">
                 Retour à la connexion

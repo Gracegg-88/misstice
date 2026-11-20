@@ -101,7 +101,7 @@ export default function SireneImportClient() {
       </button>
 
       {error && (
-        <p className="mt-3 rounded-xl bg-festif-soft px-4 py-2 text-sm font-medium text-festif">
+        <p className="mt-3 rounded-xl bg-garnet-soft px-4 py-2 text-sm font-medium text-garnet">
           {error}
         </p>
       )}
@@ -146,7 +146,7 @@ export default function SireneImportClient() {
                     <tr key={k} className="border-b border-black/5 last:border-0">
                       <td className="px-5 py-3 font-medium text-plum">{s.cityName}</td>
                       <td className="px-5 py-3">
-                        <span className="rounded-md bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                        <span className="rounded-md bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet">
                           {s.category}
                         </span>
                       </td>

@@ -168,7 +168,7 @@ export default function PublicInvitationClient({
               </div>
 
               {error && (
-                <p className="mt-3 text-center text-sm text-festif">{error}</p>
+                <p className="mt-3 text-center text-sm text-garnet">{error}</p>
               )}
 
               <div className="mt-5 grid grid-cols-2 gap-3">

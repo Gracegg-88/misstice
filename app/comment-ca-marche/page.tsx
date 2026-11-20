@@ -52,7 +52,7 @@ const guides = [
   {
     href: "/organiser-un-anniversaire",
     image: "/birthday-party.jpg",
-    overlay: "bg-festif/80",
+    overlay: "bg-garnet/80",
     text: "text-plum",
     title: "Organiser un anniversaire",
     body: "De la petite fête entre proches à la grande soirée, tout pour organiser un anniversaire sans stress.",
@@ -76,7 +76,7 @@ const guides = [
   {
     href: "/organiser-une-baby-shower",
     image: "/babyshower-photo.png",
-    overlay: "bg-festif-soft/85",
+    overlay: "bg-garnet-soft/85",
     text: "text-plum",
     title: "Organiser une baby shower",
     body: "Préparez l'arrivée de bébé avec une organisation simple, entre budget raisonnable et bons souvenirs.",
@@ -95,7 +95,7 @@ export default function CommentCaMarchePage() {
               <h1 className="mt-4 max-w-[13ch] font-display text-4xl font-semibold leading-[.9] tracking-tight text-plum sm:text-5xl lg:text-6xl">Un guide pour chaque moment. Une même façon de <em className="font-normal text-violet">garder le fil.</em></h1>
               <p className="mt-5 max-w-xl text-base font-light leading-relaxed text-slate sm:text-lg">Budget, échéances, idées et prestataires : choisissez un point de départ adapté à ce que vous préparez.</p>
             </div>
-            <div className="flex gap-3 border-l-2 border-festif pl-4 text-sm font-light leading-relaxed text-slate"><BookOpen className="shrink-0 text-festif" size={19} /><p>Des contenus pensés pour vous aider à décider, pas pour vous faire défiler sans fin.</p></div>
+            <div className="flex gap-3 border-l-2 border-garnet pl-4 text-sm font-light leading-relaxed text-slate"><BookOpen className="shrink-0 text-garnet" size={19} /><p>Des contenus pensés pour vous aider à décider, pas pour vous faire défiler sans fin.</p></div>
           </Reveal>
 
           <div className="mt-10 grid gap-3 md:grid-cols-3">
@@ -106,7 +106,7 @@ export default function CommentCaMarchePage() {
                     <span className="flex h-12 w-12 items-center justify-center text-violet">
                       <step.icon size={26} strokeWidth={1.75} />
                     </span>
-                    <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-festif">
+                    <span className="absolute -left-1 -top-3 font-display text-2xl font-normal italic text-garnet">
                       {step.n}
                     </span>
                   </div>
@@ -155,7 +155,7 @@ export default function CommentCaMarchePage() {
                     <p className="mt-3 flex-1 text-sm font-light leading-relaxed opacity-75">
                       {g.body}
                     </p>
-                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold underline decoration-festif decoration-2 underline-offset-8">
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold underline decoration-garnet decoration-2 underline-offset-8">
                       Préparer ce moment
                       <ArrowRight
                         size={16}
@@ -168,7 +168,7 @@ export default function CommentCaMarchePage() {
             ))}
           </div>
 
-          <div className="mt-12 flex flex-col gap-5 border-t border-plum/10 pt-7 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3 text-sm font-light text-slate"><Sparkles className="shrink-0 text-festif" size={18} /><p>Vous avez déjà une idée ? Commencez directement par votre projet.</p></div><Link href="/creer" className="inline-flex items-center gap-2 text-sm font-semibold text-violet underline decoration-festif decoration-2 underline-offset-6">Créer mon événement <ArrowRight size={16} /></Link></div>
+          <div className="mt-12 flex flex-col gap-5 border-t border-plum/10 pt-7 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3 text-sm font-light text-slate"><Sparkles className="shrink-0 text-garnet" size={18} /><p>Vous avez déjà une idée ? Commencez directement par votre projet.</p></div><Link href="/creer" className="inline-flex items-center gap-2 text-sm font-semibold text-violet underline decoration-garnet decoration-2 underline-offset-6">Créer mon événement <ArrowRight size={16} /></Link></div>
         </div>
       </main>
       <Footer />
