@@ -67,7 +67,7 @@ export default function VendorCard({
               </span>
             )}
             {vendor.isNew && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-festif shadow-sm">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-garnet shadow-sm">
                 <Sparkles size={14} />
                 Nouveau
               </span>
@@ -76,7 +76,7 @@ export default function VendorCard({
         )}
         {vendor.claimStatus === "non_reclamee" && (
           <div className="absolute bottom-4 left-4">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-festif shadow-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-semibold text-garnet shadow-sm">
               <Lock size={14} />
               Fiche non réclamée
             </span>
@@ -85,7 +85,7 @@ export default function VendorCard({
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-festif">
+        <p className="text-xs font-semibold uppercase tracking-wide text-garnet">
           {vendor.category}
         </p>
         <h3 className="mt-0.5 font-display text-xl font-semibold text-plum">
@@ -111,7 +111,7 @@ export default function VendorCard({
 
         {/* Note */}
         <div className="mt-3 flex items-center gap-1 text-sm">
-          <Star size={15} className="fill-festif text-festif" />
+          <Star size={15} className="fill-garnet text-garnet" />
           <span className="font-semibold text-plum">{note}</span>
           <span className="text-slate">({vendor.reviews} avis)</span>
         </div>

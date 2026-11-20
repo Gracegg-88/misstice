@@ -13,16 +13,16 @@ export default function GuideProductPreview({ mode = "checklist" }: { mode?: "ch
   return (
     <aside className="my-8 overflow-hidden bg-ink p-5 text-cream sm:p-6" aria-label="Aperçu de l’espace projet Misstice">
       <div className="flex items-center justify-between">
-        <span className="eyebrow text-festif">Dans votre projet Misstice</span>
-        {isBudget ? <CircleDollarSign size={18} className="text-festif" /> : <UsersRound size={18} className="text-festif" />}
+        <span className="eyebrow text-garnet">Dans votre projet Misstice</span>
+        {isBudget ? <CircleDollarSign size={18} className="text-garnet" /> : <UsersRound size={18} className="text-garnet" />}
       </div>
       <h3 className="mt-5 max-w-md font-display text-2xl font-semibold leading-[1.02] sm:text-3xl">Une vue claire pour avancer, sans vous éparpiller.</h3>
       <div className="mt-6 grid gap-2 sm:grid-cols-3">
         {rows.map((row, index) => (
           <div key={row} className="bg-cream/10 p-3">
-            <span className="text-xs tracking-[0.12em] text-festif">0{index + 1}</span>
+            <span className="text-xs tracking-[0.12em] text-garnet">0{index + 1}</span>
             <p className="mt-4 text-sm font-medium leading-snug">{row}</p>
-            <Check className="mt-4 text-festif" size={16} />
+            <Check className="mt-4 text-garnet" size={16} />
           </div>
         ))}
       </div>

@@ -16,41 +16,52 @@ const config: Config = {
           dark: "#5A2FC4",
           soft: "#F1ECFD", // fond léger pour badges / surfaces
         },
-        // Accent festif : UN seul usage ponctuel par écran (ex. badge du hero).
-        // Jamais sur les titres, liens, icônes ou soulignements — c'est le rôle du violet.
-        festif: {
-          DEFAULT: "#FF8C42",
-          soft: "#FFF1E6",
+        // Lavande : fonds doux et badges, un cran plus présent que violet-soft
+        // quand on veut un fond teinté qui reste visible sans attirer l'œil
+        // comme le violet plein (CTA).
+        lavender: {
+          DEFAULT: "#A98BF0",
+          soft: "#EFE9FD",
+        },
+        // Garnet (anciennement "festif") : alerte, litige, action destructive
+        // (supprimer, refuser, annuler) — jamais un accent festif/décoratif,
+        // jamais en grand aplat. Rouge grenat plutôt qu'orange : plus
+        // cohérent avec un positionnement premium/sérieux.
+        garnet: {
+          DEFAULT: "#A13B4A",
+          soft: "#F6E7E9",
         },
         // Validation / succès
         emerald: {
           DEFAULT: "#10B981",
           soft: "#E7F8F1",
         },
-        // Accent premium neutre (mise en avant prestataire, badges "premium").
-        // Volontairement froid/neutre — jamais de rose/blush/terracotta, pour
-        // rester perçu comme une marketplace neutre en genre, pas "réservée
-        // aux femmes". Réservé aux touches premium, jamais en usage principal.
-        navy: {
-          DEFAULT: "#2B4C7E",
-          soft: "#EAF0F8",
+        // Or (anciennement "navy") : touches premium UNIQUEMENT — badge Pro,
+        // filets, petits détails. Toujours avec du texte foncé (plum) dessus,
+        // JAMAIS de texte clair : l'or sur fond clair et le texte clair sur
+        // fond or échouent tous les deux au contraste (vérifié : ~2:1).
+        gold: {
+          DEFAULT: "#D9B25F",
+          soft: "#F7EFDC",
+          // Variante foncée : seule déclinaison de l'or utilisable EN TEXTE sur
+          // fond clair (l'or plein échoue au contraste, ~2:1 — voir au-dessus).
+          dark: "#7A5C33",
         },
         // Fonds
         cream: "#FAFAF9", // fond clair (jamais blanc pur)
-        ink: "#1E1B2E", // fond sombre des sections "écrin"
+        ink: "#1E1240", // fond sombre des sections "écrin" — améthyste foncé
         // Texte
-        plum: "#1A1A2E", // texte principal
+        plum: "#1E1240", // texte principal, titres — même améthyste que `ink`
         slate: "#6B7280", // texte secondaire
       },
       // Dégradés de marque réutilisables → classes `bg-gradient-*`.
-      // Ne jamais créer de dégradé violet → festif en grand format : l'orange
-      // reste une touche ponctuelle (~10% max d'une section visible), jamais
-      // un aplat dominant.
+      // Ne jamais créer de dégradé violet → garnet en grand format : le
+      // garnet reste réservé aux alertes, jamais un aplat dominant.
       backgroundImage: {
         // Boutons CTA du quotidien, hero discret.
         "gradient-primary": "linear-gradient(135deg, #6C3CE1 0%, #5A2FC4 100%)",
         // Sections premium, mise en avant prestataire, hero principal.
-        "gradient-premium": "linear-gradient(135deg, #6C3CE1 0%, #2B4C7E 100%)",
+        "gradient-premium": "linear-gradient(135deg, #6C3CE1 0%, #1E1240 100%)",
         // Fonds de section doux, transitions.
         "gradient-soft": "linear-gradient(135deg, #F1ECFD 0%, #FAFAF9 100%)",
       },

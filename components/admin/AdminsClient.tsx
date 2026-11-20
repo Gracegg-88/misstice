@@ -218,7 +218,7 @@ export default function AdminsClient({
               className="h-5 w-5 shrink-0 accent-violet"
             />
           </label>
-          {error && <p className="text-sm text-festif">{error}</p>}
+          {error && <p className="text-sm text-garnet">{error}</p>}
           {notice && (
             <p className="rounded-xl bg-emerald-soft px-4 py-2.5 text-sm text-emerald">
               {notice}
@@ -266,7 +266,7 @@ export default function AdminsClient({
                               {a.full_name?.trim() || "Administrateur"}
                             </span>
                             {isSelf && (
-                              <span className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                              <span className="rounded-full bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet">
                                 Vous
                               </span>
                             )}
@@ -277,7 +277,7 @@ export default function AdminsClient({
                     </td>
                     <td className="px-5 py-3">
                       {a.banned ? (
-                        <span className="rounded-full bg-festif-soft px-2.5 py-0.5 text-xs font-semibold text-festif">
+                        <span className="rounded-full bg-garnet-soft px-2.5 py-0.5 text-xs font-semibold text-garnet">
                           Suspendu
                         </span>
                       ) : (
@@ -325,7 +325,7 @@ export default function AdminsClient({
                                 row: a,
                               })
                             }
-                            className="inline-flex items-center gap-1 text-festif hover:underline disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-garnet hover:underline disabled:opacity-50"
                           >
                             <Ban size={13} />
                             {a.banned ? "Réactiver" : "Suspendre"}

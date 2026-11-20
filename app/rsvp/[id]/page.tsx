@@ -164,7 +164,7 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                   className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-semibold ${
                     confirmed
                       ? "bg-emerald-soft text-emerald"
-                      : "bg-festif-soft text-festif"
+                      : "bg-garnet-soft text-garnet"
                   }`}
                 >
                   {confirmed ? <Check size={15} /> : <X size={15} />}
@@ -192,10 +192,10 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                 />
               ) : (
                 <>
-                  <div className="mx-auto mt-1 flex items-center justify-center gap-2 text-festif">
-                    <span className="h-px w-6 bg-festif/40" />
+                  <div className="mx-auto mt-1 flex items-center justify-center gap-2 text-garnet">
+                    <span className="h-px w-6 bg-garnet/40" />
                     <span className="text-sm">✦</span>
-                    <span className="h-px w-6 bg-festif/40" />
+                    <span className="h-px w-6 bg-garnet/40" />
                   </div>
                   <p className="mt-1 text-xs text-slate">
                     Une célébration chaleureuse préparée avec soin.
@@ -245,7 +245,7 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                   className={`mt-3 flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold ${
                     confirmed
                       ? "bg-emerald-soft text-emerald"
-                      : "bg-festif-soft text-festif"
+                      : "bg-garnet-soft text-garnet"
                   }`}
                 >
                   <CheckCircle2 size={18} />
@@ -296,7 +296,7 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
                       onClick={() => respond("décliné")}
                       disabled={busy}
                       className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white/70 py-2 text-sm font-semibold text-plum hover:bg-white disabled:opacity-60 ${
-                        preselect === "décliné" ? "ring-2 ring-festif ring-offset-2" : ""
+                        preselect === "décliné" ? "ring-2 ring-garnet ring-offset-2" : ""
                       }`}
                     >
                       <X size={16} />
@@ -307,7 +307,7 @@ export default function RsvpPage({ params }: { params: { id: string } }) {
               )}
 
               {respondError && (
-                <p className="mt-3 text-xs font-medium text-festif">
+                <p className="mt-3 text-xs font-medium text-garnet">
                   {respondError}
                 </p>
               )}

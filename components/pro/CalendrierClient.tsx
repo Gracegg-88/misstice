@@ -41,13 +41,13 @@ const STATUS_LABEL: Record<Status, string> = {
 };
 const DOT: Record<Status, string> = {
   available: "bg-emerald",
-  pending: "bg-festif",
+  pending: "bg-garnet",
   blocked: "bg-slate/60",
   booked: "bg-violet",
 };
 const PILL: Record<Status, string> = {
   available: "bg-emerald-soft text-emerald",
-  pending: "bg-festif-soft text-festif",
+  pending: "bg-garnet-soft text-garnet",
   blocked: "bg-black/5 text-slate",
   booked: "bg-violet-soft text-violet",
 };
@@ -249,7 +249,7 @@ export default function CalendrierClient({
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:max-w-2xl">
           <StatCard icon={CalendarDays} value={stats.booked} label="Événements confirmés" tint="bg-violet-soft text-violet" />
-          <StatCard icon={Clock} value={stats.pending} label="Devis en attente" tint="bg-festif-soft text-festif" />
+          <StatCard icon={Clock} value={stats.pending} label="Devis en attente" tint="bg-garnet-soft text-garnet" />
           <StatCard icon={CheckCircle2} value={stats.available} label="Jours disponibles" tint="bg-emerald-soft text-emerald" />
           <StatCard icon={Lock} value={stats.blocked} label="Jours bloqués" tint="bg-black/5 text-slate" />
         </div>
@@ -360,7 +360,7 @@ export default function CalendrierClient({
                 {selEvent.location && (
                   <p className="text-sm text-slate">{selEvent.location}</p>
                 )}
-                <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${selEvent.status === "accepté" ? "bg-violet-soft text-violet" : "bg-festif-soft text-festif"}`}>
+                <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${selEvent.status === "accepté" ? "bg-violet-soft text-violet" : "bg-garnet-soft text-garnet"}`}>
                   {selEvent.status === "accepté" ? "Événement confirmé" : "Devis en attente"}
                 </span>
               </div>
@@ -437,7 +437,7 @@ export default function CalendrierClient({
             <ChevronRight size={16} className="text-slate" />
           </Link>
 
-          {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+          {error && <p className="mt-3 text-sm text-garnet">{error}</p>}
         </div>
       </div>
     </div>

@@ -134,7 +134,7 @@ export default function GooglePlaceLinker({
         </button>
       </div>
 
-      {error && <p className="text-sm text-festif">{error}</p>}
+      {error && <p className="text-sm text-garnet">{error}</p>}
 
       {candidates && candidates.length === 0 && (
         <p className="text-sm text-slate">

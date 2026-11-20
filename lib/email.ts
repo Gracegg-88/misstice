@@ -46,7 +46,7 @@ export async function sendEmail(opts: {
 // Gabarit d'email Misstice — style plat (sans bandeau coloré), à la Google.
 export function emailShell(bodyHtml: string): string {
   return `
-  <div style="margin:0;padding:32px 16px;background:#FAFAF9;font-family:Segoe UI,Arial,sans-serif;color:#1E1B2E">
+  <div style="margin:0;padding:32px 16px;background:#FAFAF9;font-family:Segoe UI,Arial,sans-serif;color:#1E1240">
     <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;border:1px solid #eeeeee;padding:36px 32px">
       <div style="text-align:center">
         <img src="https://www.misstice.com/brand/misstice-mark.png" width="42" height="42" alt="Misstice" style="display:inline-block;width:42px;height:42px;object-fit:contain;vertical-align:middle" />

@@ -55,9 +55,9 @@
   background: linear-gradient(
     115deg,
     #6c3ce1 0%,
-    #ff8c42 30%,
+    #d9b25f 30%,
     #6c3ce1 55%,
-    #2b4c7e 80%,
+    #1e1240 80%,
     #6c3ce1 100%
   );
   background-size: 260% 260%;
@@ -86,7 +86,7 @@
 }
 .ev-cta:active { transform: scale(0.97); }
 
-/* ---------- CTA principal : liseré festif animé (touche ponctuelle) ----------
+/* ---------- CTA principal : liseré garnet animé (touche ponctuelle) ----------
    Réservé à UN SEUL bouton par page (le CTA de conversion principal) —
    jamais un aplat, juste un léger appel visuel. Le liseré est un anneau en
    dégradé qui se déplace (comme .ev-aurora), pas un simple pulse d'opacité :
@@ -103,11 +103,11 @@
   border-radius: inherit;
   background: linear-gradient(
     120deg,
-    #ff8c42,
-    #ffd9a8,
-    #ff8c42,
-    #ffb27a,
-    #ff8c42
+    #d9b25f,
+    #f7efdc,
+    #d9b25f,
+    #e8c87e,
+    #d9b25f
   );
   background-size: 300% 300%;
   animation: ev-cta-pulse-ring 6s ease-in-out infinite;

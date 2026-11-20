@@ -157,7 +157,7 @@ export default function EventsManagerClient({
                     type="button"
                     onClick={() => setConfirmId(e.id)}
                     aria-label="Supprimer l'événement"
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 text-festif hover:bg-festif-soft"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 text-garnet hover:bg-garnet-soft"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -209,7 +209,7 @@ export default function EventsManagerClient({
                 type="button"
                 disabled={busy}
                 onClick={() => remove(toDelete.id)}
-                className="flex-1 rounded-2xl bg-festif py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                className="flex-1 rounded-2xl bg-garnet py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
               >
                 {busy ? "Suppression…" : "Supprimer"}
               </button>

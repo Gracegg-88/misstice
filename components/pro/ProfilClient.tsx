@@ -503,7 +503,7 @@ export default function ProfilClient({
       </div>
 
       {error && (
-        <p className="mt-4 rounded-2xl bg-festif-soft px-4 py-3 text-sm font-medium text-festif">
+        <p className="mt-4 rounded-2xl bg-garnet-soft px-4 py-3 text-sm font-medium text-garnet">
           {error}
         </p>
       )}
@@ -746,7 +746,7 @@ export default function ProfilClient({
                             prev.filter((_, j) => j !== i)
                           )
                         }
-                        className="text-slate hover:text-festif"
+                        className="text-slate hover:text-garnet"
                       >
                         <X size={13} />
                       </button>
@@ -841,7 +841,7 @@ export default function ProfilClient({
                     type="button"
                     aria-label="Supprimer la formule"
                     onClick={() => deletePackage(p.id)}
-                    className="text-slate hover:text-festif"
+                    className="text-slate hover:text-garnet"
                   >
                     <X size={16} />
                   </button>
@@ -939,7 +939,7 @@ export default function ProfilClient({
                     onClick={() =>
                       setNewFeatures((p) => p.filter((_, j) => j !== i))
                     }
-                    className="text-slate hover:text-festif"
+                    className="text-slate hover:text-garnet"
                   >
                     <X size={12} />
                   </button>
@@ -1035,7 +1035,7 @@ export default function ProfilClient({
         </div>
       </section>
 
-      {error && <p className="mt-4 text-right text-sm text-festif">{error}</p>}
+      {error && <p className="mt-4 text-right text-sm text-garnet">{error}</p>}
 
       {/* Save */}
       <div className="mt-6 flex justify-end">

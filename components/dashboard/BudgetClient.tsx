@@ -18,7 +18,7 @@ type Cat = {
 
 // Palette de la charte pour colorer les nouvelles catégories.
 const PALETTE = [
-  "#6C3CE1", "#FF8C42", "#10B981", "#A855F7", "#EC4899",
+  "#6C3CE1", "#D9B25F", "#10B981", "#A855F7", "#EC4899",
   "#3B82F6", "#6366F1", "#F43F5E", "#F59E0B", "#6B7280",
 ];
 
@@ -247,7 +247,7 @@ export default function BudgetClient({
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         {[
           { l: "Budget total", n: total, sub: "Prévisionnel", c: "text-plum" },
-          { l: "Dépensé", n: spent, sub: `${pct}% du budget`, c: "text-festif" },
+          { l: "Dépensé", n: spent, sub: `${pct}% du budget`, c: "text-garnet" },
           {
             l: "Restant",
             n: remaining,
@@ -280,7 +280,7 @@ export default function BudgetClient({
         </div>
         <div className="mt-4 h-3 overflow-hidden rounded-full bg-cream">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-violet to-festif"
+            className="h-full rounded-full bg-gradient-to-r from-violet to-garnet"
             style={{ width: `${Math.min(100, pct)}%` }}
           />
         </div>
@@ -410,7 +410,7 @@ export default function BudgetClient({
                   placeholder="ex. 250"
                 />
               </div>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={saving}
@@ -505,7 +505,7 @@ export default function BudgetClient({
                       type="button"
                       aria-label={`Supprimer ${c.name}`}
                       onClick={() => setConfirmCat({ id: c.id, name: c.name })}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate hover:bg-festif-soft hover:text-festif"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate hover:bg-garnet-soft hover:text-garnet"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -517,7 +517,7 @@ export default function BudgetClient({
                   </p>
                 )}
               </div>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={savingBudgets}

@@ -63,7 +63,7 @@ export default function FavoriteVendorsClient() {
   if (vendors.length === 0) {
     return (
       <div className="mt-6 rounded-3xl border border-dashed border-black/10 bg-white p-12 text-center">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-festif-soft text-festif">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-garnet-soft text-garnet">
           <Heart size={22} />
         </span>
         <p className="mt-3 font-semibold text-plum">Aucun favori pour l&apos;instant</p>
@@ -94,7 +94,7 @@ export default function FavoriteVendorsClient() {
             className="overflow-hidden rounded-3xl border border-black/5 bg-white"
           >
             <div
-              className={`relative flex h-28 items-end bg-gradient-to-br ${v.grad || "from-violet to-festif"} p-4`}
+              className={`relative flex h-28 items-end bg-gradient-to-br ${v.grad || "from-violet to-garnet"} p-4`}
             >
               {v.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -111,9 +111,9 @@ export default function FavoriteVendorsClient() {
                 type="button"
                 onClick={() => toggle(v.id)}
                 aria-label="Retirer des favoris"
-                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-festif hover:bg-white"
+                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-garnet hover:bg-white"
               >
-                <Heart size={16} className="fill-festif" />
+                <Heart size={16} className="fill-garnet" />
               </button>
             </div>
             <div className="p-5">
@@ -126,7 +126,7 @@ export default function FavoriteVendorsClient() {
                 </div>
                 {v.rating > 0 && (
                   <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-plum">
-                    <Star size={14} className="fill-festif text-festif" />
+                    <Star size={14} className="fill-garnet text-garnet" />
                     {v.rating.toFixed(1).replace(".", ",")}
                   </span>
                 )}

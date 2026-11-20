@@ -192,7 +192,7 @@ export default function TeamThread({
       </div>
 
       {sendError && (
-        <p className="border-t border-black/5 px-4 pt-2 text-xs font-medium text-festif">
+        <p className="border-t border-black/5 px-4 pt-2 text-xs font-medium text-garnet">
           {sendError}
         </p>
       )}

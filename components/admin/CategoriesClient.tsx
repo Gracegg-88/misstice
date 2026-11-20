@@ -209,7 +209,7 @@ export default function CategoriesClient({
         </div>
       </div>
 
-      {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-3 text-sm text-garnet">{error}</p>}
 
       {/* Filtres de statut */}
       <div className="mt-6 flex gap-2">
@@ -320,7 +320,7 @@ export default function CategoriesClient({
                     type="button"
                     aria-label={`Supprimer ${c.name}`}
                     onClick={() => setConfirmCat(c)}
-                    className={`${iconBtn} hover:bg-festif-soft hover:text-festif`}
+                    className={`${iconBtn} hover:bg-garnet-soft hover:text-garnet`}
                   >
                     <Trash2 size={15} />
                   </button>
@@ -379,7 +379,7 @@ export default function CategoriesClient({
                   className="mt-1.5 w-full resize-none rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm outline-none focus:border-violet"
                 />
               </div>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={saving || !formName.trim()}

@@ -162,8 +162,8 @@ export default async function DashboardOverview() {
   }
 
   const alertStyle: Record<Alert["level"], string> = {
-    critical: "border-festif/30 bg-festif-soft text-festif",
-    warning: "border-festif/20 bg-festif-soft/60 text-festif",
+    critical: "border-garnet/30 bg-garnet-soft text-garnet",
+    warning: "border-garnet/20 bg-garnet-soft/60 text-garnet",
     info: "border-violet/20 bg-violet-soft/60 text-plum",
   };
   const shown = alerts.slice(0, 3);
@@ -308,7 +308,7 @@ export default async function DashboardOverview() {
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2.5 py-1 text-xs font-semibold text-emerald">
               {guestsConfirmed} confirmé{guestsConfirmed > 1 ? "s" : ""}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2.5 py-1 text-xs font-semibold text-festif">
+            <span className="inline-flex items-center gap-1 rounded-full bg-garnet-soft px-2.5 py-1 text-xs font-semibold text-garnet">
               {guestsPending} sans réponse
             </span>
           </div>
@@ -383,7 +383,7 @@ export default async function DashboardOverview() {
                           ? "bg-emerald-soft text-emerald"
                           : v.status === "refusé"
                             ? "bg-black/5 text-slate"
-                            : "bg-festif-soft text-festif"
+                            : "bg-garnet-soft text-garnet"
                       }`}
                     >
                       {v.status === "confirmé" && <BadgeCheck size={13} />}

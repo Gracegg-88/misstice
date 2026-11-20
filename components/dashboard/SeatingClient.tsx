@@ -162,7 +162,7 @@ export default function SeatingClient({
         </div>
       )}
 
-      {error && <p className="mt-4 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-4 text-sm text-garnet">{error}</p>}
 
       {/* Ajouter une table */}
       {canEdit && (
@@ -230,7 +230,7 @@ export default function SeatingClient({
                   </p>
                   <p
                     className={`text-xs ${
-                      over ? "font-semibold text-festif" : "text-slate"
+                      over ? "font-semibold text-garnet" : "text-slate"
                     }`}
                   >
                     {list.length} / {t.capacity} place{t.capacity > 1 ? "s" : ""}
@@ -242,7 +242,7 @@ export default function SeatingClient({
                     type="button"
                     onClick={() => deleteTable(t.id)}
                     aria-label={`Supprimer ${t.name}`}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate hover:bg-cream hover:text-festif"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate hover:bg-cream hover:text-garnet"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -261,7 +261,7 @@ export default function SeatingClient({
                         type="button"
                         onClick={() => removeSeat(s.id)}
                         aria-label={`Retirer ${s.name}`}
-                        className="shrink-0 text-slate hover:text-festif"
+                        className="shrink-0 text-slate hover:text-garnet"
                       >
                         <X size={14} />
                       </button>

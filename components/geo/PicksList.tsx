@@ -11,7 +11,7 @@ export default function PicksList({ picks }: { picks: DirectoryPick[] }) {
     <div className="divide-y divide-black/5">
       {picks.map((p) => (
         <div key={p.id} className="flex items-start gap-4 py-5">
-          <span className="w-9 shrink-0 pt-0.5 font-display text-2xl font-semibold italic text-festif">
+          <span className="w-9 shrink-0 pt-0.5 font-display text-2xl font-semibold italic text-garnet">
             {String(p.rank).padStart(2, "0")}
           </span>
           <div className="min-w-0 flex-1">

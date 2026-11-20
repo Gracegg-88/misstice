@@ -324,7 +324,7 @@ export default function ProfileForm({
         </div>
       </div>
 
-      {error && <p className="mt-5 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-5 text-sm text-garnet">{error}</p>}
 
       <div className="mt-8 flex items-center gap-3">
         <button

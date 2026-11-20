@@ -20,7 +20,7 @@ export default function FinalCTA() {
               (plum) car ce ton est trop clair pour du texte cream lisible. */}
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-r from-[#D9B88C]/90 via-[#D9B88C]/60 to-cream/20"
+            className="absolute inset-0 bg-gradient-to-r from-gold/90 via-gold/60 to-cream/20"
           />
 
           <div className="relative max-w-2xl p-6 sm:p-8">

@@ -39,7 +39,7 @@ export default function ProSidebar({
                 className="h-10 w-10 shrink-0 rounded-2xl object-cover"
               />
             ) : (
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet to-festif font-display text-base font-semibold text-white">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet to-garnet font-display text-base font-semibold text-white">
                 {initial}
               </span>
             )}

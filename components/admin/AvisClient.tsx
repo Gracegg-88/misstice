@@ -49,7 +49,7 @@ export default function AvisClient({ reviews }: { reviews: Review[] }) {
         {reviews.length} avis déposé{reviews.length > 1 ? "s" : ""}.
       </p>
       {error && (
-        <p className="mt-3 rounded-xl bg-festif-soft px-4 py-2 text-sm font-medium text-festif">
+        <p className="mt-3 rounded-xl bg-garnet-soft px-4 py-2 text-sm font-medium text-garnet">
           {error}
         </p>
       )}
@@ -81,13 +81,13 @@ export default function AvisClient({ reviews }: { reviews: Review[] }) {
                   <td className="px-5 py-3 text-slate">{r.authorName || "—"}</td>
                   <td className="px-5 py-3">
                     <span className="inline-flex items-center gap-1 font-semibold text-plum">
-                      <Star size={14} className="fill-festif text-festif" />
+                      <Star size={14} className="fill-garnet text-garnet" />
                       {r.rating}
                     </span>
                   </td>
                   <td className="max-w-xs px-5 py-3 text-slate">
                     {r.eventType && (
-                      <span className="mb-1 inline-block rounded-md bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                      <span className="mb-1 inline-block rounded-md bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet">
                         {r.eventType}
                       </span>
                     )}
@@ -103,7 +103,7 @@ export default function AvisClient({ reviews }: { reviews: Review[] }) {
                         aria-label={`Supprimer l'avis de ${r.authorName ?? "cet auteur"}`}
                         disabled={busy === r.id}
                         onClick={() => setConfirmReview(r)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate transition-colors hover:bg-festif-soft hover:text-festif disabled:opacity-60"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate transition-colors hover:bg-garnet-soft hover:text-garnet disabled:opacity-60"
                       >
                         <Trash2 size={15} />
                       </button>

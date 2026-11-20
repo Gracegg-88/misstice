@@ -244,7 +244,7 @@ export default function GiftListClient({
                     type="button"
                     onClick={() => remove(i.id)}
                     aria-label={`Supprimer ${i.title}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-slate hover:bg-cream hover:text-festif"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl text-slate hover:bg-cream hover:text-garnet"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -321,7 +321,7 @@ export default function GiftListClient({
                   />
                 </div>
               </div>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={saving || !form.title.trim()}

@@ -41,7 +41,7 @@ export default function Hero() {
               <div className="mt-4 h-1 bg-plum/10"><span className="block h-full w-2/5 bg-violet" /></div>
             </div>
           </div>
-          <div className="absolute -left-3 top-12 grid h-24 w-24 place-items-center rounded-full bg-festif text-center font-display text-lg font-medium leading-none text-plum sm:-left-4 lg:-left-6 lg:top-16 lg:h-32 lg:w-32 lg:text-2xl">à votre<br />rythme</div>
+          <div className="absolute -left-3 top-12 grid h-24 w-24 place-items-center rounded-full bg-garnet text-center font-display text-lg font-medium leading-none text-plum sm:-left-4 lg:-left-6 lg:top-16 lg:h-32 lg:w-32 lg:text-2xl">à votre<br />rythme</div>
         </div>
       </div>
     </section>

@@ -238,15 +238,15 @@ export default function GuideMascot() {
           {/* Chignon/pompon en étincelle, reprise du logo Misstice */}
           <path
             d="M32 2 Q32 12 42 12 Q32 12 32 22 Q32 12 22 12 Q32 12 32 2 Z"
-            fill="#FF8C42"
+            fill="#D9B25F"
           />
           {/* Visage rond façon emoji */}
           <circle cx="32" cy="38" r="20" fill="#FAFAF9" />
-          <circle cx="25" cy="36" r="2.6" fill="#1A1A2E" />
-          <circle cx="39" cy="36" r="2.6" fill="#1A1A2E" />
+          <circle cx="25" cy="36" r="2.6" fill="#1E1240" />
+          <circle cx="39" cy="36" r="2.6" fill="#1E1240" />
           <path
             d="M25 43 Q32 48 39 43"
-            stroke="#1A1A2E"
+            stroke="#1E1240"
             strokeWidth="2.4"
             strokeLinecap="round"
             fill="none"

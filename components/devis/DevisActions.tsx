@@ -246,7 +246,7 @@ export default function DevisActions({
 
   return (
     <div className="no-print mx-auto max-w-3xl">
-      {error && <p className="mb-3 text-center text-sm text-festif">{error}</p>}
+      {error && <p className="mb-3 text-center text-sm text-garnet">{error}</p>}
       {notice && <p className="mb-3 text-center text-sm text-slate">{notice}</p>}
 
       <div className="flex flex-wrap items-center justify-center gap-3">
@@ -278,7 +278,7 @@ export default function DevisActions({
               type="button"
               onClick={() => respond("refusé")}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-2xl border border-festif/40 bg-white px-5 py-3 text-sm font-semibold text-festif hover:bg-festif-soft disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-2xl border border-garnet/40 bg-white px-5 py-3 text-sm font-semibold text-garnet hover:bg-garnet-soft disabled:opacity-60"
             >
               <XCircle size={16} />
               Refuser
@@ -328,7 +328,7 @@ export default function DevisActions({
               type="button"
               onClick={() => decideTrial(false)}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-2xl border border-festif/40 bg-white px-5 py-3 text-sm font-semibold text-festif hover:bg-festif-soft disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-2xl border border-garnet/40 bg-white px-5 py-3 text-sm font-semibold text-garnet hover:bg-garnet-soft disabled:opacity-60"
             >
               <XCircle size={16} />
               Annuler après rencontre
@@ -345,14 +345,14 @@ export default function DevisActions({
           <button
             type="button"
             onClick={() => setShowDispute(true)}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate underline decoration-dotted hover:text-festif"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate underline decoration-dotted hover:text-garnet"
           >
             <TriangleAlert size={13} />
             Signaler un problème
           </button>
         )}
         {canDispute && showDispute && (
-          <div className="w-full rounded-2xl border border-festif/30 bg-festif-soft/40 p-4 text-center">
+          <div className="w-full rounded-2xl border border-garnet/30 bg-garnet-soft/40 p-4 text-center">
             <p className="text-sm font-semibold text-plum">
               Quel est le problème ?
             </p>
@@ -369,7 +369,7 @@ export default function DevisActions({
                 type="button"
                 onClick={() => fileDispute("prestataire_absent")}
                 disabled={saving}
-                className="rounded-xl bg-festif px-4 py-2.5 text-sm font-semibold text-white hover:bg-festif/90 disabled:opacity-60"
+                className="rounded-xl bg-garnet px-4 py-2.5 text-sm font-semibold text-white hover:bg-garnet/90 disabled:opacity-60"
               >
                 Le prestataire n&apos;est pas venu
               </button>
@@ -410,7 +410,7 @@ export default function DevisActions({
           </span>
         )}
         {current === "expiré" && (
-          <span className="inline-flex items-center gap-2 rounded-2xl bg-festif-soft px-6 py-3 text-sm font-semibold text-festif">
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-garnet-soft px-6 py-3 text-sm font-semibold text-garnet">
             Devis expiré
           </span>
         )}
@@ -421,7 +421,7 @@ export default function DevisActions({
           </span>
         )}
         {current === "en litige" && (
-          <span className="inline-flex items-center gap-2 rounded-2xl bg-festif-soft px-6 py-3 text-sm font-semibold text-festif">
+          <span className="inline-flex items-center gap-2 rounded-2xl bg-garnet-soft px-6 py-3 text-sm font-semibold text-garnet">
             En litige
           </span>
         )}

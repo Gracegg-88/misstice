@@ -346,7 +346,7 @@ export default function DevisForm({
                     }
                     disabled={items.length === 1}
                     aria-label="Supprimer la ligne"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-slate hover:bg-festif-soft hover:text-festif disabled:opacity-30"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-slate hover:bg-garnet-soft hover:text-garnet disabled:opacity-30"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -591,7 +591,7 @@ export default function DevisForm({
         </Section>
       )}
 
-      {error && <p className="mt-4 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-4 text-sm text-garnet">{error}</p>}
 
       <div className="mt-6 flex justify-end">
         <button

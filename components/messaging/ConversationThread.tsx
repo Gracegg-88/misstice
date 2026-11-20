@@ -451,7 +451,7 @@ export default function ConversationThread({
       </div>
 
       {sendError && (
-        <p className="border-t border-black/5 px-4 pt-2 text-xs font-medium text-festif">
+        <p className="border-t border-black/5 px-4 pt-2 text-xs font-medium text-garnet">
           {sendError}
         </p>
       )}
@@ -481,7 +481,7 @@ export default function ConversationThread({
             type="button"
             onClick={clearPending}
             aria-label="Retirer la pièce jointe"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-cream hover:text-festif"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate hover:bg-cream hover:text-garnet"
           >
             <X size={16} />
           </button>
@@ -534,7 +534,7 @@ export default function ConversationThread({
                     onClick={() => openPicker(cameraRef)}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-plum hover:bg-cream"
                   >
-                    <Camera size={18} className="text-festif" />
+                    <Camera size={18} className="text-garnet" />
                     Caméra
                   </button>
                   <button

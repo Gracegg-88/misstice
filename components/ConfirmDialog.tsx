@@ -26,7 +26,7 @@ export default function ConfirmDialog({
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-5">
       <div className="absolute inset-0 bg-plum/50" onClick={onCancel} />
       <div className="relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-festif-soft text-festif">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-garnet-soft text-garnet">
           <AlertTriangle size={22} />
         </span>
         <h3 className="mt-4 font-display text-xl font-semibold text-plum">
@@ -45,7 +45,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className="flex-1 rounded-xl bg-festif py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="flex-1 rounded-xl bg-garnet py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             {loading ? "…" : confirmLabel}
           </button>

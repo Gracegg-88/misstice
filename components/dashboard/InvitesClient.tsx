@@ -15,7 +15,7 @@ type Status = Guest["status"];
 // exactement à la contrainte de la table `guests`).
 const STATUSES: { value: Status; label: string; style: string }[] = [
   { value: "confirmé", label: "Confirmé", style: "bg-emerald-soft text-emerald" },
-  { value: "en attente", label: "En attente", style: "bg-festif-soft text-festif" },
+  { value: "en attente", label: "En attente", style: "bg-garnet-soft text-garnet" },
   { value: "invité", label: "Invité", style: "bg-violet-soft text-violet" },
   { value: "décliné", label: "Décliné", style: "bg-black/5 text-slate" },
 ];
@@ -427,7 +427,7 @@ export default function InvitesClient({
               )}&body=${encodeURIComponent(shareText)}`}
               className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum hover:border-violet/40"
             >
-              <Mail size={15} className="text-festif" />
+              <Mail size={15} className="text-garnet" />
               E-mail
             </a>
           </div>
@@ -438,7 +438,7 @@ export default function InvitesClient({
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {[
           { l: "Confirmés", v: counts["confirmé"], c: "bg-emerald", back: "bg-emerald/90" },
-          { l: "En attente", v: counts["en attente"], c: "bg-festif", back: "bg-festif/90" },
+          { l: "En attente", v: counts["en attente"], c: "bg-garnet", back: "bg-garnet/90" },
           { l: "Invités", v: counts["invité"], c: "bg-violet", back: "bg-violet/90" },
           { l: "Déclinés", v: counts["décliné"], c: "bg-black/30", back: "bg-black/40" },
         ].map((s) => {
@@ -512,7 +512,7 @@ export default function InvitesClient({
                     </span>
                     <div>
                       <p className="font-medium text-plum">{g.name}</p>
-                      {g.diet && <p className="text-xs text-festif">{g.diet}</p>}
+                      {g.diet && <p className="text-xs text-garnet">{g.diet}</p>}
                     </div>
                   </div>
                 </td>
@@ -602,7 +602,7 @@ export default function InvitesClient({
                       type="button"
                       onClick={() => setConfirmGuest({ id: g.id, name: g.name })}
                       title="Supprimer l'invité"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate opacity-0 transition-colors hover:bg-black/5 hover:text-festif group-hover:opacity-100"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate opacity-0 transition-colors hover:bg-black/5 hover:text-garnet group-hover:opacity-100"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -687,7 +687,7 @@ export default function InvitesClient({
                 />
                 Autorise un accompagnant (+1)
               </label>
-              {error && <p className="text-sm text-festif">{error}</p>}
+              {error && <p className="text-sm text-garnet">{error}</p>}
               <button
                 type="submit"
                 disabled={saving}

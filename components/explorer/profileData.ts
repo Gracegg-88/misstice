@@ -1,14 +1,14 @@
 import type { Vendor } from "./vendors";
 
 export const GALLERY_GRADS = [
-  "from-violet to-festif",
-  "from-festif to-emerald",
+  "from-violet to-garnet",
+  "from-garnet to-emerald",
   "from-emerald to-violet",
   "from-violet to-emerald",
-  "from-festif to-violet",
-  "from-emerald to-festif",
-  "from-violet to-festif",
-  "from-festif to-emerald",
+  "from-garnet to-violet",
+  "from-emerald to-garnet",
+  "from-violet to-garnet",
+  "from-garnet to-emerald",
   "from-emerald to-violet",
 ];
 

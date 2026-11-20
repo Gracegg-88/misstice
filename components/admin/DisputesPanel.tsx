@@ -148,9 +148,9 @@ export default function DisputesPanel({ disputed }: { disputed: Quote[] }) {
   if (remaining.length === 0) return null;
 
   return (
-    <div className="mt-6 rounded-3xl border border-festif/30 bg-festif-soft p-5">
+    <div className="mt-6 rounded-3xl border border-garnet/30 bg-garnet-soft p-5">
       <p className="flex items-center gap-2 font-display text-lg font-semibold text-plum">
-        <TriangleAlert size={20} className="text-festif" />
+        <TriangleAlert size={20} className="text-garnet" />
         Litiges à traiter
       </p>
       <p className="mt-1 text-sm text-slate">
@@ -160,7 +160,7 @@ export default function DisputesPanel({ disputed }: { disputed: Quote[] }) {
         remboursement) — les cas « insatisfaction » nécessitent une décision
         au cas par cas.
       </p>
-      {error && <p className="mt-3 text-sm text-festif">{error}</p>}
+      {error && <p className="mt-3 text-sm text-garnet">{error}</p>}
       <ul className="mt-4 divide-y divide-black/5">
         {remaining.map((q) => {
           const thread = threads[q.id];
@@ -195,7 +195,7 @@ export default function DisputesPanel({ disputed }: { disputed: Quote[] }) {
                     type="button"
                     onClick={() => resolve(q.id, true)}
                     disabled={busyId === q.id}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-festif px-3.5 py-2 text-xs font-semibold text-white hover:bg-festif/90 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-garnet px-3.5 py-2 text-xs font-semibold text-white hover:bg-garnet/90 disabled:opacity-60"
                   >
                     {busyId === q.id ? (
                       <Loader2 size={13} className="animate-spin" />
@@ -228,7 +228,7 @@ export default function DisputesPanel({ disputed }: { disputed: Quote[] }) {
                     <p className="text-sm text-slate">Chargement…</p>
                   )}
                   {thread === "error" && (
-                    <p className="text-sm text-festif">
+                    <p className="text-sm text-garnet">
                       Impossible de charger les échanges.
                     </p>
                   )}

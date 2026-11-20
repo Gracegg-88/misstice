@@ -40,7 +40,7 @@ function Stars({ value, size = 16 }: { value: number; size?: number }) {
           size={size}
           className={
             i <= Math.round(value)
-              ? "fill-festif text-festif"
+              ? "fill-garnet text-garnet"
               : "text-black/15"
           }
         />
@@ -192,7 +192,7 @@ export default function VendorProfile({
                     {vendor.reviews > 0 ? (
                       <>
                         <span className="inline-flex items-center gap-1 font-semibold text-plum">
-                          <Star size={15} className="fill-festif text-festif" />
+                          <Star size={15} className="fill-garnet text-garnet" />
                           {vendor.rating.toFixed(1).replace(".", ",")}
                         </span>
                         <span>({vendor.reviews} avis)</span>
@@ -219,13 +219,13 @@ export default function VendorProfile({
                       </span>
                     )}
                     {vendor.isNew && vendor.userId && (
-                      <span className="inline-flex items-center gap-1 font-medium text-festif">
+                      <span className="inline-flex items-center gap-1 font-medium text-garnet">
                         <Sparkles size={15} />
                         Nouveau
                       </span>
                     )}
                     {vendor.claimStatus === "non_reclamee" && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2.5 py-1 font-medium text-festif">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-garnet-soft px-2.5 py-1 font-medium text-garnet">
                         <Lock size={13} />
                         Fiche non réclamée
                       </span>
@@ -286,8 +286,8 @@ export default function VendorProfile({
           }`}
         >
           {[
-            { icon: Euro, label: "À partir de", value: formatPriceFrom(vendor.priceFrom), tint: "bg-festif-soft text-festif" },
-            { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-festif-soft text-festif" },
+            { icon: Euro, label: "À partir de", value: formatPriceFrom(vendor.priceFrom), tint: "bg-garnet-soft text-garnet" },
+            { icon: Star, label: "Note", value: vendor.rating > 0 ? `${vendor.rating.toFixed(1).replace(".", ",")} / 5` : "—", tint: "bg-garnet-soft text-garnet" },
             ...(availabilityLabel
               ? [
                   {
@@ -530,10 +530,10 @@ export default function VendorProfile({
                             <span className="w-3 text-sm text-slate">
                               {b.stars}
                             </span>
-                            <Star size={13} className="fill-festif text-festif" />
+                            <Star size={13} className="fill-garnet text-garnet" />
                             <div className="h-2 flex-1 overflow-hidden rounded-full bg-cream">
                               <div
-                                className="h-full rounded-full bg-festif"
+                                className="h-full rounded-full bg-garnet"
                                 style={{ width: `${b.pct}%` }}
                               />
                             </div>
@@ -849,7 +849,7 @@ function ReviewForm({ vendorId }: { vendorId: string }) {
               <Star
                 size={26}
                 className={
-                  s <= rating ? "fill-festif text-festif" : "text-black/15"
+                  s <= rating ? "fill-garnet text-garnet" : "text-black/15"
                 }
               />
             </button>
@@ -869,7 +869,7 @@ function ReviewForm({ vendorId }: { vendorId: string }) {
           placeholder="Partagez votre expérience…"
           className={inputCls}
         />
-        {error && <p className="text-sm text-festif">{error}</p>}
+        {error && <p className="text-sm text-garnet">{error}</p>}
         <button
           type="submit"
           disabled={sending || !rating || !body.trim()}
@@ -1319,7 +1319,7 @@ function QuoteForm({
           {message.trim().length}/50 caractères minimum
         </p>
       </div>
-      {error && <p className="text-sm text-festif">{error}</p>}
+      {error && <p className="text-sm text-garnet">{error}</p>}
       <button
         type="submit"
         disabled={sending}
@@ -1461,7 +1461,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
         placeholder="Bonjour, j'aimerais quelques informations sur…"
         className="w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none focus:border-violet"
       />
-      {error && <p className="text-sm text-festif">{error}</p>}
+      {error && <p className="text-sm text-garnet">{error}</p>}
       <button
         type="submit"
         disabled={sending}

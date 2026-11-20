@@ -32,7 +32,7 @@ export default function StripeConnectStatus({
 
       {status === "en_attente" && (
         <>
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-festif-soft px-4 py-3 text-sm text-festif">
+          <div className="mt-4 flex items-center gap-2 rounded-xl bg-garnet-soft px-4 py-3 text-sm text-garnet">
             <Clock size={18} />
             <span>Votre dossier est en cours de vérification par Stripe.</span>
           </div>

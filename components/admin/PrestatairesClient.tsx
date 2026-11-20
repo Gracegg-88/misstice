@@ -318,7 +318,7 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
         )}
       </div>
       {error && (
-        <p className="mt-3 rounded-xl bg-festif-soft px-4 py-2 text-sm font-medium text-festif">
+        <p className="mt-3 rounded-xl bg-garnet-soft px-4 py-2 text-sm font-medium text-garnet">
           {error}
         </p>
       )}
@@ -351,7 +351,7 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                   <td className="px-5 py-3 font-medium text-plum">{v.name}</td>
                   <td className="px-5 py-3">
                     {v.category ? (
-                      <span className="rounded-md bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                      <span className="rounded-md bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet">
                         {v.category}
                       </span>
                     ) : (
@@ -362,19 +362,19 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                   <td className="px-5 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
                       {v.isDemo && v.claimStatus === "reclamee" && (
-                        <span className="rounded-full bg-navy-soft px-2 py-0.5 text-xs font-semibold text-navy">
+                        <span className="rounded-full bg-gold-soft px-2 py-0.5 text-xs font-semibold text-plum">
                           Démo
                         </span>
                       )}
                       {v.claimStatus === "non_reclamee" && (
-                        <span className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                        <span className="rounded-full bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet">
                           Fiche non réclamée
                         </span>
                       )}
                       {v.contactFields.length > 0 && (
                         <span
                           title="Coordonnées (téléphone, email, site, réseau…) visibles sur la fiche publique"
-                          className="rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif"
+                          className="rounded-full bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet"
                         >
                           Coordonnées : {v.contactFields.join(", ")}
                         </span>
@@ -390,7 +390,7 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                         </span>
                       )}
                       {!v.reviewed_at && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-festif-soft px-2 py-0.5 text-xs font-semibold text-festif">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-garnet-soft px-2 py-0.5 text-xs font-semibold text-garnet">
                           <Sparkles size={12} />
                           Nouveau
                         </span>
@@ -447,7 +447,7 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                         aria-label={`Supprimer ${v.name}`}
                         disabled={busy === v.id}
                         onClick={() => setConfirmVendor(v)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate transition-colors hover:bg-festif-soft hover:text-festif disabled:opacity-60"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate transition-colors hover:bg-garnet-soft hover:text-garnet disabled:opacity-60"
                       >
                         <Trash2 size={15} />
                       </button>
