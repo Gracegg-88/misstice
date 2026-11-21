@@ -18,6 +18,9 @@ export type ProVendor = {
   depositPercent: number | null;
   // Thème visuel de la fiche publique (voir lib/themes.ts).
   themeId: string;
+  // Lien court misstice.com/p/[slug] — null tant que la fiche n'a jamais été
+  // enregistrée (voir lib/slug.ts#ensureVendorSlug).
+  slug: string | null;
   // Programme pilote / membres fondateurs (voir lib/pilot.ts).
   foundingMember: boolean;
   pilotMember: boolean;

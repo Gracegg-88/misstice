@@ -58,6 +58,7 @@ export default async function ProProfilPage() {
       foundingMember: false,
       pilotMember: false,
       pilotPackProUntil: null,
+      slug: null,
       rating: 0,
       reviews: 0,
       moods: [],

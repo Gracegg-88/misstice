@@ -65,7 +65,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
   const { data: vp } = await supabase
     .from("vendor_profiles")
     .select(
-      "id, company, category, city, about, deposit_percent, theme_id, founding_member, pilot_member, pilot_pack_pro_until"
+      "id, company, category, city, about, deposit_percent, theme_id, founding_member, pilot_member, pilot_pack_pro_until, slug"
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -108,6 +108,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     founding_member: boolean;
     pilot_member: boolean;
     pilot_pack_pro_until: string | null;
+    slug: string | null;
   };
 
   return {
@@ -122,6 +123,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     foundingMember: p.founding_member,
     pilotMember: p.pilot_member,
     pilotPackProUntil: p.pilot_pack_pro_until,
+    slug: p.slug,
     tagline: vv?.tagline ?? null,
     priceFrom: vv?.price_from ?? null,
     image: vv?.image ?? null,
