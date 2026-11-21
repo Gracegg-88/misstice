@@ -16,6 +16,12 @@ export type ProVendor = {
   // Acompte : null = suit le défaut de la catégorie (voir
   // lib/vendors.ts#getCategoryDefaultDepositPercent).
   depositPercent: number | null;
+  // Thème visuel de la fiche publique (voir lib/themes.ts).
+  themeId: string;
+  // Programme pilote / membres fondateurs (voir lib/pilot.ts).
+  foundingMember: boolean;
+  pilotMember: boolean;
+  pilotPackProUntil: string | null;
   // Ambiance & Vibe
   moods: string[];
   energies: string[];

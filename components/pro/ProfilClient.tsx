@@ -30,6 +30,10 @@ import {
   MUSIC_STYLES,
   type VendorVibes,
 } from "@/lib/vibes";
+import ThemePicker from "@/components/pro/ThemePicker";
+import { DEFAULT_THEME_ID } from "@/lib/themes";
+import { canUploadMorePhotos, isPilotPackProActive } from "@/lib/pilot-utils";
+import { Sparkles } from "lucide-react";
 
 export default function ProfilClient({
   vendor,
@@ -37,6 +41,7 @@ export default function ProfilClient({
   photos,
   categories,
   categoryDepositDefaults = {},
+  freeTierPhotoLimit = 3,
 }: {
   vendor: ProVendor;
   packages: VendorPackage[];
@@ -46,6 +51,8 @@ export default function ProfilClient({
   // default_deposit_percent), pour l'afficher à titre indicatif quand le
   // prestataire n'a pas réglé le sien.
   categoryDepositDefaults?: Record<string, number>;
+  // Limite de photos en formule gratuite (platform_settings.free_tier_photo_limit).
+  freeTierPhotoLimit?: number;
 }) {
   const router = useRouter();
 
@@ -63,6 +70,7 @@ export default function ProfilClient({
     vendor.depositPercent == null ? "" : String(vendor.depositPercent)
   );
   const categoryDefaultDeposit = categoryDepositDefaults[info.category] ?? 0;
+  const [themeId, setThemeId] = useState(vendor.themeId || DEFAULT_THEME_ID);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -176,6 +184,7 @@ export default function ProfilClient({
       category: info.category || null,
       city: info.city || null,
       about: info.about || null,
+      theme_id: themeId,
     });
     return e?.message ?? null;
   };
@@ -249,6 +258,7 @@ export default function ProfilClient({
       city: info.city || null,
       about: info.about || null,
       deposit_percent: depositTrim === "" ? null : Number(depositTrim),
+      theme_id: themeId,
     });
     if (pErr) {
       setSaving(false);
@@ -390,7 +400,20 @@ export default function ProfilClient({
     }
     const supabase = createClient();
 
+    // Limite de la formule gratuite (jamais pour un membre fondateur, ni
+    // pendant un Pack Pro pilote actif) — revérifiée côté base de toute
+    // façon (trigger enforce_photo_limit), ceci n'est qu'un message clair
+    // côté interface avant d'aller plus loin.
+    let count = pics.length;
+    const canUpload = () => canUploadMorePhotos(vendor, count, freeTierPhotoLimit);
+
     for (const file of files) {
+      if (!canUpload()) {
+        setError(
+          `Limite de ${freeTierPhotoLimit} photos atteinte pour la formule gratuite. Passez au Pack Pro pour un book illimité.`
+        );
+        break;
+      }
       if (file.type.startsWith("video/")) {
         try {
           const meta = await readVideoMeta(file);
@@ -440,6 +463,7 @@ export default function ProfilClient({
         continue;
       }
       setPics((p) => [...p, data as VendorPhoto]);
+      count += 1;
     }
 
     setUploading(false);
@@ -489,6 +513,23 @@ export default function ProfilClient({
               <BadgeCheck size={15} />
               Vérifié par Misstice
             </p>
+          )}
+          {vendor.foundingMember ? (
+            <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-gold-dark">
+              <Sparkles size={15} />
+              Membre fondateur — book de photos illimité, pour toujours
+            </p>
+          ) : (
+            isPilotPackProActive(vendor) && (
+              <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-gold-dark">
+                <Sparkles size={15} />
+                Pack Pro gratuit (programme pilote) jusqu&apos;au{" "}
+                {new Date(`${vendor.pilotPackProUntil}T00:00:00`).toLocaleDateString(
+                  "fr-FR",
+                  { day: "numeric", month: "long", year: "numeric" }
+                )}
+              </p>
+            )
           )}
         </div>
         {vendor.vendorId && (
@@ -626,6 +667,22 @@ export default function ProfilClient({
             onChange={(e) => setInfo({ ...info, about: e.target.value })}
             className={`mt-1.5 ${inputCls}`}
           />
+        </div>
+      </section>
+
+      {/* Thème de la fiche publique */}
+      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+        <h2 className="font-display text-lg font-semibold text-plum">
+          Thème de ma fiche
+        </h2>
+        <p className="mt-1 text-sm text-slate">
+          Choisissez l&apos;apparence de votre fiche publique. La zone de
+          confiance (badge Vérifié, avis, paiement sécurisé) reste toujours
+          identique, quel que soit le thème. Sans choix de votre part, le
+          thème « Signature » s&apos;applique par défaut.
+        </p>
+        <div className="mt-4">
+          <ThemePicker value={themeId} onChange={setThemeId} />
         </div>
       </section>
 
@@ -981,7 +1038,7 @@ export default function ProfilClient({
           </h2>
           <button
             onClick={() => fileRef.current?.click()}
-            disabled={uploading}
+            disabled={uploading || !canUploadMorePhotos(vendor, pics.length, freeTierPhotoLimit)}
             className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-violet/40 px-3 py-2 text-sm font-semibold text-violet hover:bg-violet-soft disabled:opacity-60"
           >
             <Upload size={15} />
@@ -999,6 +1056,13 @@ export default function ProfilClient({
         <p className="mt-2 text-xs text-slate">
           Vidéos acceptées pour le moment : {BOOK_VIDEO_MAX_SHORT_SIDE}p max,{" "}
           {Math.round(BOOK_VIDEO_MAX_SECONDS / 60)} minutes max.
+          {!vendor.foundingMember && !isPilotPackProActive(vendor) && (
+            <>
+              {" "}
+              Formule gratuite : {pics.length}/{freeTierPhotoLimit} photos
+              utilisées.
+            </>
+          )}
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
           {pics.map((photo, i) => (

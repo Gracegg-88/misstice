@@ -8,6 +8,7 @@ import GooglePlaceLinker from "@/components/google/GooglePlaceLinker";
 import { getMyVendor, getMyPackages, getMyPhotos } from "@/lib/pro";
 import { getProfile } from "@/lib/queries";
 import { getCategories, getCategoryDepositDefaults } from "@/lib/vendors";
+import { getPlatformSettings } from "@/lib/pilot";
 import { createClient } from "@/lib/supabase/server";
 import type { ProVendor } from "@/lib/pro-types";
 
@@ -15,6 +16,7 @@ export default async function ProProfilPage() {
   const vendor = await getMyVendor();
   const categories = await getCategories();
   const categoryDepositDefaults = await getCategoryDepositDefaults();
+  const { freeTierPhotoLimit } = await getPlatformSettings();
 
   const supabase = createClient();
   const {
@@ -52,6 +54,10 @@ export default async function ProProfilPage() {
       image: null,
       verified: false,
       depositPercent: null,
+      themeId: "signature",
+      foundingMember: false,
+      pilotMember: false,
+      pilotPackProUntil: null,
       rating: 0,
       reviews: 0,
       moods: [],
@@ -74,6 +80,7 @@ export default async function ProProfilPage() {
           photos={[]}
           categories={categories}
           categoryDepositDefaults={categoryDepositDefaults}
+          freeTierPhotoLimit={freeTierPhotoLimit}
         />
         {accountSection}
       </div>
@@ -118,6 +125,7 @@ export default async function ProProfilPage() {
         photos={photos}
         categories={categories}
         categoryDepositDefaults={categoryDepositDefaults}
+        freeTierPhotoLimit={freeTierPhotoLimit}
       />
       <div className="mx-auto max-w-3xl">
         <SiretVerification

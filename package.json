@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/check-theme-contrast.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:themes": "node scripts/check-theme-contrast.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
