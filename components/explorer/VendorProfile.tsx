@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -30,6 +30,9 @@ import { formatPriceFrom } from "@/lib/price";
 import { useContactInfoAlert } from "@/lib/contact-alert";
 import { removalHref } from "@/lib/vendor-removal";
 import GooglePlaceCard, { googlePlacesEnabled } from "@/components/google/GooglePlaceCard";
+import { getTheme } from "@/lib/themes";
+import TrustZone from "./TrustZone";
+import ShareVendorLink from "./ShareVendorLink";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -80,6 +83,20 @@ export default function VendorProfile({
   const [loggedIn, setLoggedIn] = useState(false);
   const { has: favHas, toggle: favToggle } = useFavorites();
   const saved = favHas(vendor.id);
+  // Thème choisi par le prestataire (lib/themes.ts) : couleurs de page, pas
+  // la zone de confiance (toujours identique, voir TrustZone.tsx).
+  const theme = getTheme(vendor.themeId);
+  const themeVars = {
+    "--v-ground": theme.colors.ground,
+    "--v-text": theme.colors.text,
+    "--v-heading": theme.colors.heading,
+    "--v-muted": theme.colors.muted,
+    "--v-surface": theme.colors.surface,
+    "--v-surface-text": theme.colors.surfaceText,
+    "--v-button-bg": theme.colors.buttonBg,
+    "--v-button-text": theme.colors.buttonText,
+    "--v-accent": theme.colors.accent,
+  } as CSSProperties;
   // Fiche VITRINE de démonstration (sans compte, ancien contenu d'exemple
   // fictif) → contenu d'exemple autorisé. Vrai compte non rempli, OU fiche
   // vitrine importée depuis SIRENE (claimStatus="non_reclamee", vraie
@@ -147,22 +164,33 @@ export default function VendorProfile({
     });
   }, [vendor.id, vendor.claimStatus]);
 
+  // Le hero photo d'ambiance partagée ne garantit un bon contraste que sur le
+  // thème par défaut (overlay clair) : les autres thèmes utilisent un fond
+  // plein de la couleur du thème à la place, sans la photo.
+  const heroHasPhoto = theme.id === "signature";
+
   return (
-    <div className="bg-cream">
-      {/* Hero / cover — infos posées sur l'image */}
+    <div className="bg-[var(--v-ground)]" style={themeVars}>
+      {/* Hero / cover — infos posées sur l'image (thème par défaut) ou sur un
+          fond plein (autres thèmes, pour garder un contraste garanti). */}
       <div
-        className="relative overflow-hidden bg-cream bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero_details.png')" }}
+        className="relative overflow-hidden bg-[var(--v-ground)] bg-cover bg-center"
+        style={heroHasPhoto ? { backgroundImage: "url('/hero_details.png')" } : undefined}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
+        {heroHasPhoto && (
+          <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
+        )}
         <div className="relative mx-auto max-w-content px-page py-8">
-          <a
-            href="/prestataires"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-sm font-medium text-plum shadow-sm hover:bg-white"
-          >
-            <ArrowLeft size={16} />
-            Retour
-          </a>
+          <div className="flex items-center justify-between gap-3">
+            <a
+              href="/prestataires"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-sm font-medium text-plum shadow-sm hover:bg-white"
+            >
+              <ArrowLeft size={16} />
+              Retour
+            </a>
+            <ShareVendorLink vendorId={vendor.id} vendorName={vendor.name} />
+          </div>
 
           <div className="mt-8 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
             <div className="min-w-0 max-w-2xl flex-1">
@@ -176,36 +204,38 @@ export default function VendorProfile({
                   />
                 ) : (
                   <div
-                    className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br ${vendor.grad} font-display text-2xl font-semibold text-white shadow-md sm:h-24 sm:w-24 sm:text-3xl`}
+                    className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-[var(--v-surface)] font-display text-2xl font-semibold text-[var(--v-heading)] shadow-md sm:h-24 sm:w-24 sm:text-3xl"
                   >
                     {vendor.name.charAt(0)}
                   </div>
                 )}
                 <div className="min-w-0">
-                  <h1 className="font-display text-3xl font-semibold tracking-tight text-plum sm:text-4xl">
+                  <h1 className="font-display text-3xl font-semibold tracking-tight text-[var(--v-heading)] sm:text-4xl">
                     {vendor.name}
                   </h1>
-                  <p className="mt-0.5 text-slate">
+                  <p className="mt-0.5 text-[var(--v-muted)]">
                     {vendor.category} événementiel
                   </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm text-[var(--v-muted)]">
                     {vendor.reviews > 0 ? (
                       <>
-                        <span className="inline-flex items-center gap-1 font-semibold text-plum">
+                        <span className="inline-flex items-center gap-1 font-semibold text-[var(--v-text)]">
                           <Star size={15} className="fill-garnet text-garnet" />
                           {vendor.rating.toFixed(1).replace(".", ",")}
                         </span>
                         <span>({vendor.reviews} avis)</span>
                       </>
                     ) : (
-                      <span className="font-medium text-plum">Nouveau prestataire</span>
+                      <span className="font-medium text-[var(--v-text)]">Nouveau prestataire</span>
                     )}
                     <span className="inline-flex items-center gap-1">
                       <MapPin size={14} />
                       {vendor.city}
                     </span>
+                    {/* Badges statut : fond opaque clair, pour rester lisibles
+                        quel que soit le thème de la page. */}
                     {vendor.verified && vendor.userId && (
-                      <span className="inline-flex items-center gap-1 font-medium text-violet">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-violet-soft px-2.5 py-1 font-medium text-violet">
                         <BadgeCheck size={15} />
                         Vérifié par Misstice
                       </span>
@@ -213,13 +243,13 @@ export default function VendorProfile({
                     {/* Badge positif uniquement : rien n'est affiché au client
                         tant que les paiements ne sont pas actifs. */}
                     {vendor.payoutsEnabled && vendor.userId && (
-                      <span className="inline-flex items-center gap-1 font-medium text-emerald">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2.5 py-1 font-medium text-emerald">
                         <ShieldCheck size={15} />
                         Paiement sécurisé activé
                       </span>
                     )}
                     {vendor.isNew && vendor.userId && (
-                      <span className="inline-flex items-center gap-1 font-medium text-garnet">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-garnet-soft px-2.5 py-1 font-medium text-garnet">
                         <Sparkles size={15} />
                         Nouveau
                       </span>
@@ -234,12 +264,16 @@ export default function VendorProfile({
                 </div>
               </div>
 
+              <div className="mt-5 max-w-md">
+                <TrustZone vendor={vendor} />
+              </div>
+
               {/* Actions principales */}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setQuoteOpen(true)}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-violet-dark"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--v-button-bg)] px-6 py-3.5 text-base font-semibold text-[var(--v-button-text)] shadow-sm transition-opacity hover:opacity-90"
                 >
                   <MessageSquare size={18} />
                   Demander un devis
@@ -247,16 +281,16 @@ export default function VendorProfile({
                 <button
                   type="button"
                   onClick={() => setMsgOpen(true)}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-plum/15 bg-white px-6 py-3.5 text-base font-semibold text-plum transition-colors hover:border-plum/30"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--v-text)]/15 bg-[var(--v-surface)] px-6 py-3.5 text-base font-semibold text-[var(--v-text)] transition-colors hover:border-[var(--v-text)]/30"
                 >
                   <Send size={18} />
                   Envoyer un message
                 </button>
               </div>
               {vendor.claimStatus === "non_reclamee" && (
-                <p className="mt-3 text-sm text-slate">
+                <p className="mt-3 text-sm text-[var(--v-muted)]">
                   Cette entreprise est la vôtre ?{" "}
-                  <a href="/devenir-prestataire" className="font-semibold text-violet hover:text-violet-dark">
+                  <a href="/devenir-prestataire" className="font-semibold text-[var(--v-heading)] underline decoration-[var(--v-heading)]/40 underline-offset-2 hover:opacity-80">
                     Réclamez-la
                   </a>
                 </p>
@@ -301,14 +335,14 @@ export default function VendorProfile({
           ].map((s) => (
             <div
               key={s.label}
-              className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm"
+              className="flex items-center gap-3 rounded-2xl border border-black/5 bg-[var(--v-surface)] p-4 shadow-sm"
             >
               <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${s.tint}`}>
                 <s.icon size={18} />
               </span>
               <div className="min-w-0">
-                <p className="text-xs text-slate">{s.label}</p>
-                <p className="truncate font-display text-base font-semibold text-plum">
+                <p className="text-xs text-[var(--v-muted)]">{s.label}</p>
+                <p className="truncate font-display text-base font-semibold text-[var(--v-surface-text)]">
                   {s.value}
                 </p>
               </div>
@@ -321,21 +355,21 @@ export default function VendorProfile({
           <div className="space-y-10 lg:col-span-2">
             {/* À propos */}
             <section>
-              <h2 className="font-display text-2xl font-semibold text-plum">
+              <h2 className="font-display text-2xl font-semibold text-[var(--v-heading)]">
                 À propos
               </h2>
               {vendor.about ? (
-                <p className="mt-3 whitespace-pre-wrap leading-relaxed text-slate">
+                <p className="mt-3 whitespace-pre-wrap leading-relaxed text-[var(--v-muted)]">
                   {vendor.about}
                 </p>
               ) : isDemo ? (
-                <p className="mt-3 leading-relaxed text-slate">
+                <p className="mt-3 leading-relaxed text-[var(--v-muted)]">
                   {vendor.tagline} Basé à {vendor.city}, {vendor.name} accompagne
                   familles et particuliers pour des événements à la hauteur de
                   vos attentes.
                 </p>
               ) : (
-                <p className="mt-3 leading-relaxed text-slate/70 italic">
+                <p className="mt-3 leading-relaxed text-[var(--v-muted)]/70 italic">
                   Ce prestataire n&apos;a pas encore rédigé sa présentation.
                 </p>
               )}
@@ -368,13 +402,13 @@ export default function VendorProfile({
               if (groups.length === 0) return null;
               return (
                 <section>
-                  <h2 className="font-display text-2xl font-semibold text-plum">
+                  <h2 className="font-display text-2xl font-semibold text-[var(--v-heading)]">
                     Ambiance &amp; Vibe
                   </h2>
                   <div className="mt-4 space-y-4">
                     {groups.map((g) => (
                       <div key={g.label}>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--v-muted)]">
                           {g.label}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
@@ -396,11 +430,11 @@ export default function VendorProfile({
 
             {/* Forfaits */}
             <section>
-              <h2 className="font-display text-2xl font-semibold text-plum">
+              <h2 className="font-display text-2xl font-semibold text-[var(--v-heading)]">
                 Services &amp; tarifs
               </h2>
               {packages.length === 0 ? (
-                <p className="mt-3 rounded-2xl border border-dashed border-black/10 bg-white/60 p-5 text-sm italic text-slate/70">
+                <p className="mt-3 rounded-2xl border border-dashed border-black/10 bg-[var(--v-surface)]/60 p-5 text-sm italic text-[var(--v-muted)]">
                   Aucun forfait renseigné pour le moment.
                 </p>
               ) : (
@@ -408,26 +442,26 @@ export default function VendorProfile({
                 {packages.map((p) => (
                   <div
                     key={p.name}
-                    className={`relative rounded-2xl border bg-white p-5 ${
-                      p.popular ? "border-violet" : "border-black/5"
+                    className={`relative rounded-2xl border bg-[var(--v-surface)] p-5 ${
+                      p.popular ? "border-[var(--v-accent)]" : "border-black/5"
                     }`}
                   >
                     {p.popular && (
-                      <span className="absolute -top-2.5 left-5 rounded-full bg-violet px-2.5 py-0.5 text-xs font-semibold text-white">
+                      <span className="absolute -top-2.5 left-5 rounded-full bg-[var(--v-button-bg)] px-2.5 py-0.5 text-xs font-semibold text-[var(--v-button-text)]">
                         Le plus demandé
                       </span>
                     )}
-                    <p className="font-display text-lg font-semibold text-plum">
+                    <p className="font-display text-lg font-semibold text-[var(--v-surface-text)]">
                       {p.name}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-violet">
+                    <p className="mt-1 text-sm font-semibold text-[var(--v-heading)]">
                       {p.price}
                     </p>
                     <ul className="mt-3 space-y-2">
                       {p.features.map((f) => (
                         <li
                           key={f}
-                          className="flex items-start gap-2 text-sm text-slate"
+                          className="flex items-start gap-2 text-sm text-[var(--v-muted)]"
                         >
                           <Check
                             size={15}
@@ -446,18 +480,18 @@ export default function VendorProfile({
             {/* Le Book — réservé aux membres connectés */}
             <section>
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-2xl font-semibold text-plum">
+                <h2 className="font-display text-2xl font-semibold text-[var(--v-heading)]">
                   Le book de {vendor.name}
                 </h2>
                 {(photos.length > 0 || isDemo) && (
-                  <span className="text-sm text-slate">
+                  <span className="text-sm text-[var(--v-muted)]">
                     {photos.length || GALLERY_GRADS.length} réalisations
                   </span>
                 )}
               </div>
 
               {photos.length === 0 && !isDemo ? (
-                <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-white/60 p-5 text-sm italic text-slate/70">
+                <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-[var(--v-surface)]/60 p-5 text-sm italic text-[var(--v-muted)]">
                   Aucune réalisation ajoutée pour le moment.
                 </p>
               ) : (
@@ -507,37 +541,37 @@ export default function VendorProfile({
             <div className={showGoogleReviews ? "grid gap-8 md:grid-cols-2 md:items-start" : ""}>
               {/* Avis Misstice */}
               <section>
-                <h2 className="font-display text-2xl font-semibold text-plum">
+                <h2 className="font-display text-2xl font-semibold text-[var(--v-heading)]">
                   Avis Misstice{vendor.reviews > 0 ? ` (${vendor.reviews})` : ""}
                 </h2>
 
                 {vendor.reviews > 0 ? (
                   <>
                     {/* Résumé + répartition */}
-                    <div className={`mt-4 flex flex-col gap-6 rounded-2xl border border-black/5 bg-white p-5 ${showGoogleReviews ? "" : "sm:flex-row sm:items-center sm:p-6"}`}>
+                    <div className={`mt-4 flex flex-col gap-6 rounded-2xl border border-black/5 bg-[var(--v-surface)] p-5 ${showGoogleReviews ? "" : "sm:flex-row sm:items-center sm:p-6"}`}>
                       <div className={`text-center ${showGoogleReviews ? "" : "sm:w-40 sm:shrink-0"}`}>
-                        <p className="font-display text-5xl font-semibold text-plum">
+                        <p className="font-display text-5xl font-semibold text-[var(--v-surface-text)]">
                           {vendor.rating.toFixed(1)}
                         </p>
                         <Stars value={vendor.rating} />
-                        <p className="mt-1 text-sm text-slate">
+                        <p className="mt-1 text-sm text-[var(--v-muted)]">
                           {vendor.reviews} avis
                         </p>
                       </div>
                       <div className="flex-1 space-y-1.5">
                         {breakdown.map((b) => (
                           <div key={b.stars} className="flex items-center gap-2">
-                            <span className="w-3 text-sm text-slate">
+                            <span className="w-3 text-sm text-[var(--v-muted)]">
                               {b.stars}
                             </span>
                             <Star size={13} className="fill-garnet text-garnet" />
-                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-cream">
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/10">
                               <div
                                 className="h-full rounded-full bg-garnet"
                                 style={{ width: `${b.pct}%` }}
                               />
                             </div>
-                            <span className="w-9 text-right text-xs text-slate">
+                            <span className="w-9 text-right text-xs text-[var(--v-muted)]">
                               {b.pct}%
                             </span>
                           </div>
@@ -550,7 +584,7 @@ export default function VendorProfile({
                       {reviews.map((r) => (
                         <div
                           key={r.id}
-                          className="rounded-2xl border border-black/5 bg-white p-4"
+                          className="rounded-2xl border border-black/5 bg-[var(--v-surface)] p-4"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2.5">
@@ -558,17 +592,17 @@ export default function VendorProfile({
                                 {r.initial}
                               </span>
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-plum">
+                                <p className="truncate text-sm font-semibold text-[var(--v-surface-text)]">
                                   {r.author}
                                 </p>
-                                <p className="text-xs text-slate">
+                                <p className="text-xs text-[var(--v-muted)]">
                                   {r.event} · {r.date}
                                 </p>
                               </div>
                             </div>
                             <Stars value={r.rating} size={13} />
                           </div>
-                          <p className="mt-2 text-sm leading-relaxed text-slate">
+                          <p className="mt-2 text-sm leading-relaxed text-[var(--v-muted)]">
                             {r.text}
                           </p>
                         </div>
@@ -576,7 +610,7 @@ export default function VendorProfile({
                     </div>
                   </>
                 ) : (
-                  <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-white p-6 text-center text-sm text-slate">
+                  <p className="mt-4 rounded-2xl border border-dashed border-black/10 bg-[var(--v-surface)] p-6 text-center text-sm text-[var(--v-muted)]">
                     Aucun avis pour l&apos;instant. Soyez le premier à partager
                     votre expérience&nbsp;!
                   </p>
@@ -592,10 +626,10 @@ export default function VendorProfile({
                   vers Google Maps de notre part, pour garder le client ici. */}
               {showGoogleReviews && vendor.googlePlaceId && (
                 <section aria-labelledby="avis-google">
-                  <h2 id="avis-google" className="font-display text-2xl font-semibold text-plum">
+                  <h2 id="avis-google" className="font-display text-2xl font-semibold text-[var(--v-heading)]">
                     Avis Google
                   </h2>
-                  <p className="mt-1 text-sm text-slate">
+                  <p className="mt-1 text-sm text-[var(--v-muted)]">
                     Note et avis publiés sur Google, affichés par Google. Ils ne
                     sont pas comptés dans les avis Misstice.
                   </p>
@@ -612,23 +646,23 @@ export default function VendorProfile({
           {/* Aside sticky */}
           <aside className="lg:col-span-1">
             <div className="space-y-4 lg:sticky lg:top-24">
-              <div className="rounded-3xl border border-black/5 bg-white p-6">
+              <div className="rounded-3xl border border-black/5 bg-[var(--v-surface)] p-6">
                 <button
                   type="button"
                   onClick={() => setQuoteOpen(true)}
-                  className="w-full rounded-2xl bg-violet px-6 py-3.5 text-base font-semibold text-white hover:bg-violet-dark"
+                  className="w-full rounded-2xl bg-[var(--v-button-bg)] px-6 py-3.5 text-base font-semibold text-[var(--v-button-text)] transition-opacity hover:opacity-90"
                 >
                   Demander un devis
                 </button>
                 <button
                   type="button"
                   onClick={() => setMsgOpen(true)}
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-plum/15 px-6 py-3 text-sm font-semibold text-plum hover:border-plum/30"
+                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[var(--v-surface-text)]/15 px-6 py-3 text-sm font-semibold text-[var(--v-surface-text)] hover:border-[var(--v-surface-text)]/30"
                 >
                   <Send size={16} />
                   Envoyer un message
                 </button>
-                <p className="mt-4 text-center text-xs text-slate">
+                <p className="mt-4 text-center text-xs text-[var(--v-muted)]">
                   Devis gratuit et sans engagement.
                 </p>
               </div>
@@ -640,15 +674,15 @@ export default function VendorProfile({
       {/* Fiche vitrine non réclamée : réclamation ou demande de retrait */}
       {vendor.claimStatus === "non_reclamee" && (
         <div className="mx-auto max-w-content px-page pt-10">
-          <div className="flex flex-col gap-2 border-t border-black/5 pt-6 text-xs text-slate sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 border-t border-black/5 pt-6 text-xs text-[var(--v-muted)] sm:flex-row sm:items-center sm:justify-between">
             <p>
               Vous êtes ce professionnel ?{" "}
-              <a href="/devenir-prestataire" className="font-semibold text-violet hover:text-violet-dark">
+              <a href="/devenir-prestataire" className="font-semibold text-[var(--v-heading)] underline decoration-[var(--v-heading)]/40 underline-offset-2 hover:opacity-80">
                 Réclamez votre fiche
               </a>
             </p>
             <p>
-              <a href={removalHref(vendor.name)} className="underline hover:text-violet">
+              <a href={removalHref(vendor.name)} className="underline hover:opacity-80">
                 Demander le retrait ou la rectification de cette fiche
               </a>
             </p>

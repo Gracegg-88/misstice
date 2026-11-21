@@ -25,6 +25,7 @@ export type Vendor = {
   claimStatus: "reclamee" | "non_reclamee"; // fiche vitrine importée (SIRENE) pas encore réclamée
   siret?: string | null; // n° SIRET (activité confirmée), utilisé pour la sélection « 3 prestataires »
   about?: string | null; // description réelle (vendor_profiles.about)
+  themeId?: string; // thème choisi pour la fiche publique (voir lib/themes.ts)
   // Ambiance & Vibe (tags renseignés par le prestataire).
   moods: string[];
   energies: string[];

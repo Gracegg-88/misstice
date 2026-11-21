@@ -282,14 +282,16 @@ export async function getVendor(id: string): Promise<Vendor | null> {
   const row = data as Row;
   const vendor = map(row);
 
-  // Pour un prestataire inscrit, on récupère sa vraie description.
+  // Pour un prestataire inscrit, on récupère sa vraie description + son thème.
   if (row.user_id) {
     const { data: vp } = await supabase
       .from("vendor_profiles")
-      .select("about")
+      .select("about, theme_id")
       .eq("id", row.user_id)
       .maybeSingle();
-    vendor.about = (vp as { about: string | null } | null)?.about ?? null;
+    const p = vp as { about: string | null; theme_id: string | null } | null;
+    vendor.about = p?.about ?? null;
+    vendor.themeId = p?.theme_id ?? undefined;
   }
 
   return vendor;

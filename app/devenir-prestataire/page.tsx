@@ -17,6 +17,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyButton from "@/components/CalendlyButton";
+import { getPilotSlotsRemaining, getPlatformSettings } from "@/lib/pilot";
 
 export const metadata: Metadata = pageMetadata({
   title: "Devenir prestataire mariage et événementiel : inscription gratuite",
@@ -142,7 +143,12 @@ const faqs = [
   },
 ];
 
-export default function DevenirPrestatairePage() {
+export default async function DevenirPrestatairePage() {
+  const [slotsRemaining, { pilotDurationMonths }] = await Promise.all([
+    getPilotSlotsRemaining(),
+    getPlatformSettings(),
+  ]);
+
   return (
     <>
       <Header />
@@ -157,6 +163,17 @@ export default function DevenirPrestatairePage() {
               Développez votre activité de prestataire mariage et
               événementiel avec Misstice
             </h1>
+            {slotsRemaining > 0 ? (
+              <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-4 py-1.5 text-sm font-semibold text-gold-dark">
+                ✦ Plus que {slotsRemaining} place
+                {slotsRemaining > 1 ? "s" : ""} pour profiter du Pack Pro
+                gratuit pendant {pilotDurationMonths} mois
+              </p>
+            ) : (
+              <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-violet-soft px-4 py-1.5 text-sm font-semibold text-violet">
+                Le programme pilote Pack Pro gratuit est complet — inscrivez-vous, la formule gratuite reste ouverte à tous
+              </p>
+            )}
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href={CTA_HREF}
