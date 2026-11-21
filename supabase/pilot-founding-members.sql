@@ -47,7 +47,7 @@ alter table public.vendor_profiles
 alter table public.vendor_profiles drop constraint if exists vendor_profiles_theme_id_check;
 alter table public.vendor_profiles
   add constraint vendor_profiles_theme_id_check
-  check (theme_id in ('signature', 'nuit', 'ivoire-or', 'emeraude', 'terracotta', 'noir-elegant'));
+  check (theme_id in ('signature', 'nuit', 'ivoire-or', 'emeraude', 'terracotta', 'noir-elegant', 'blanc-classique'));
 
 -- 3. BACKFILL — tous les comptes prestataires déjà créés avant cette PR
 --    deviennent membres fondateurs (photos illimitées pour toujours) ET

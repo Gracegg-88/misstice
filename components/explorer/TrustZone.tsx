@@ -7,16 +7,14 @@ import { googlePlacesEnabled } from "@/components/google/GooglePlaceCard";
  * la fiche Google est validée) et garantie de paiement sécurisé. Style
  * TOUJOURS identique, quel que soit le thème choisi pour la fiche (voir
  * lib/themes.ts) — ce composant n'utilise aucune couleur de thème, jamais.
+ * Pas de libellé "Zone de confiance" affiché : juste l'encadré d'infos.
  */
 export default function TrustZone({ vendor }: { vendor: Vendor }) {
   const showGoogleNote = Boolean(vendor.googlePlaceId) && googlePlacesEnabled;
 
   return (
     <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm sm:p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate">
-        Zone de confiance Misstice
-      </p>
-      <ul className="mt-2.5 space-y-2 text-sm text-plum">
+      <ul className="space-y-2 text-sm text-plum">
         {vendor.verified && vendor.userId && (
           <li className="flex items-center gap-2">
             <BadgeCheck size={16} className="shrink-0 text-violet" />

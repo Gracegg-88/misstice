@@ -120,6 +120,24 @@ export const THEMES: Theme[] = [
     },
   },
   {
+    id: "blanc-classique",
+    name: "Blanc classique",
+    tier: "free",
+    // L'option la plus neutre/sobre : blanc pur, texte quasi-noir, aucune
+    // touche de couleur — pour qui veut une fiche sans personnalité propre.
+    colors: {
+      ground: "#FFFFFF",
+      text: "#1F1F1F",
+      muted: "#5B564E",
+      heading: "#1F1F1F",
+      surface: "#FFFFFF",
+      surfaceText: "#1F1F1F",
+      buttonBg: "#1F1F1F",
+      buttonText: "#FFFFFF",
+      accent: "#9A9590",
+    },
+  },
+  {
     id: "noir-elegant",
     name: "Noir élégant",
     tier: "free",
