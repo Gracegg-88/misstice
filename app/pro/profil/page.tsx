@@ -7,7 +7,11 @@ import StripeConnectStatus from "@/components/pro/StripeConnectStatus";
 import GooglePlaceLinker from "@/components/google/GooglePlaceLinker";
 import { getMyVendor, getMyPackages, getMyPhotos } from "@/lib/pro";
 import { getProfile } from "@/lib/queries";
-import { getCategories, getCategoryDepositDefaults } from "@/lib/vendors";
+import {
+  getCategories,
+  getCategoryDepositDefaults,
+  getCategoryIllustrationPhotos,
+} from "@/lib/vendors";
 import { getPlatformSettings } from "@/lib/pilot";
 import { createClient } from "@/lib/supabase/server";
 import type { ProVendor } from "@/lib/pro-types";
@@ -59,6 +63,11 @@ export default async function ProProfilPage() {
       pilotMember: false,
       pilotPackProUntil: null,
       slug: null,
+      coverShape: "droite",
+      coverGradient: "aucun",
+      coverIsIllustration: false,
+      coverIllustrationUrl: null,
+      buttonConfig: ["devis", "message", "disponibilites", "composer"],
       rating: 0,
       reviews: 0,
       moods: [],
@@ -82,15 +91,17 @@ export default async function ProProfilPage() {
           categories={categories}
           categoryDepositDefaults={categoryDepositDefaults}
           freeTierPhotoLimit={freeTierPhotoLimit}
+          categoryIllustrationPhotos={[]}
         />
         {accountSection}
       </div>
     );
   }
 
-  const [packages, photos, { data: vendorProfileRow }, googleRes] = await Promise.all([
+  const [packages, photos, categoryIllustrationPhotos, { data: vendorProfileRow }, googleRes] = await Promise.all([
     getMyPackages(),
     getMyPhotos(),
+    getCategoryIllustrationPhotos(vendor.category),
     supabase
       .from("vendor_profiles")
       .select("siret, siret_verified_at, siret_company_name, stripe_onboarding_status")
@@ -127,6 +138,7 @@ export default async function ProProfilPage() {
         categories={categories}
         categoryDepositDefaults={categoryDepositDefaults}
         freeTierPhotoLimit={freeTierPhotoLimit}
+        categoryIllustrationPhotos={categoryIllustrationPhotos}
       />
       <div className="mx-auto max-w-3xl">
         <SiretVerification

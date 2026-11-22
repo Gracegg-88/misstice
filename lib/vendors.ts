@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Vendor } from "@/components/explorer/vendors";
 import type { Pkg, Review } from "@/components/explorer/profileData";
 import { vendorTier } from "@/lib/vendor-tier";
+import { isPilotPackProActive } from "@/lib/pilot-utils";
 
 type Row = {
   id: string;
@@ -128,6 +129,22 @@ export async function getCategories(): Promise<string[]> {
     .select("name")
     .order("position", { ascending: true });
   return ((data as { name: string }[]) ?? []).map((c) => c.name);
+}
+
+/** Photos d'illustration d'une catégorie (téléversées par l'admin, voir
+ *  app/admin/photos-illustration), pour le choix de couverture côté pro
+ *  (CoverPicker.tsx) — vide tant que l'admin n'en a ajouté aucune. */
+export async function getCategoryIllustrationPhotos(
+  category: string | null
+): Promise<{ id: string; url: string }[]> {
+  if (!category) return [];
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("category_illustration_photos")
+    .select("id, url")
+    .eq("category", category)
+    .order("position", { ascending: true });
+  return (data as { id: string; url: string }[]) ?? [];
 }
 
 /** Pourcentage d'acompte par défaut d'une catégorie (0 si non renseignée/inconnue). */
@@ -282,16 +299,49 @@ export async function getVendor(id: string): Promise<Vendor | null> {
   const row = data as Row;
   const vendor = map(row);
 
-  // Pour un prestataire inscrit, on récupère sa vraie description + son thème.
+  // Pour un prestataire inscrit, on récupère sa vraie description + son thème
+  // + ses réglages d'apparence (couverture, boutons).
   if (row.user_id) {
     const { data: vp } = await supabase
       .from("vendor_profiles")
-      .select("about, theme_id")
+      .select(
+        "about, theme_id, cover_shape, cover_gradient, cover_is_illustration, cover_illustration_url, button_config, founding_member, pilot_member, pilot_pack_pro_until"
+      )
       .eq("id", row.user_id)
       .maybeSingle();
-    const p = vp as { about: string | null; theme_id: string | null } | null;
+    const p = vp as {
+      about: string | null;
+      theme_id: string | null;
+      cover_shape: string | null;
+      cover_gradient: string | null;
+      cover_is_illustration: boolean | null;
+      cover_illustration_url: string | null;
+      button_config: string[] | null;
+      founding_member: boolean;
+      pilot_member: boolean;
+      pilot_pack_pro_until: string | null;
+    } | null;
     vendor.about = p?.about ?? null;
     vendor.themeId = p?.theme_id ?? undefined;
+    // La page publique n'affiche JAMAIS une option Pro non payée : on
+    // revérifie les droits ici, même si l'enregistrement côté pro est déjà
+    // censé les refuser (défense en profondeur, voir Complément 4).
+    const hasAccess = p
+      ? isPilotPackProActive({
+          foundingMember: p.founding_member,
+          pilotMember: p.pilot_member,
+          pilotPackProUntil: p.pilot_pack_pro_until,
+        })
+      : false;
+    vendor.coverShape = hasAccess ? p?.cover_shape ?? undefined : "droite";
+    vendor.coverGradient = hasAccess ? p?.cover_gradient ?? undefined : "aucun";
+    vendor.coverIsIllustration = Boolean(
+      p?.cover_is_illustration && p?.cover_illustration_url
+    );
+    vendor.coverImg = vendor.coverIsIllustration
+      ? p?.cover_illustration_url ?? null
+      : null;
+    vendor.buttonConfig = p?.button_config ?? undefined;
   }
 
   return vendor;

@@ -36,6 +36,25 @@ import { canUploadMorePhotos, isPilotPackProActive } from "@/lib/pilot-utils";
 import { ensureVendorSlug } from "@/lib/slug";
 import SharePanel from "@/components/pro/SharePanel";
 import { Sparkles } from "lucide-react";
+import CoverPicker from "@/components/pro/CoverPicker";
+import ButtonsPicker from "@/components/pro/ButtonsPicker";
+import MobilePreview from "@/components/pro/MobilePreview";
+import PackProModal from "@/components/pro/PackProModal";
+import {
+  COVER_SHAPES,
+  COVER_GRADIENTS,
+  type CoverShape,
+  type CoverGradient,
+} from "@/lib/cover-options";
+import { DEFAULT_BUTTON_CONFIG, toggleOptionalButton } from "@/lib/button-config";
+
+const TABS = [
+  { id: "infos", label: "Infos" },
+  { id: "apparence", label: "Apparence" },
+  { id: "boutons", label: "Boutons" },
+  { id: "partager", label: "Partager" },
+] as const;
+type TabId = (typeof TABS)[number]["id"];
 
 export default function ProfilClient({
   vendor,
@@ -44,6 +63,7 @@ export default function ProfilClient({
   categories,
   categoryDepositDefaults = {},
   freeTierPhotoLimit = 3,
+  categoryIllustrationPhotos = [],
 }: {
   vendor: ProVendor;
   packages: VendorPackage[];
@@ -55,6 +75,8 @@ export default function ProfilClient({
   categoryDepositDefaults?: Record<string, number>;
   // Limite de photos en formule gratuite (platform_settings.free_tier_photo_limit).
   freeTierPhotoLimit?: number;
+  // Photos d'illustration de la catégorie du prestataire (voir CoverPicker.tsx).
+  categoryIllustrationPhotos?: { id: string; url: string }[];
 }) {
   const router = useRouter();
 
@@ -77,6 +99,37 @@ export default function ProfilClient({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  // Onglet « Ma page » actif.
+  const [activeTab, setActiveTab] = useState<TabId>("infos");
+
+  // Couverture (Complément 3) — forme/dégradé réservés au Pack Pro, voir
+  // lib/cover-options.ts. "Essayer" reste possible sans les droits : c'est
+  // l'enregistrement qui est intercepté (voir saveInfo/doSaveInfo).
+  const [coverShape, setCoverShape] = useState<CoverShape>(
+    (vendor.coverShape as CoverShape) || "droite"
+  );
+  const [coverGradient, setCoverGradient] = useState<CoverGradient>(
+    (vendor.coverGradient as CoverGradient) || "aucun"
+  );
+  const [coverIsIllustration, setCoverIsIllustration] = useState(
+    vendor.coverIsIllustration
+  );
+  const [illustrationUrl, setIllustrationUrl] = useState<string | null>(
+    vendor.coverIllustrationUrl
+  );
+  const hasAccess = isPilotPackProActive(vendor);
+
+  // Boutons d'action affichés sur la fiche (voir lib/button-config.ts).
+  const [buttonConfig, setButtonConfig] = useState<string[]>(
+    vendor.buttonConfig?.length ? vendor.buttonConfig : DEFAULT_BUTTON_CONFIG
+  );
+
+  // Fenêtre Pack Pro (Complément 4), déclenchée par saveInfo quand une
+  // option Pro non payée a été essayée.
+  const [packProModalOpen, setPackProModalOpen] = useState(false);
+  const [triedProOptions, setTriedProOptions] = useState<string[]>([]);
+  const [interestSaved, setInterestSaved] = useState(false);
 
   // Ambiance & Vibe (tags auto-attribués, stockés sur vendors)
   const [vibes, setVibes] = useState<VendorVibes>({
@@ -231,7 +284,25 @@ export default function ProfilClient({
   const inputCls =
     "w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none focus:border-violet";
 
+  // --- Couverture : options Pro essayées sans y avoir droit (Complément 3) ---
+  const proOptionsTried = (shape: CoverShape, gradient: CoverGradient): string[] => {
+    if (hasAccess) return [];
+    const tried: string[] = [];
+    const shapeDef = COVER_SHAPES.find((s) => s.id === shape);
+    if (shapeDef && !shapeDef.free) {
+      tried.push(`la couverture ${shapeDef.label.toLowerCase()}`);
+    }
+    const gradientDef = COVER_GRADIENTS.find((g) => g.id === gradient);
+    if (gradientDef && !gradientDef.free) {
+      tried.push(`le dégradé ${gradientDef.label.toLowerCase()}`);
+    }
+    return tried;
+  };
+
   // --- Enregistrer les infos (crée la fiche si elle n'existe pas encore) ---
+  // Intercepte l'enregistrement si une option Pack Pro non payée a été
+  // essayée (Complément 3) : la fenêtre Pack Pro (Complément 4) décide alors
+  // de la suite, voir handlePackProUpgrade / handleSaveWithoutPro ci-dessous.
   const saveInfo = async () => {
     if (!info.company.trim()) {
       setError("Le nom de votre activité est obligatoire.");
@@ -249,7 +320,50 @@ export default function ProfilClient({
         return;
       }
     }
+    setError("");
 
+    const tried = proOptionsTried(coverShape, coverGradient);
+    if (tried.length > 0) {
+      setTriedProOptions(tried);
+      setPackProModalOpen(true);
+      return;
+    }
+    await doSaveInfo(coverShape, coverGradient);
+  };
+
+  const handleSaveWithoutPro = async () => {
+    setPackProModalOpen(false);
+    setCoverShape("droite");
+    setCoverGradient("aucun");
+    await doSaveInfo("droite", "aucun");
+  };
+
+  const handleContinueEditing = () => setPackProModalOpen(false);
+
+  const handlePackProUpgradeInterest = async () => {
+    setPackProModalOpen(false);
+    const profErr = await ensureProfile();
+    if (!profErr) {
+      const supabase = createClient();
+      await supabase
+        .from("vendor_profiles")
+        .update({ pack_pro_interest_at: new Date().toISOString() })
+        .eq("id", vendor.profileId);
+      setInterestSaved(true);
+      setTimeout(() => setInterestSaved(false), 5000);
+    }
+    setCoverShape("droite");
+    setCoverGradient("aucun");
+    await doSaveInfo("droite", "aucun");
+  };
+
+  // Enregistrement effectif — appelé directement (pas d'option Pro essayée)
+  // ou après le choix du prestataire dans la fenêtre Pack Pro. shapeToSave /
+  // gradientToSave sont toujours "droite"/"aucun" quand hasAccess est faux
+  // (déjà revérifié ici, et de nouveau côté base, voir
+  // enforce_cover_pro_gate dans supabase/ma-page.sql).
+  const doSaveInfo = async (shapeToSave: CoverShape, gradientToSave: CoverGradient) => {
+    const depositTrim = depositPercent.trim();
     setSaving(true);
     setError("");
     setSaved(false);
@@ -264,12 +378,19 @@ export default function ProfilClient({
       about: info.about || null,
       deposit_percent: depositTrim === "" ? null : Number(depositTrim),
       theme_id: themeId,
+      cover_shape: hasAccess ? shapeToSave : "droite",
+      cover_gradient: hasAccess ? gradientToSave : "aucun",
+      cover_is_illustration: coverIsIllustration,
+      cover_illustration_url: coverIsIllustration ? illustrationUrl : null,
+      button_config: buttonConfig,
     });
     if (pErr) {
       setSaving(false);
       setError(pErr.message);
       return;
     }
+    setCoverShape(hasAccess ? shapeToSave : "droite");
+    setCoverGradient(hasAccess ? gradientToSave : "aucun");
     const newSlug = await ensureVendorSlug(supabase, vendor.profileId, info.company.trim());
     setSlug(newSlug);
 
@@ -509,11 +630,11 @@ export default function ProfilClient({
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-            Mon profil
+            Ma page
           </h1>
           {vendor.verified && (
             <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-violet">
@@ -555,9 +676,34 @@ export default function ProfilClient({
           {error}
         </p>
       )}
+      {interestSaved && (
+        <p className="mt-4 rounded-2xl bg-emerald-soft px-4 py-3 text-sm font-medium text-emerald">
+          Merci&nbsp;! On te recontacte dès que le Pack Pro est disponible.
+        </p>
+      )}
+
+      <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1">
+          {/* Onglets Ma page */}
+          <div className="flex gap-1 overflow-x-auto rounded-2xl bg-cream p-1">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+                  activeTab === t.id
+                    ? "bg-white text-plum shadow-sm"
+                    : "text-slate hover:text-plum"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
       {/* Infos */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Informations
         </h2>
@@ -677,8 +823,8 @@ export default function ProfilClient({
         </div>
       </section>
 
-      {/* Thème de la fiche publique */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      {/* Apparence : thème + couverture */}
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "apparence" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Thème de ma fiche
         </h2>
@@ -691,19 +837,64 @@ export default function ProfilClient({
         <div className="mt-4">
           <ThemePicker value={themeId} onChange={setThemeId} />
         </div>
+
+        <h2 className="mt-8 font-display text-lg font-semibold text-plum">
+          Couverture
+        </h2>
+        <p className="mt-1 text-sm text-slate">
+          La forme courbe/vague/arche et le dégradé font partie du Pack Pro —
+          vous pouvez les essayer ici, l&apos;enregistrement vous proposera de
+          passer au Pack Pro le cas échéant.
+        </p>
+        <div className="mt-4">
+          <CoverPicker
+            hasAccess={hasAccess}
+            mainImage={mainImage}
+            categoryPhotos={categoryIllustrationPhotos}
+            coverIsIllustration={coverIsIllustration}
+            illustrationUrl={illustrationUrl}
+            shape={coverShape}
+            gradient={coverGradient}
+            onChangeCoverSource={(isIllustration, url) => {
+              setCoverIsIllustration(isIllustration);
+              setIllustrationUrl(url);
+            }}
+            onChangeShape={setCoverShape}
+            onChangeGradient={setCoverGradient}
+          />
+        </div>
       </section>
 
-      <SharePanel
-        vendorId={vendor.vendorId}
-        slug={slug}
-        company={info.company || vendor.company}
-        category={info.category || vendor.category || ""}
-        city={info.city || vendor.city || ""}
-        verified={vendor.verified}
-      />
+      {/* Boutons affichés sur la fiche */}
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "boutons" ? "" : "hidden"}`}>
+        <h2 className="font-display text-lg font-semibold text-plum">
+          Boutons affichés sur ma fiche
+        </h2>
+        <p className="mt-1 text-sm text-slate">
+          Choisissez les boutons secondaires visibles sous vos deux actions
+          principales.
+        </p>
+        <div className="mt-4">
+          <ButtonsPicker
+            buttonConfig={buttonConfig}
+            onToggle={(id) => setButtonConfig((p) => toggleOptionalButton(p, id))}
+          />
+        </div>
+      </section>
+
+      <div className={activeTab === "partager" ? "" : "hidden"}>
+        <SharePanel
+          vendorId={vendor.vendorId}
+          slug={slug}
+          company={info.company || vendor.company}
+          category={info.category || vendor.category || ""}
+          city={info.city || vendor.city || ""}
+          verified={vendor.verified}
+        />
+      </div>
 
       {/* Ambiance & Vibe */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Ambiance &amp; Vibe
         </h2>
@@ -761,7 +952,7 @@ export default function ProfilClient({
       </section>
 
       {/* Services & tarifs */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Services &amp; tarifs
         </h2>
@@ -1047,7 +1238,7 @@ export default function ProfilClient({
       </section>
 
       {/* Book */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold text-plum">
             Mon book
@@ -1115,23 +1306,46 @@ export default function ProfilClient({
         </div>
       </section>
 
-      {error && <p className="mt-4 text-right text-sm text-garnet">{error}</p>}
+          {error && <p className="mt-4 text-right text-sm text-garnet">{error}</p>}
 
-      {/* Save */}
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={saveInfo}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
-        >
-          <Check size={17} />
-          {saving
-            ? "Enregistrement…"
-            : saved
-            ? "Modifications enregistrées"
-            : "Enregistrer les modifications"}
-        </button>
+          {/* Save */}
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={saveInfo}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+            >
+              <Check size={17} />
+              {saving
+                ? "Enregistrement…"
+                : saved
+                ? "Modifications enregistrées"
+                : "Enregistrer les modifications"}
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden w-[280px] shrink-0 lg:block">
+          <MobilePreview
+            company={info.company}
+            themeId={themeId}
+            mainImage={mainImage}
+            coverIsIllustration={coverIsIllustration}
+            illustrationUrl={illustrationUrl}
+            shape={coverShape}
+            gradient={coverGradient}
+            hasAccess={hasAccess}
+          />
+        </div>
       </div>
+
+      <PackProModal
+        open={packProModalOpen}
+        triedOptions={triedProOptions}
+        onUpgrade={handlePackProUpgradeInterest}
+        onSaveWithoutPro={handleSaveWithoutPro}
+        onContinueEditing={handleContinueEditing}
+      />
     </div>
   );
 }
