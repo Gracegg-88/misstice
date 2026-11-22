@@ -34,6 +34,8 @@ import { getTheme } from "@/lib/themes";
 import TrustZone from "./TrustZone";
 import ShareVendorLink from "./ShareVendorLink";
 import { setAttributionCookie, attributionSourceFor } from "@/lib/attribution";
+import AvailabilityCalendar from "./AvailabilityCalendar";
+import PackageComposer from "./PackageComposer";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -58,6 +60,9 @@ export type QuotePrefill = {
   type: string | null;
   date: string | null;
   guests: number | null;
+  // Pré-remplissage additionnel depuis "Composer mon devis" (facultatif).
+  wanted?: string;
+  estimateNote?: string;
 };
 
 export default function VendorProfile({
@@ -123,6 +128,17 @@ export default function VendorProfile({
   useEffect(() => {
     if (src) setAttributionCookie(vendor.id, src);
   }, [vendor.id, src]);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
+  // Pré-remplissage additionnel posé par "Voir mes disponibilités" ou
+  // "Composer mon devis", fusionné avec le `prefill` reçu du serveur.
+  const [extraPrefill, setExtraPrefill] = useState<Partial<QuotePrefill>>({});
+  const mergedPrefill: QuotePrefill = {
+    type: prefill?.type ?? null,
+    date: prefill?.date ?? null,
+    guests: prefill?.guests ?? null,
+    ...extraPrefill,
+  };
 
   // Vraie session (pour conditionner l'accès à la demande de devis).
   useEffect(() => {
@@ -296,6 +312,28 @@ export default function VendorProfile({
                   Envoyer un message
                 </button>
               </div>
+              {vendor.userId && (
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => setCalendarOpen(true)}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--v-text)]/15 px-5 py-2.5 text-sm font-semibold text-[var(--v-text)] transition-colors hover:border-[var(--v-text)]/30"
+                  >
+                    <CalendarCheck size={16} />
+                    Voir mes disponibilités
+                  </button>
+                  {packages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setComposerOpen(true)}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--v-text)]/15 px-5 py-2.5 text-sm font-semibold text-[var(--v-text)] transition-colors hover:border-[var(--v-text)]/30"
+                    >
+                      <Euro size={16} />
+                      Composer mon devis
+                    </button>
+                  )}
+                </div>
+              )}
               {vendor.claimStatus === "non_reclamee" && (
                 <p className="mt-3 text-sm text-[var(--v-muted)]">
                   Cette entreprise est la vôtre ?{" "}
@@ -746,9 +784,12 @@ export default function VendorProfile({
         <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis · ${vendor.name}`}>
           <QuoteForm
             vendor={vendor}
-            prefill={prefill}
+            prefill={mergedPrefill}
             currentEventId={currentEventId}
-            onDone={() => setQuoteOpen(false)}
+            onDone={() => {
+              setQuoteOpen(false);
+              setExtraPrefill({});
+            }}
           />
         </Modal>
       )}
@@ -757,6 +798,34 @@ export default function VendorProfile({
       {msgOpen && (
         <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message · ${vendor.name}`}>
           <MessageForm vendor={vendor} onDone={() => setMsgOpen(false)} />
+        </Modal>
+      )}
+
+      {/* ── Modale "Voir mes disponibilités" ── */}
+      {calendarOpen && vendor.userId && (
+        <Modal onClose={() => setCalendarOpen(false)} title={`Disponibilités · ${vendor.name}`}>
+          <AvailabilityCalendar
+            vendorUserId={vendor.userId}
+            onPickDate={(date) => {
+              setExtraPrefill((p) => ({ ...p, date }));
+              setCalendarOpen(false);
+              setQuoteOpen(true);
+            }}
+          />
+        </Modal>
+      )}
+
+      {/* ── Modale "Composer mon devis" ── */}
+      {composerOpen && (
+        <Modal onClose={() => setComposerOpen(false)} title={`Composer mon devis · ${vendor.name}`}>
+          <PackageComposer
+            packages={packages}
+            onCompose={({ wanted, estimateNote }) => {
+              setExtraPrefill((p) => ({ ...p, wanted, estimateNote }));
+              setComposerOpen(false);
+              setQuoteOpen(true);
+            }}
+          />
         </Modal>
       )}
 
@@ -1010,7 +1079,7 @@ function QuoteForm({
   const [answers, setAnswers] = useState<Record<string, string>>(
     prefill?.guests ? { invites: String(prefill.guests) } : {}
   );
-  const [wanted, setWanted] = useState("");
+  const [wanted, setWanted] = useState(prefill?.wanted ?? "");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -1239,6 +1308,11 @@ function QuoteForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {prefill?.estimateNote && (
+        <p className="rounded-xl bg-violet-soft px-4 py-2.5 text-sm text-violet">
+          {prefill.estimateNote}
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="text-sm font-medium text-plum">
