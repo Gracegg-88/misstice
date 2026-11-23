@@ -10,6 +10,7 @@ import {
   ExternalLink,
   BadgeCheck,
   Pencil,
+  ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import CategorySelect from "@/components/pro/CategorySelect";
@@ -60,6 +61,15 @@ const TABS = [
   { id: "partager", label: "Partager" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
+
+const VIBE_GROUPS = [
+  { label: "Mood", axis: "moods", options: MOODS },
+  { label: "Énergie", axis: "energies", options: ENERGIES },
+  { label: "Lumière", axis: "lights", options: LIGHTS },
+  { label: "Palette", axis: "palettes", options: PALETTES },
+  { label: "Atmosphère", axis: "atmospheres", options: ATMOSPHERES },
+  { label: "Style musical", axis: "music", options: MUSIC_STYLES },
+] as const;
 
 export default function ProfilClient({
   vendor,
@@ -117,6 +127,25 @@ export default function ProfilClient({
     null | "couverture" | "photo" | "nom" | "presentation" | "apparence" | "boutons" | "partager"
   >(null);
 
+  // Blocs en accordéon dans l'onglet "Infos" (ordinateur uniquement — un seul
+  // ouvert à la fois, pour réduire le défilement). Sur mobile (repli
+  // "classic"), tous les blocs restent visibles, plus simple à parcourir au
+  // doigt que de rouvrir chacun.
+  const [openBlock, setOpenBlock] = useState<
+    "informations" | "ambiance" | "services" | "book"
+  >("informations");
+  const blockBodyCls = (id: typeof openBlock) => (openBlock === id ? "" : "lg:hidden");
+
+  // Sélecteur "+ Ajouter" (Ambiance & Vibe) : un onglet (axe) à la fois, 8
+  // étiquettes maximum au total tous axes confondus.
+  const [vibePickerOpen, setVibePickerOpen] = useState(false);
+  const [vibePickerAxis, setVibePickerAxis] = useState<keyof VendorVibes>("moods");
+  const MAX_VIBES = 8;
+
+  // Formulaire d'ajout d'une formule : masqué tant qu'on ne clique pas sur
+  // "+ Ajouter une formule" (liste repliée sinon).
+  const [addPkgFormOpen, setAddPkgFormOpen] = useState(false);
+
   // Couverture (Complément 3) — forme/dégradé réservés au Pack Pro, voir
   // lib/cover-options.ts. "Essayer" reste possible sans les droits : c'est
   // l'enregistrement qui est intercepté (voir saveInfo/doSaveInfo).
@@ -154,13 +183,22 @@ export default function ProfilClient({
     atmospheres: vendor.atmospheres ?? [],
     music: vendor.music ?? [],
   });
+  const totalVibesCount = Object.values(vibes).reduce((s, arr) => s + arr.length, 0);
+  // 8 étiquettes maximum au total, tous axes confondus — on ignore le clic
+  // plutôt que d'afficher une erreur bloquante (retirer une étiquette
+  // existante reste toujours possible).
   const toggleVibe = (axis: keyof VendorVibes, value: string) =>
-    setVibes((v) => ({
-      ...v,
-      [axis]: v[axis].includes(value)
-        ? v[axis].filter((x) => x !== value)
-        : [...v[axis], value],
-    }));
+    setVibes((v) => {
+      const already = v[axis].includes(value);
+      const total = Object.values(v).reduce((s, arr) => s + arr.length, 0);
+      if (!already && total >= MAX_VIBES) return v;
+      return {
+        ...v,
+        [axis]: already
+          ? v[axis].filter((x) => x !== value)
+          : [...v[axis], value],
+      };
+    });
 
   // Formules / tarifs (état optimiste local)
   const [pkgs, setPkgs] = useState<VendorPackage[]>(packages);
@@ -505,6 +543,7 @@ export default function ProfilClient({
     setNewPkg({ name: "", price: "", popular: false });
     setNewFeatures([]);
     setFeatureInput("");
+    setAddPkgFormOpen(false);
     router.refresh();
   };
 
@@ -1052,10 +1091,21 @@ export default function ProfilClient({
 
       {/* Infos */}
       <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
-        <h2 className="font-display text-lg font-semibold text-plum">
-          Informations
-        </h2>
+        <button
+          type="button"
+          onClick={() => setOpenBlock("informations")}
+          className="flex w-full items-center justify-between gap-2 text-left lg:cursor-pointer"
+        >
+          <h2 className="font-display text-lg font-semibold text-plum">
+            Informations
+          </h2>
+          <ChevronDown
+            size={18}
+            className={`hidden shrink-0 text-slate transition-transform lg:block ${openBlock === "informations" ? "rotate-180" : ""}`}
+          />
+        </button>
 
+        <div className={blockBodyCls("informations")}>
         {/* Photo principale */}
         <div className="mt-4 flex items-center gap-4">
           {mainImage ? (
@@ -1169,6 +1219,7 @@ export default function ProfilClient({
             className={`mt-1.5 ${inputCls}`}
           />
         </div>
+        </div>
       </section>
 
       {/* Apparence : thème + couverture */}
@@ -1243,70 +1294,133 @@ export default function ProfilClient({
 
       {/* Ambiance & Vibe */}
       <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
-        <h2 className="font-display text-lg font-semibold text-plum">
-          Ambiance &amp; Vibe
-        </h2>
+        <button
+          type="button"
+          onClick={() => setOpenBlock("ambiance")}
+          className="flex w-full items-center justify-between gap-2 text-left lg:cursor-pointer"
+        >
+          <h2 className="font-display text-lg font-semibold text-plum">
+            Ambiance &amp; Vibe
+          </h2>
+          <ChevronDown
+            size={18}
+            className={`hidden shrink-0 text-slate transition-transform lg:block ${openBlock === "ambiance" ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        <div className={blockBodyCls("ambiance")}>
         <p className="mt-1 text-sm text-slate">
-          Choisissez les tags qui décrivent votre univers. Ils servent aux
-          filtres de l&apos;annuaire et s&apos;affichent en badges sur votre
-          fiche. En cas d&apos;avis clients trop négatifs, ces badges peuvent être
-          retirés automatiquement.
+          Choisissez les tags qui décrivent votre univers ({MAX_VIBES}
+          {" "}maximum). Ils s&apos;affichent en badges sur votre fiche.
         </p>
-        <div className="mt-4 space-y-4">
-          {(
-            [
-              { label: "Mood / Ambiance", axis: "moods", options: MOODS },
-              { label: "Énergie", axis: "energies", options: ENERGIES },
-              { label: "Lumière", axis: "lights", options: LIGHTS },
-              { label: "Palette", axis: "palettes", options: PALETTES },
-              { label: "Atmosphère", axis: "atmospheres", options: ATMOSPHERES },
-              {
-                label: "Style musical (DJ / animateur)",
-                axis: "music",
-                options: MUSIC_STYLES,
-              },
-            ] as const
-          ).map((g) => (
-            <div key={g.axis}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate">
-                {g.label}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {g.options.map((o) => {
-                  const on = vibes[g.axis].includes(o);
-                  return (
-                    <button
-                      key={o}
-                      type="button"
-                      onClick={() => toggleVibe(g.axis, o)}
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                        on
-                          ? "bg-violet text-white"
-                          : "bg-cream text-slate hover:text-plum"
-                      }`}
-                    >
-                      {o}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+
+        {/* Étiquettes choisies uniquement */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {VIBE_GROUPS.flatMap((g) =>
+            vibes[g.axis].map((o) => (
+              <span
+                key={`${g.axis}-${o}`}
+                className="inline-flex items-center gap-1 rounded-full bg-violet px-2.5 py-1 text-xs font-medium text-white"
+              >
+                {o}
+                <button
+                  type="button"
+                  aria-label={`Retirer ${o}`}
+                  onClick={() => toggleVibe(g.axis, o)}
+                  className="text-white/70 hover:text-white"
+                >
+                  <X size={11} />
+                </button>
+              </span>
+            ))
+          )}
+          {totalVibesCount === 0 && (
+            <p className="text-sm text-slate">Aucune étiquette choisie.</p>
+          )}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setVibePickerOpen((v) => !v)}
+          disabled={totalVibesCount >= MAX_VIBES && !vibePickerOpen}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-dashed border-violet/40 px-3 py-1.5 text-xs font-semibold text-violet disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Plus size={13} />
+          {totalVibesCount >= MAX_VIBES
+            ? `${MAX_VIBES}/${MAX_VIBES} maximum`
+            : vibePickerOpen
+            ? "Fermer"
+            : "Ajouter"}
+        </button>
+
+        {vibePickerOpen && (
+          <div className="mt-3 rounded-2xl bg-cream p-4">
+            <div className="flex flex-wrap gap-1.5">
+              {VIBE_GROUPS.map((g) => (
+                <button
+                  key={g.axis}
+                  type="button"
+                  onClick={() => setVibePickerAxis(g.axis)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
+                    vibePickerAxis === g.axis
+                      ? "bg-plum text-white"
+                      : "bg-white text-slate hover:text-plum"
+                  }`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {VIBE_GROUPS.find((g) => g.axis === vibePickerAxis)?.options.map((o) => {
+                const on = vibes[vibePickerAxis].includes(o);
+                const disabled = !on && totalVibesCount >= MAX_VIBES;
+                return (
+                  <button
+                    key={o}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => toggleVibe(vibePickerAxis, o)}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                      on
+                        ? "bg-violet text-white"
+                        : "bg-white text-slate hover:text-plum"
+                    }`}
+                  >
+                    {o}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <p className="mt-4 text-xs text-slate">
           Pensez à cliquer sur «&nbsp;Enregistrer les modifications&nbsp;» en bas
           de page.
         </p>
+        </div>
       </section>
 
       {/* Services & tarifs */}
       <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
-        <h2 className="font-display text-lg font-semibold text-plum">
-          Services &amp; tarifs
-        </h2>
+        <button
+          type="button"
+          onClick={() => setOpenBlock("services")}
+          className="flex w-full items-center justify-between gap-2 text-left lg:cursor-pointer"
+        >
+          <h2 className="font-display text-lg font-semibold text-plum">
+            Services &amp; tarifs
+          </h2>
+          <ChevronDown
+            size={18}
+            className={`hidden shrink-0 text-slate transition-transform lg:block ${openBlock === "services" ? "rotate-180" : ""}`}
+          />
+        </button>
 
+        <div className={blockBodyCls("services")}>
         {/* Formules existantes */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 space-y-2">
           {pkgs.map((p) =>
             editingId === p.id ? (
               /* --- Mode édition --- */
@@ -1428,26 +1542,34 @@ export default function ProfilClient({
                 </div>
               </div>
             ) : (
-              /* --- Affichage --- */
+              /* --- Affichage compact (nom + prix sur une ligne) --- */
               <div
                 key={p.id}
-                className={`relative rounded-2xl border p-4 ${
-                  p.popular ? "border-violet" : "border-black/10"
-                }`}
+                className="flex items-center justify-between gap-3 rounded-xl border border-black/10 px-4 py-2.5"
               >
-                {p.popular && (
-                  <span className="absolute -top-2.5 left-4 rounded-full bg-violet px-2.5 py-0.5 text-xs font-semibold text-white">
-                    Le plus demandé
+                <div className="min-w-0 flex-1">
+                  <span className="truncate font-medium text-plum">
+                    {p.name}
+                  </span>
+                  {p.popular && (
+                    <span className="ml-2 rounded-full bg-violet-soft px-2 py-0.5 text-[11px] font-semibold text-violet">
+                      Le plus demandé
+                    </span>
+                  )}
+                </div>
+                {p.price && (
+                  <span className="shrink-0 text-sm font-semibold text-violet">
+                    {p.price}
                   </span>
                 )}
-                <div className="absolute right-2.5 top-2.5 flex gap-1">
+                <div className="flex shrink-0 gap-1">
                   <button
                     type="button"
                     aria-label="Modifier la formule"
                     onClick={() => startEdit(p)}
                     className="text-slate hover:text-violet"
                   >
-                    <Pencil size={15} />
+                    <Pencil size={14} />
                   </button>
                   <button
                     type="button"
@@ -1455,33 +1577,9 @@ export default function ProfilClient({
                     onClick={() => deletePackage(p.id)}
                     className="text-slate hover:text-garnet"
                   >
-                    <X size={16} />
+                    <X size={15} />
                   </button>
                 </div>
-                <p className="pr-12 font-display text-base font-semibold text-plum">
-                  {p.name}
-                </p>
-                {p.price && (
-                  <p className="mt-0.5 text-sm font-semibold text-violet">
-                    {p.price}
-                  </p>
-                )}
-                {p.features.length > 0 && (
-                  <ul className="mt-3 space-y-1.5">
-                    {p.features.map((f, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-1.5 text-sm text-slate"
-                      >
-                        <Check
-                          size={14}
-                          className="mt-0.5 shrink-0 text-emerald"
-                        />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             )
           )}
@@ -1492,9 +1590,29 @@ export default function ProfilClient({
           )}
         </div>
 
-        {/* Ajout d'une formule */}
-        <div className="mt-5 rounded-2xl bg-cream p-4">
-          <p className="text-sm font-semibold text-plum">Ajouter une formule</p>
+        {/* Ajout d'une formule — masqué tant qu'on ne clique pas dessus. */}
+        {!addPkgFormOpen ? (
+          <button
+            type="button"
+            onClick={() => setAddPkgFormOpen(true)}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-dashed border-violet/40 px-3 py-1.5 text-xs font-semibold text-violet"
+          >
+            <Plus size={13} />
+            Ajouter une formule
+          </button>
+        ) : (
+        <div className="mt-4 rounded-2xl bg-cream p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-plum">Ajouter une formule</p>
+            <button
+              type="button"
+              aria-label="Fermer"
+              onClick={() => setAddPkgFormOpen(false)}
+              className="text-slate hover:text-plum"
+            >
+              <X size={15} />
+            </button>
+          </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <input
               value={newPkg.name}
@@ -1583,32 +1701,36 @@ export default function ProfilClient({
             </button>
           </div>
         </div>
+        )}
+        </div>
       </section>
 
       {/* Book */}
       <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
-        <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setOpenBlock("book")}
+          className="flex w-full items-center justify-between gap-2 text-left lg:cursor-pointer"
+        >
           <h2 className="font-display text-lg font-semibold text-plum">
             Mon book
           </h2>
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading || !canUploadMorePhotos(vendor, pics.length, freeTierPhotoLimit)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-violet/40 px-3 py-2 text-sm font-semibold text-violet hover:bg-violet-soft disabled:opacity-60"
-          >
-            <Upload size={15} />
-            {uploading ? "Envoi…" : "Ajouter des photos ou vidéos"}
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*,video/*"
-            multiple
-            onChange={onUpload}
-            className="hidden"
+          <ChevronDown
+            size={18}
+            className={`hidden shrink-0 text-slate transition-transform lg:block ${openBlock === "book" ? "rotate-180" : ""}`}
           />
-        </div>
-        <p className="mt-2 text-xs text-slate">
+        </button>
+
+        <div className={blockBodyCls("book")}>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          onChange={onUpload}
+          className="hidden"
+        />
+        <p className="mt-1 text-xs text-slate">
           Vidéos acceptées pour le moment : {BOOK_VIDEO_MAX_SHORT_SIDE}p max,{" "}
           {Math.round(BOOK_VIDEO_MAX_SECONDS / 60)} minutes max.
           {!vendor.foundingMember && !isPilotPackProActive(vendor) && (
@@ -1646,11 +1768,20 @@ export default function ProfilClient({
               </button>
             </div>
           ))}
-          {pics.length === 0 && (
-            <p className="col-span-full text-sm text-slate">
-              Ajoutez vos plus belles réalisations pour valoriser votre profil.
-            </p>
-          )}
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading || !canUploadMorePhotos(vendor, pics.length, freeTierPhotoLimit)}
+            aria-label="Ajouter des photos ou vidéos"
+            className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border border-dashed border-violet/40 text-violet hover:bg-violet-soft disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {uploading ? (
+              <span className="text-xs font-semibold">Envoi…</span>
+            ) : (
+              <Plus size={22} />
+            )}
+          </button>
+        </div>
         </div>
       </section>
 
