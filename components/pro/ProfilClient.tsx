@@ -31,7 +31,7 @@ import {
   type VendorVibes,
 } from "@/lib/vibes";
 import ThemePicker from "@/components/pro/ThemePicker";
-import { DEFAULT_THEME_ID } from "@/lib/themes";
+import { DEFAULT_THEME_ID, getTheme } from "@/lib/themes";
 import { canUploadMorePhotos, isPilotPackProActive } from "@/lib/pilot-utils";
 import { ensureVendorSlug } from "@/lib/slug";
 import SharePanel from "@/components/pro/SharePanel";
@@ -47,6 +47,11 @@ import {
   type CoverGradient,
 } from "@/lib/cover-options";
 import { DEFAULT_BUTTON_CONFIG, toggleOptionalButton } from "@/lib/button-config";
+import BottomSheet from "@/components/pro/BottomSheet";
+import PencilTag from "@/components/pro/PencilTag";
+import CoverBanner from "@/components/explorer/CoverBanner";
+import ProPreviewWatermark from "@/components/pro/ProPreviewWatermark";
+import { Eye } from "lucide-react";
 
 const TABS = [
   { id: "infos", label: "Infos" },
@@ -102,6 +107,15 @@ export default function ProfilClient({
 
   // Onglet « Ma page » actif.
   const [activeTab, setActiveTab] = useState<TabId>("infos");
+
+  // Édition mobile (Complément 5) : "wysiwyg" affiche la fiche telle que les
+  // clients la voient, avec un crayon par zone modifiable ; "classic" bascule
+  // vers l'éditeur par onglets (seul utilisé sur ordinateur) — notamment pour
+  // Formules & tarifs et le Book, trop denses pour un petit panneau.
+  const [mobileMode, setMobileMode] = useState<"wysiwyg" | "classic">("wysiwyg");
+  const [mobileSheet, setMobileSheet] = useState<
+    null | "couverture" | "photo" | "nom" | "presentation" | "apparence" | "boutons" | "partager"
+  >(null);
 
   // Couverture (Complément 3) — forme/dégradé réservés au Pack Pro, voir
   // lib/cover-options.ts. "Essayer" reste possible sans les droits : c'est
@@ -666,7 +680,7 @@ export default function ProfilClient({
             className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-plum hover:border-violet/40"
           >
             <ExternalLink size={15} />
-            Aperçu public
+            Voir ma fiche publique
           </a>
         )}
       </div>
@@ -682,8 +696,342 @@ export default function ProfilClient({
         </p>
       )}
 
+      {/* Édition mobile "sur la fiche" (Complément 5) — masquée sur ordinateur
+          (seul l'éditeur classique ci-dessous y est utilisé) et quand le
+          prestataire est passé en vue classique (formules/book). */}
+      <div className={mobileMode === "wysiwyg" ? "lg:hidden" : "hidden"}>
+        {(() => {
+          const wysiwygTheme = getTheme(themeId);
+          const coverUrl = coverIsIllustration ? illustrationUrl : mainImage;
+          return (
+            <>
+              <div className="relative mt-6 overflow-hidden rounded-3xl border border-black/5 pb-24">
+                <div className="relative">
+                  <CoverBanner
+                    imageUrl={coverUrl}
+                    isIllustration={coverIsIllustration}
+                    shape={coverShape}
+                    gradient={coverGradient}
+                    groundColor={wysiwygTheme.colors.ground}
+                    heightClassName="h-36"
+                  />
+                  <ProPreviewWatermark
+                    active={!hasAccess && (coverShape !== "droite" || coverGradient !== "aucun")}
+                  />
+                  <PencilTag
+                    label="Couverture"
+                    onClick={() => setMobileSheet("couverture")}
+                    className="absolute right-3 top-3 z-20"
+                  />
+                </div>
+
+                <div className="relative px-5 pb-5" style={{ background: wysiwygTheme.colors.ground }}>
+                  <div className="relative -mt-9 inline-block">
+                    {mainImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={mainImage}
+                        alt=""
+                        className="h-16 w-16 rounded-2xl border-2 object-cover shadow-sm"
+                        style={{ borderColor: wysiwygTheme.colors.ground }}
+                      />
+                    ) : (
+                      <div
+                        className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 font-display text-xl font-semibold shadow-sm"
+                        style={{ borderColor: wysiwygTheme.colors.ground, background: wysiwygTheme.colors.surface, color: wysiwygTheme.colors.heading }}
+                      >
+                        {(info.company.trim()[0] || "P").toUpperCase()}
+                      </div>
+                    )}
+                    <PencilTag
+                      label="Photo de profil"
+                      onClick={() => setMobileSheet("photo")}
+                      className="absolute -bottom-1 -right-1 h-6 w-6"
+                    />
+                  </div>
+
+                  <div className="relative mt-3 pr-9">
+                    <p className="truncate font-display text-xl font-semibold" style={{ color: wysiwygTheme.colors.heading }}>
+                      {info.company.trim() || "Votre activité"}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm" style={{ color: wysiwygTheme.colors.muted }}>
+                      {info.tagline.trim() || "Votre accroche"}
+                    </p>
+                    <PencilTag
+                      label="Nom et accroche"
+                      onClick={() => setMobileSheet("nom")}
+                      className="absolute right-0 top-0"
+                    />
+                  </div>
+
+                  {vendor.verified && (
+                    <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-violet-soft px-2.5 py-1 text-xs font-medium text-violet">
+                      <BadgeCheck size={13} />
+                      Vérifié par Misstice
+                    </span>
+                  )}
+
+                  <div className="relative mt-4 pr-9">
+                    <p className="text-sm leading-relaxed" style={{ color: wysiwygTheme.colors.text }}>
+                      {info.about.trim() || "Ajoutez une présentation pour vous démarquer."}
+                    </p>
+                    <PencilTag
+                      label="Présentation"
+                      onClick={() => setMobileSheet("presentation")}
+                      className="absolute right-0 top-0"
+                    />
+                  </div>
+
+                  <div
+                    className="relative mt-4 rounded-2xl p-3.5 pr-11"
+                    style={{ background: wysiwygTheme.colors.surface }}
+                  >
+                    <p className="text-sm font-semibold" style={{ color: wysiwygTheme.colors.surfaceText }}>
+                      Formules &amp; tarifs
+                    </p>
+                    <p className="mt-0.5 text-xs" style={{ color: wysiwygTheme.colors.muted }}>
+                      {pkgs.length > 0 ? `${pkgs.length} formule${pkgs.length > 1 ? "s" : ""}` : "Aucune formule pour le moment"}
+                    </p>
+                    <PencilTag
+                      label="Formules et tarifs"
+                      onClick={() => {
+                        setActiveTab("infos");
+                        setMobileMode("classic");
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+
+                  <div
+                    className="relative mt-3 rounded-2xl p-3.5 pr-11"
+                    style={{ background: wysiwygTheme.colors.surface }}
+                  >
+                    <p className="text-sm font-semibold" style={{ color: wysiwygTheme.colors.surfaceText }}>
+                      Mon book
+                    </p>
+                    <p className="mt-0.5 text-xs" style={{ color: wysiwygTheme.colors.muted }}>
+                      {pics.length > 0 ? `${pics.length} photo${pics.length > 1 ? "s" : ""}` : "Aucune photo pour le moment"}
+                    </p>
+                    <PencilTag
+                      label="Galerie"
+                      onClick={() => {
+                        setActiveTab("infos");
+                        setMobileMode("classic");
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+
+                  <div className="relative mt-4 pr-9">
+                    <div className="h-11 rounded-2xl" style={{ background: wysiwygTheme.colors.buttonBg }} />
+                    <PencilTag
+                      label="Boutons d'action"
+                      onClick={() => setMobileSheet("boutons")}
+                      className="absolute right-0 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Boutons flottants Apparence / Partager */}
+              <div className="fixed bottom-24 right-4 z-[80] flex flex-col items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMobileSheet("apparence")}
+                  className="rounded-full bg-plum px-4 py-2.5 text-xs font-semibold text-white shadow-lg"
+                >
+                  Apparence
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileSheet("partager")}
+                  className="rounded-full border border-black/10 bg-white px-4 py-2.5 text-xs font-semibold text-plum shadow-lg"
+                >
+                  Partager
+                </button>
+              </div>
+
+              {/* Barre "Enregistrer" fixe */}
+              <div className="fixed inset-x-0 bottom-0 z-[75] border-t border-black/5 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                {error && (
+                  <p className="mb-2 text-center text-xs font-medium text-garnet">{error}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={saveInfo}
+                  disabled={saving}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet py-3 text-sm font-semibold text-white disabled:opacity-60"
+                >
+                  <Check size={16} />
+                  {saving ? "Enregistrement…" : saved ? "Modifications enregistrées" : "Enregistrer"}
+                </button>
+              </div>
+
+              <BottomSheet
+                open={mobileSheet === "couverture"}
+                title="Couverture"
+                onClose={() => setMobileSheet(null)}
+              >
+                <CoverPicker
+                  hasAccess={hasAccess}
+                  mainImage={mainImage}
+                  categoryPhotos={categoryIllustrationPhotos}
+                  coverIsIllustration={coverIsIllustration}
+                  illustrationUrl={illustrationUrl}
+                  shape={coverShape}
+                  gradient={coverGradient}
+                  onChangeCoverSource={(isIllustration, url) => {
+                    setCoverIsIllustration(isIllustration);
+                    setIllustrationUrl(url);
+                  }}
+                  onChangeShape={setCoverShape}
+                  onChangeGradient={setCoverGradient}
+                />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "photo"}
+                title="Photo de profil"
+                onClose={() => setMobileSheet(null)}
+              >
+                <div className="flex items-center gap-4">
+                  {mainImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={mainImage} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-soft font-display text-xl font-semibold text-violet">
+                      {(info.company.trim()[0] || "P").toUpperCase()}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => mainRef.current?.click()}
+                    disabled={uploadingMain}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum disabled:opacity-60"
+                  >
+                    <Upload size={15} />
+                    {uploadingMain ? "Envoi…" : "Changer la photo"}
+                  </button>
+                </div>
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "nom"}
+                title="Nom et accroche"
+                onClose={() => setMobileSheet(null)}
+              >
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-plum">Nom</label>
+                    <input
+                      value={info.company}
+                      onChange={(e) => setInfo({ ...info, company: e.target.value })}
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">Accroche</label>
+                    <input
+                      value={info.tagline}
+                      onChange={(e) => setInfo({ ...info, tagline: e.target.value })}
+                      placeholder="ex. Reportage doux et lumineux"
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">Catégorie</label>
+                    <div className="mt-1.5">
+                      <CategorySelect
+                        value={info.category}
+                        onChange={(v) => setInfo({ ...info, category: v })}
+                        options={categories}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">Ville</label>
+                    <input
+                      value={info.city}
+                      onChange={(e) => setInfo({ ...info, city: e.target.value })}
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">À partir de</label>
+                    <input
+                      value={info.priceFrom}
+                      onChange={(e) => setInfo({ ...info, priceFrom: e.target.value })}
+                      placeholder="ex. dès 800 €"
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                </div>
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "presentation"}
+                title="Présentation"
+                onClose={() => setMobileSheet(null)}
+              >
+                <label className="text-sm font-medium text-plum">À propos</label>
+                <textarea
+                  rows={5}
+                  value={info.about}
+                  onChange={(e) => setInfo({ ...info, about: e.target.value })}
+                  className={`mt-1.5 ${inputCls}`}
+                />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "apparence"}
+                title="Apparence — Thème"
+                onClose={() => setMobileSheet(null)}
+              >
+                <ThemePicker value={themeId} onChange={setThemeId} />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "boutons"}
+                title="Boutons d'action"
+                onClose={() => setMobileSheet(null)}
+              >
+                <ButtonsPicker
+                  buttonConfig={buttonConfig}
+                  onToggle={(id) => setButtonConfig((p) => toggleOptionalButton(p, id))}
+                />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "partager"}
+                title="Partager"
+                onClose={() => setMobileSheet(null)}
+              >
+                <SharePanel
+                  vendorId={vendor.vendorId}
+                  slug={slug}
+                  company={info.company || vendor.company}
+                  category={info.category || vendor.category || ""}
+                  city={info.city || vendor.city || ""}
+                  verified={vendor.verified}
+                />
+              </BottomSheet>
+            </>
+          );
+        })()}
+      </div>
+
       <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1">
+        <div className={mobileMode === "classic" ? "min-w-0 flex-1" : "hidden min-w-0 flex-1 lg:block"}>
+          {mobileMode === "classic" && (
+            <button
+              type="button"
+              onClick={() => setMobileMode("wysiwyg")}
+              className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-violet lg:hidden"
+            >
+              <Eye size={15} />
+              Revenir à l&apos;aperçu de ma fiche
+            </button>
+          )}
           {/* Onglets Ma page */}
           <div className="flex gap-1 overflow-x-auto rounded-2xl bg-cream p-1">
             {TABS.map((t) => (
