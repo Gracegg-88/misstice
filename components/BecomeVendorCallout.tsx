@@ -36,7 +36,7 @@ export default function BecomeVendorCallout({
             {signupHref && (
               <a
                 href={signupHref}
-                className="ev-cta inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
+                className="ev-cta inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
               >
                 <Users size={17} />
                 {signupLabel}
@@ -47,7 +47,7 @@ export default function BecomeVendorCallout({
               className={
                 signupHref
                   ? "inline-flex items-center justify-center gap-2 px-3 py-3.5 text-sm font-semibold text-plum underline decoration-violet/40 decoration-2 underline-offset-8 transition-colors hover:text-violet"
-                  : "ev-cta inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
+                  : "ev-cta inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
               }
             />
           </div>

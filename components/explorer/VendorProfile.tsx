@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
@@ -33,6 +33,12 @@ import GooglePlaceCard, { googlePlacesEnabled } from "@/components/google/Google
 import { getTheme } from "@/lib/themes";
 import TrustZone from "./TrustZone";
 import ShareVendorLink from "./ShareVendorLink";
+import { setAttributionCookie, attributionSourceFor } from "@/lib/attribution";
+import AvailabilityCalendar from "./AvailabilityCalendar";
+import PackageComposer from "./PackageComposer";
+import CoverBanner from "./CoverBanner";
+import type { CoverShape, CoverGradient } from "@/lib/cover-options";
+import { isButtonEnabled } from "@/lib/button-config";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -57,6 +63,9 @@ export type QuotePrefill = {
   type: string | null;
   date: string | null;
   guests: number | null;
+  // Pré-remplissage additionnel depuis "Composer mon devis" (facultatif).
+  wanted?: string;
+  estimateNote?: string;
 };
 
 export default function VendorProfile({
@@ -114,6 +123,25 @@ export default function VendorProfile({
   const [quoteOpen, setQuoteOpen] = useState(autoDevis);
   const [msgOpen, setMsgOpen] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const searchParams = useSearchParams();
+  const src = searchParams.get("src");
+
+  // Attribution (lien de bio, WhatsApp, QR, carte, signature…) : posée dès
+  // l'arrivée sur la fiche, relue à la demande de devis (lib/attribution.ts).
+  useEffect(() => {
+    if (src) setAttributionCookie(vendor.id, src);
+  }, [vendor.id, src]);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
+  // Pré-remplissage additionnel posé par "Voir mes disponibilités" ou
+  // "Composer mon devis", fusionné avec le `prefill` reçu du serveur.
+  const [extraPrefill, setExtraPrefill] = useState<Partial<QuotePrefill>>({});
+  const mergedPrefill: QuotePrefill = {
+    type: prefill?.type ?? null,
+    date: prefill?.date ?? null,
+    guests: prefill?.guests ?? null,
+    ...extraPrefill,
+  };
 
   // Vraie session (pour conditionner l'accès à la demande de devis).
   useEffect(() => {
@@ -136,7 +164,7 @@ export default function VendorProfile({
       sessionStorage.setItem(key, "1");
       supabase
         .from("profile_views")
-        .insert({ vendor_id: vendor.id })
+        .insert({ vendor_id: vendor.id, source: src ?? null })
         .then(({ error }) => {
           if (error) {
             // Échec → nouvelle tentative possible au prochain chargement.
@@ -145,7 +173,7 @@ export default function VendorProfile({
           }
         });
     });
-  }, [vendor.id, vendor.userId]);
+  }, [vendor.id, vendor.userId, src]);
 
   // Compteur réel de vues pour les fiches vitrines importées (non réclamées),
   // séparé de profile_views (réservé aux vrais comptes) — une fois par
@@ -164,36 +192,40 @@ export default function VendorProfile({
     });
   }, [vendor.id, vendor.claimStatus]);
 
-  // Le hero photo d'ambiance partagée ne garantit un bon contraste que sur le
-  // thème par défaut (overlay clair) : les autres thèmes utilisent un fond
-  // plein de la couleur du thème à la place, sans la photo.
-  const heroHasPhoto = theme.id === "signature";
+  // Couverture : une photo d'illustration choisie (coverImg, voir
+  // CoverPicker.tsx) prime sur la propre photo du prestataire, sinon fond
+  // plein à la couleur du thème. Forme/dégradé (Complément 3) déjà réduits à
+  // "droite"/"aucun" par getVendor() si le prestataire n'a pas les droits
+  // Pack Pro.
+  const coverUrl = vendor.coverImg || vendor.img || null;
 
   return (
     <div className="bg-[var(--v-ground)]" style={themeVars}>
-      {/* Hero / cover — infos posées sur l'image (thème par défaut) ou sur un
-          fond plein (autres thèmes, pour garder un contraste garanti). */}
-      <div
-        className="relative overflow-hidden bg-[var(--v-ground)] bg-cover bg-center"
-        style={heroHasPhoto ? { backgroundImage: "url('/hero_details.png')" } : undefined}
+      {/* Couverture — photo si elle existe, sinon fond plein du thème. Forme
+          et dégradé (Pack Pro) superposés par CoverBanner. */}
+      <CoverBanner
+        imageUrl={coverUrl}
+        isIllustration={Boolean(vendor.coverIsIllustration)}
+        shape={(vendor.coverShape as CoverShape) || "droite"}
+        gradient={(vendor.coverGradient as CoverGradient) || "aucun"}
+        groundColor={theme.colors.ground}
       >
-        {heroHasPhoto && (
-          <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
-        )}
-        <div className="relative mx-auto max-w-content px-page py-8">
-          <div className="flex items-center justify-between gap-3">
-            <a
-              href="/prestataires"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-sm font-medium text-plum shadow-sm hover:bg-white"
-            >
-              <ArrowLeft size={16} />
-              Retour
-            </a>
-            <ShareVendorLink vendorId={vendor.id} vendorName={vendor.name} />
-          </div>
+        <div className="relative mx-auto flex max-w-content items-center justify-between gap-3 px-page py-5">
+          <a
+            href="/prestataires"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white/90 px-3 py-1.5 text-sm font-medium text-plum shadow-sm hover:bg-white"
+          >
+            <ArrowLeft size={16} />
+            Retour
+          </a>
+          <ShareVendorLink vendorId={vendor.id} vendorName={vendor.name} />
+        </div>
+      </CoverBanner>
 
-          <div className="mt-8 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
-            <div className="min-w-0 max-w-2xl flex-1">
+      <div className="relative mx-auto max-w-content px-page pb-8 pt-4">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+          <div className="min-w-0 max-w-2xl flex-1">
+            <div className="-mt-12 sm:-mt-14">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                 {vendor.img ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -263,6 +295,7 @@ export default function VendorProfile({
                   </div>
                 </div>
               </div>
+            </div>
 
               <div className="mt-5 max-w-md">
                 <TrustZone vendor={vendor} />
@@ -287,6 +320,34 @@ export default function VendorProfile({
                   Envoyer un message
                 </button>
               </div>
+              {vendor.userId &&
+                (isButtonEnabled(vendor.buttonConfig, "disponibilites") ||
+                  (isButtonEnabled(vendor.buttonConfig, "composer") &&
+                    packages.length > 0)) && (
+                  <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                    {isButtonEnabled(vendor.buttonConfig, "disponibilites") && (
+                      <button
+                        type="button"
+                        onClick={() => setCalendarOpen(true)}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--v-text)]/15 px-5 py-2.5 text-sm font-semibold text-[var(--v-text)] transition-colors hover:border-[var(--v-text)]/30"
+                      >
+                        <CalendarCheck size={16} />
+                        Voir mes disponibilités
+                      </button>
+                    )}
+                    {isButtonEnabled(vendor.buttonConfig, "composer") &&
+                      packages.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setComposerOpen(true)}
+                          className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--v-text)]/15 px-5 py-2.5 text-sm font-semibold text-[var(--v-text)] transition-colors hover:border-[var(--v-text)]/30"
+                        >
+                          <Euro size={16} />
+                          Composer mon devis
+                        </button>
+                      )}
+                  </div>
+                )}
               {vendor.claimStatus === "non_reclamee" && (
                 <p className="mt-3 text-sm text-[var(--v-muted)]">
                   Cette entreprise est la vôtre ?{" "}
@@ -310,7 +371,6 @@ export default function VendorProfile({
             </button>
           </div>
         </div>
-      </div>
 
       <div className="mx-auto max-w-content px-page pt-8">
         {/* Stat cards */}
@@ -737,9 +797,12 @@ export default function VendorProfile({
         <Modal onClose={() => setQuoteOpen(false)} title={`Demander un devis · ${vendor.name}`}>
           <QuoteForm
             vendor={vendor}
-            prefill={prefill}
+            prefill={mergedPrefill}
             currentEventId={currentEventId}
-            onDone={() => setQuoteOpen(false)}
+            onDone={() => {
+              setQuoteOpen(false);
+              setExtraPrefill({});
+            }}
           />
         </Modal>
       )}
@@ -748,6 +811,34 @@ export default function VendorProfile({
       {msgOpen && (
         <Modal onClose={() => setMsgOpen(false)} title={`Envoyer un message · ${vendor.name}`}>
           <MessageForm vendor={vendor} onDone={() => setMsgOpen(false)} />
+        </Modal>
+      )}
+
+      {/* ── Modale "Voir mes disponibilités" ── */}
+      {calendarOpen && vendor.userId && (
+        <Modal onClose={() => setCalendarOpen(false)} title={`Disponibilités · ${vendor.name}`}>
+          <AvailabilityCalendar
+            vendorUserId={vendor.userId}
+            onPickDate={(date) => {
+              setExtraPrefill((p) => ({ ...p, date }));
+              setCalendarOpen(false);
+              setQuoteOpen(true);
+            }}
+          />
+        </Modal>
+      )}
+
+      {/* ── Modale "Composer mon devis" ── */}
+      {composerOpen && (
+        <Modal onClose={() => setComposerOpen(false)} title={`Composer mon devis · ${vendor.name}`}>
+          <PackageComposer
+            packages={packages}
+            onCompose={({ wanted, estimateNote }) => {
+              setExtraPrefill((p) => ({ ...p, wanted, estimateNote }));
+              setComposerOpen(false);
+              setQuoteOpen(true);
+            }}
+          />
         </Modal>
       )}
 
@@ -1001,7 +1092,7 @@ function QuoteForm({
   const [answers, setAnswers] = useState<Record<string, string>>(
     prefill?.guests ? { invites: String(prefill.guests) } : {}
   );
-  const [wanted, setWanted] = useState("");
+  const [wanted, setWanted] = useState(prefill?.wanted ?? "");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -1166,6 +1257,7 @@ function QuoteForm({
           demande,
           subject: `Demande de devis · ${vendor.name}`,
           event_id: currentEventId,
+          source: attributionSourceFor(vendor.id),
         })
         .select("id")
         .single();
@@ -1229,6 +1321,11 @@ function QuoteForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
+      {prefill?.estimateNote && (
+        <p className="rounded-xl bg-violet-soft px-4 py-2.5 text-sm text-violet">
+          {prefill.estimateNote}
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="text-sm font-medium text-plum">
@@ -1457,6 +1554,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
           subject: `Message · ${vendor.name}`,
+          source: attributionSourceFor(vendor.id),
         })
         .select("id")
         .single();

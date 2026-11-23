@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, DM_Sans } from "next/font/google";
+import { Fraunces, DM_Sans, Unbounded } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import GuideMascot from "@/components/GuideMascot";
@@ -26,6 +26,17 @@ const bodyFont = DM_Sans({
   variable: "--font-body",
   display: "swap",
   weight: ["400", "500", "600", "700"],
+});
+
+// Titres énormes du nouveau style du site (Complément 2 — hero accueil,
+// /devenir-prestataire, chiffres) : sans-serif géométrique très grasse,
+// délibérément distincte de --font-heading (Fraunces) qui reste utilisée
+// partout ailleurs (fiche prestataire, devis, titres de section "classiques").
+const heroFont = Unbounded({
+  subsets: ["latin"],
+  variable: "--font-hero",
+  display: "swap",
+  weight: ["700", "800", "900"],
 });
 
 // SEO dès le jour 1 (principe 5)
@@ -89,7 +100,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`${headingFont.variable} ${bodyFont.variable}`}>
+    <html lang="fr" className={`${headingFont.variable} ${bodyFont.variable} ${heroFont.variable}`}>
       <body className="font-sans bg-cream text-plum antialiased">
         {children}
         <GuideMascot />

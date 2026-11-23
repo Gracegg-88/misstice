@@ -26,6 +26,14 @@ export type Vendor = {
   siret?: string | null; // n° SIRET (activité confirmée), utilisé pour la sélection « 3 prestataires »
   about?: string | null; // description réelle (vendor_profiles.about)
   themeId?: string; // thème choisi pour la fiche publique (voir lib/themes.ts)
+  // Couverture (voir lib/cover-options.ts) — forme/dégradé réservés au Pack Pro.
+  coverShape?: string;
+  coverGradient?: string;
+  coverIsIllustration?: boolean;
+  // Photo d'illustration choisie (si coverIsIllustration) — sinon la
+  // couverture retombe sur `img` (photo du prestataire), voir CoverBanner.
+  coverImg?: string | null;
+  buttonConfig?: string[];
   // Ambiance & Vibe (tags renseignés par le prestataire).
   moods: string[];
   energies: string[];

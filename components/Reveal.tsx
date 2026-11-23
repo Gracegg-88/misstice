@@ -13,12 +13,18 @@ export default function Reveal({
   delay = 0,
   variant = "up",
   className = "",
+  style,
 }: {
   children: React.ReactNode;
   delay?: number;
-  /** "up" : fondu + léger translateY (défaut). "scale" : fondu + zoom 0.95→1, pour les CTA. */
-  variant?: "up" | "scale";
+  /** "up" : fondu + léger translateY (défaut). "scale" : fondu + zoom 0.95→1,
+   *  pour les CTA. "none" : ne pose aucune classe de base — l'appelant définit
+   *  entièrement son état initial/`.is-visible` (ex. cartes en éventail). */
+  variant?: "up" | "scale" | "none";
   className?: string;
+  /** Fusionné avec le `transitionDelay` interne (ex. poser --r pour une carte
+   *  en éventail, voir FanCards.tsx). */
+  style?: React.CSSProperties;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -39,13 +45,13 @@ export default function Reveal({
     return () => observer.disconnect();
   }, []);
 
-  const base = variant === "scale" ? "reveal-scale" : "reveal";
+  const base = variant === "none" ? "" : variant === "scale" ? "reveal-scale" : "reveal";
 
   return (
     <div
       ref={ref}
       className={`${base} ${visible ? "is-visible" : ""} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+      style={{ transitionDelay: `${delay}ms`, ...style }}
     >
       {children}
     </div>
