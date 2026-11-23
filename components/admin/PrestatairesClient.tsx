@@ -15,6 +15,7 @@ import {
   Loader2,
   Search,
   RotateCcw,
+  Image as ImageIcon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -407,6 +408,14 @@ export default function PrestatairesClient({ vendors }: { vendors: Vendor[] }) {
                       >
                         <ExternalLink size={14} />
                         Fiche
+                      </a>
+                      <a
+                        href={`/api/vendor/card/${v.id}`}
+                        download
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-1.5 text-xs font-semibold text-plum transition-colors hover:border-violet/40"
+                      >
+                        <ImageIcon size={14} />
+                        Générer sa carte
                       </a>
                       <button
                         type="button"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
@@ -33,6 +33,7 @@ import GooglePlaceCard, { googlePlacesEnabled } from "@/components/google/Google
 import { getTheme } from "@/lib/themes";
 import TrustZone from "./TrustZone";
 import ShareVendorLink from "./ShareVendorLink";
+import { setAttributionCookie, attributionSourceFor } from "@/lib/attribution";
 
 function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
@@ -114,6 +115,14 @@ export default function VendorProfile({
   const [quoteOpen, setQuoteOpen] = useState(autoDevis);
   const [msgOpen, setMsgOpen] = useState(false);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const searchParams = useSearchParams();
+  const src = searchParams.get("src");
+
+  // Attribution (lien de bio, WhatsApp, QR, carte, signature…) : posée dès
+  // l'arrivée sur la fiche, relue à la demande de devis (lib/attribution.ts).
+  useEffect(() => {
+    if (src) setAttributionCookie(vendor.id, src);
+  }, [vendor.id, src]);
 
   // Vraie session (pour conditionner l'accès à la demande de devis).
   useEffect(() => {
@@ -136,7 +145,7 @@ export default function VendorProfile({
       sessionStorage.setItem(key, "1");
       supabase
         .from("profile_views")
-        .insert({ vendor_id: vendor.id })
+        .insert({ vendor_id: vendor.id, source: src ?? null })
         .then(({ error }) => {
           if (error) {
             // Échec → nouvelle tentative possible au prochain chargement.
@@ -145,7 +154,7 @@ export default function VendorProfile({
           }
         });
     });
-  }, [vendor.id, vendor.userId]);
+  }, [vendor.id, vendor.userId, src]);
 
   // Compteur réel de vues pour les fiches vitrines importées (non réclamées),
   // séparé de profile_views (réservé aux vrais comptes) — une fois par
@@ -1166,6 +1175,7 @@ function QuoteForm({
           demande,
           subject: `Demande de devis · ${vendor.name}`,
           event_id: currentEventId,
+          source: attributionSourceFor(vendor.id),
         })
         .select("id")
         .single();
@@ -1457,6 +1467,7 @@ function MessageForm({ vendor, onDone }: { vendor: Vendor; onDone: () => void })
           particulier_name: clientName,
           particulier_avatar: clientAvatar,
           subject: `Message · ${vendor.name}`,
+          source: attributionSourceFor(vendor.id),
         })
         .select("id")
         .single();

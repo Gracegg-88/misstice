@@ -33,6 +33,8 @@ import {
 import ThemePicker from "@/components/pro/ThemePicker";
 import { DEFAULT_THEME_ID } from "@/lib/themes";
 import { canUploadMorePhotos, isPilotPackProActive } from "@/lib/pilot-utils";
+import { ensureVendorSlug } from "@/lib/slug";
+import SharePanel from "@/components/pro/SharePanel";
 import { Sparkles } from "lucide-react";
 
 export default function ProfilClient({
@@ -71,6 +73,7 @@ export default function ProfilClient({
   );
   const categoryDefaultDeposit = categoryDepositDefaults[info.category] ?? 0;
   const [themeId, setThemeId] = useState(vendor.themeId || DEFAULT_THEME_ID);
+  const [slug, setSlug] = useState(vendor.slug);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -186,7 +189,9 @@ export default function ProfilClient({
       about: info.about || null,
       theme_id: themeId,
     });
-    return e?.message ?? null;
+    if (e) return e.message;
+    await ensureVendorSlug(supabase, vendor.profileId, info.company.trim());
+    return null;
   };
 
   // Photo principale (vendors.image)
@@ -265,6 +270,8 @@ export default function ProfilClient({
       setError(pErr.message);
       return;
     }
+    const newSlug = await ensureVendorSlug(supabase, vendor.profileId, info.company.trim());
+    setSlug(newSlug);
 
     // vendors (fiche annuaire) : met à jour si elle existe, sinon la crée.
     const { data: existing } = await supabase
@@ -685,6 +692,15 @@ export default function ProfilClient({
           <ThemePicker value={themeId} onChange={setThemeId} />
         </div>
       </section>
+
+      <SharePanel
+        vendorId={vendor.vendorId}
+        slug={slug}
+        company={info.company || vendor.company}
+        category={info.category || vendor.category || ""}
+        city={info.city || vendor.city || ""}
+        verified={vendor.verified}
+      />
 
       {/* Ambiance & Vibe */}
       <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
