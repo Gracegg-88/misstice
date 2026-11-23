@@ -3,8 +3,9 @@
 /**
  * Nouveau style du site (Complément 2, inspiration y-vision.co.kr) : barre de
  * navigation "pilule" flottante, centrée, qui reste visible au défilement.
- * "Menu" ouvre un panneau plein écran (desktop et mobile) — la pilule elle-même
- * ne montre que l'essentiel : Menu, logo, CTA principal.
+ * Ordinateur : le menu complet est affiché dans la pilule. Mobile : les 3
+ * traits ouvrent un panneau plein écran (qui contient aussi "Devenir
+ * prestataire").
  */
 import { useEffect, useState } from "react";
 import { Menu, X, CircleUserRound } from "lucide-react";
@@ -40,20 +41,66 @@ export default function Header({ initialAccount = null }: { initialAccount?: Acc
   return (
     <>
       <header className="sticky top-3 z-50 px-page sm:top-4">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 rounded-full bg-white/95 py-2 pl-2.5 pr-2 shadow-lg shadow-ink/10 ring-1 ring-black/5 backdrop-blur-md sm:gap-3 sm:pl-3 sm:pr-2.5">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 rounded-full bg-white/95 py-2 pl-2.5 pr-2 shadow-lg shadow-ink/10 ring-1 ring-black/5 backdrop-blur-md sm:gap-3 sm:pl-3 sm:pr-2.5 lg:max-w-4xl lg:pl-5">
+          {/* Mobile : 3 traits → panneau plein écran. */}
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Ouvrir le menu"
-            className="flex min-h-11 items-center gap-1.5 rounded-full px-2.5 text-sm font-semibold text-plum transition-colors hover:bg-plum/5 sm:px-3.5"
+            className="flex min-h-11 items-center gap-1.5 rounded-full px-2.5 text-sm font-semibold text-plum transition-colors hover:bg-plum/5 sm:px-3.5 lg:hidden"
           >
             <Menu size={18} />
             <span className="hidden sm:inline">Menu</span>
           </button>
-          <Logo />
+
+          {/* Ordinateur : menu complet affiché directement dans la pilule. */}
+          <nav className="hidden items-center gap-6 lg:flex" aria-label="Navigation principale">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-plum/80 transition-colors hover:text-violet"
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <a href="/" className="lg:hidden" aria-label="Misstice — accueil">
+            <Logo />
+          </a>
+          <a href="/" className="hidden lg:block" aria-label="Misstice — accueil">
+            <Logo />
+          </a>
+
+          <div className="hidden items-center gap-5 lg:flex">
+            {!account && (
+              <a
+                href="/devenir-prestataire"
+                className="text-sm font-medium text-plum/80 transition-colors hover:text-violet"
+              >
+                Devenir prestataire
+              </a>
+            )}
+            <a
+              href={account ? account.href : "/auth"}
+              aria-label={account ? "Mon compte" : "Connexion"}
+              title={account ? "Mon compte" : "Connexion"}
+              className="flex h-9 w-9 items-center justify-center text-plum transition-colors hover:text-violet"
+            >
+              <CircleUserRound size={19} />
+            </a>
+            <a
+              href={account ? account.createHref : "/creer"}
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-cream transition-transform hover:-translate-y-0.5"
+            >
+              Créer mon événement
+            </a>
+          </div>
+
           <a
             href={account ? account.createHref : "/creer"}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-3.5 text-sm font-semibold text-cream transition-transform hover:-translate-y-0.5 sm:px-5"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-3.5 text-sm font-semibold text-cream transition-transform hover:-translate-y-0.5 sm:px-5 lg:hidden"
           >
             <span className="sm:hidden">Créer</span>
             <span className="hidden sm:inline">Créer mon événement</span>
@@ -62,7 +109,7 @@ export default function Header({ initialAccount = null }: { initialAccount?: Acc
       </header>
 
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-6">
+        <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-6 lg:hidden">
           <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="ev-fade-in relative flex w-full max-w-lg flex-col rounded-3xl bg-cream p-6 shadow-2xl sm:p-8">
             <div className="flex items-center justify-between">
