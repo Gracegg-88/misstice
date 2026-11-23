@@ -21,6 +21,14 @@ export function isPilotPackProActive(v: PilotStatus): boolean {
  *  sous la limite gratuite. Revérifié côté base (vendor-photos trigger) —
  *  cette fonction sert à l'affichage, pas de garde-fou de sécurité à elle
  *  seule. */
+/** Accès Pack Pro aujourd'hui : pilote actif, ou abonné (PR2a — pas encore
+ *  construit, toujours false pour l'instant). Les membres fondateurs n'ont
+ *  PAS automatiquement accès au Pack Pro par ce seul statut : ce flag ne
+ *  porte que sur la limite de photos (voir canUploadMorePhotos). */
+export function hasPackProAccess(v: PilotStatus): boolean {
+  return isPilotPackProActive(v);
+}
+
 export function canUploadMorePhotos(
   v: PilotStatus,
   currentPhotoCount: number,

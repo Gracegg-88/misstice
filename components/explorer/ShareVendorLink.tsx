@@ -19,8 +19,8 @@ export default function ShareVendorLink({
 
   const url =
     typeof window !== "undefined"
-      ? `${window.location.origin}/prestataires/${vendorId}`
-      : `/prestataires/${vendorId}`;
+      ? `${window.location.origin}/prestataires/${vendorId}?src=partage`
+      : `/prestataires/${vendorId}?src=partage`;
 
   const share = async () => {
     if (navigator.share) {
