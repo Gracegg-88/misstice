@@ -1,12 +1,12 @@
 "use client";
 
-import { Lock } from "lucide-react";
 import {
   COVER_SHAPES,
   COVER_GRADIENTS,
   type CoverShape,
   type CoverGradient,
 } from "@/lib/cover-options";
+import ProLockBadge from "@/components/pro/ProLockBadge";
 
 /**
  * Choix de la couverture (Complément 3) : photo (la sienne ou une photo
@@ -114,15 +114,7 @@ export default function CoverPicker({
               }`}
             >
               {s.label}
-              {!s.free && !hasAccess && (
-                <span
-                  title="Inclus dans le Pack Pro"
-                  aria-label="Inclus dans le Pack Pro"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-soft text-gold-dark"
-                >
-                  <Lock size={9} />
-                </span>
-              )}
+              {!s.free && !hasAccess && <ProLockBadge size="xs" />}
             </button>
           ))}
         </div>
@@ -143,15 +135,7 @@ export default function CoverPicker({
               }`}
             >
               {g.label}
-              {!g.free && !hasAccess && (
-                <span
-                  title="Inclus dans le Pack Pro"
-                  aria-label="Inclus dans le Pack Pro"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gold-soft text-gold-dark"
-                >
-                  <Lock size={9} />
-                </span>
-              )}
+              {!g.free && !hasAccess && <ProLockBadge size="xs" />}
             </button>
           ))}
         </div>

@@ -1,7 +1,8 @@
 "use client";
 
-import { Lock, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { THEMES, isThemeSelectable } from "@/lib/themes";
+import ProLockBadge from "@/components/pro/ProLockBadge";
 
 /** Sélecteur de thème pour la fiche publique. Les thèmes "Pro" apparaissent
  *  verrouillés (nom + cadenas + aperçu) : couleurs et animations définitives
@@ -45,15 +46,7 @@ export default function ThemePicker({
             </div>
             <div className="mt-2 flex items-center justify-between">
               <p className="text-sm font-semibold text-plum">{t.name}</p>
-              {!selectable && (
-                <span
-                  title="Inclus dans le Pack Pro"
-                  aria-label="Inclus dans le Pack Pro"
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gold-soft text-gold-dark"
-                >
-                  <Lock size={11} />
-                </span>
-              )}
+              {!selectable && <ProLockBadge />}
               {selected && (
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet text-white">
                   <Check size={12} />
