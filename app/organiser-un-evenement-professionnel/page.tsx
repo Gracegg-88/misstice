@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
+import CityLinksSection from "@/components/geo/CityLinksSection";
 import GuideSection from "@/components/guide/GuideSection";
 import GuideSimpleTable, {
   type SimpleRow,
@@ -87,6 +88,13 @@ const faqItems: FaqItem[] = [
 export default function OrganiserUnEvenementProfessionnelPage() {
   return (
     <GuideLayout
+      afterContent={
+        <CityLinksSection
+          eventTypeSlug="gala"
+          title="Prestataires pour événements professionnels par ville"
+          intro="Annuaires locaux des prestataires référencés sur Misstice pour vos galas, séminaires et soirées d'entreprise."
+        />
+      }
       heroImage="/cowork.jpg"
       heroAlt="Collègues échangeant autour d'un verre lors d'un cocktail d'entreprise"
       title="Comment organiser un événement professionnel ou un gala"

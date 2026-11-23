@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
+import CityLinksSection from "@/components/geo/CityLinksSection";
 import GuideSection from "@/components/guide/GuideSection";
 import GuideBudgetTable, {
   type BudgetRow,
@@ -27,6 +28,7 @@ const toc = [
   { id: "checklist", label: "Checklist mois par mois" },
   { id: "petit-budget", label: "Petit budget et comité restreint" },
   { id: "prestataires", label: "Trouver vos prestataires" },
+  { id: "choisir", label: "Bien choisir et comparer" },
   { id: "faq", label: "FAQ" },
 ];
 
@@ -103,11 +105,41 @@ const faqItems: FaqItem[] = [
     q: "Comment réduire le budget d'un mariage sans le sacrifier ?",
     a: "En ajustant en priorité le nombre d'invités et la saison, deux leviers qui influencent tous les autres postes de dépense.",
   },
+  {
+    q: "Quels prestataires réserver en premier pour un mariage ?",
+    a: "Le lieu de réception d'abord, puis le traiteur et le photographe : ce sont les prestataires les plus demandés sur les dates populaires. Le DJ, le fleuriste et la décoration peuvent se réserver ensuite.",
+  },
+  {
+    q: "Comment comparer plusieurs devis de prestataires ?",
+    a: "Demandez vos devis sur la même base (date, nombre d'invités, horaires, prestations attendues) et vérifiez ce qui est inclus : déplacement, installation, heures supplémentaires, conditions d'annulation et montant de l'acompte.",
+  },
+  {
+    q: "Peut-on organiser son mariage à plusieurs sur Misstice ?",
+    a: "Oui. Vous pouvez inviter vos proches dans votre événement pour partager la liste d'invités, le budget, la checklist et les échanges avec les prestataires au même endroit.",
+  },
 ];
+
+// Données structurées FAQPage, alignées sur la FAQ affichée.
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
 
 export default function OrganiserUnMariagePage() {
   return (
     <GuideLayout
+      afterContent={
+        <CityLinksSection
+          eventTypeSlug="mariage"
+          title="Organiser son mariage dans votre ville"
+          intro="Guides locaux et annuaires des prestataires dans les villes où Misstice référence le plus de professionnels."
+        />
+      }
       heroImage="/wedding-crowd.jpg"
       heroAlt="Invités souriants célébrant un mariage"
       title="Comment organiser un mariage en 2026"
@@ -257,10 +289,36 @@ export default function OrganiserUnMariagePage() {
         </p>
       </GuideSection>
 
+      <GuideSection id="choisir" title="Bien choisir et comparer ses prestataires de mariage">
+        <p className="text-sm leading-relaxed text-slate sm:text-base">
+          Avant de comparer les prix, commencez par vérifier que le
+          prestataire est disponible à votre date et qu&apos;il travaille dans
+          votre région : un photographe ou un traiteur qui se déplace loin
+          facture souvent ce déplacement. Regardez ensuite ses réalisations
+          (book photo, menus, playlists) pour savoir si son style correspond à
+          ce que vous imaginez.
+        </p>
+        <p className="mt-4 text-sm leading-relaxed text-slate sm:text-base">
+          Pour comparer des devis, demandez-les tous sur la même base : date,
+          nombre d&apos;invités, horaires et prestations attendues. Lisez ce qui
+          est inclus (installation, heures supplémentaires, déplacement) et les
+          conditions d&apos;annulation. Sur Misstice, les échanges et les devis
+          restent au même endroit, et les coordonnées du prestataire vous sont
+          transmises dès que vous acceptez son devis.
+        </p>
+        <p className="mt-4 text-sm leading-relaxed text-slate sm:text-base">
+          Enfin, gardez une marge dans votre budget pour les imprévus et notez
+          pour chaque prestataire la date limite de paiement de l&apos;acompte et
+          du solde : c&apos;est ce qui évite les mauvaises surprises dans les
+          dernières semaines.
+        </p>
+      </GuideSection>
+
       <GuideSection
         id="faq"
         title="Questions fréquentes sur l'organisation d'un mariage"
       >
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
         <GuideFaq items={faqItems} />
         <p className="mt-5 text-sm leading-relaxed text-slate">
           Pour les questions générales sur la plateforme, consultez notre{" "}

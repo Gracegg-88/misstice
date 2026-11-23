@@ -1,31 +1,31 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
-import { eventGrammar, getIndexableCityEventCombos } from "@/lib/city-content";
+import { pageMetadata, SITE_URL } from "@/lib/seo";
+import { eventGrammar } from "@/lib/city-content";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FeaturedVendorsGrid from "@/components/FeaturedVendorsGrid";
 import ComingSoon from "@/components/geo/ComingSoon";
 import Breadcrumb from "@/components/geo/Breadcrumb";
+import { FaqSection, ItemListSchema, LinkGroup, type FaqEntry } from "@/components/geo/SeoBlocks";
+import { getCities, getCityBySlug, getEventTypes, getVendorsForCity, slugify } from "@/lib/geo";
+import { getRegionContentFile, isRegionIndexable, regionSlug } from "@/lib/region-content";
 import {
-  getCities,
-  getCityBySlug,
-  getCityCategoryContent,
-  getCityEventContent,
-  getEventTypes,
-  getIndexableCityCategoryCombos,
-  getVendorsForCity,
-  slugify,
-} from "@/lib/geo";
+  getCityHubState,
+  getIndexableCityCategoryPages,
+  getIndexableCityHubs,
+  getIndexableEventCityPages,
+  getSameRegionCities,
+  plural,
+} from "@/lib/seo-rules";
 
 // Régénère la page au plus une fois par jour : le nombre de prestataires
 // évolue progressivement, pas besoin de temps réel.
 export const revalidate = 86400;
 
 // Toutes les villes connues, jamais seulement celles avec déjà un
-// prestataire : la page gère elle-même le cas "aucun vérifié" (ComingSoon)
-// et un generateStaticParams vide pour CE segment (aucune ville avec
-// prestataire vérifié, ce qui arrive tant que l'annuaire démarre) a déjà
+// prestataire : la page gère elle-même le cas "aucun prestataire"
+// (ComingSoon) et un generateStaticParams vide pour CE segment a déjà
 // provoqué une 500 en prod sur ce type de route dynamique — jamais revenir
 // à un filtre qui peut renvoyer un tableau vide ici.
 export async function generateStaticParams() {
@@ -40,10 +40,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const city = await getCityBySlug(params.ville);
   if (!city) return { title: "Prestataires" };
+  const state = await getCityHubState(city.slug);
   return pageMetadata({
-    title: `Prestataires événementiels à ${city.name}`,
-    description: `Traiteurs, photographes, DJ, salles de réception... découvrez les prestataires vérifiés à ${city.name} pour organiser votre événement avec Misstice.`,
-    path: `/prestataires/ville/${params.ville}`,
+    title: state.listedCount
+      ? `Prestataires événementiels à ${city.name} : ${plural(state.listedCount, "professionnel", "professionnels")}`
+      : `Prestataires événementiels à ${city.name}`,
+    description: state.listedCount
+      ? `Annuaire des prestataires événementiels à ${city.name} (${city.region}) : ${plural(state.listedCount, "fiche", "fiches")} classées par métier. Comparez et demandez vos devis sur Misstice.`
+      : `Prestataires événementiels à ${city.name} (${city.region}) : Misstice élargit son réseau dans cette ville.`,
+    path: `/prestataires/ville/${city.slug}`,
+    // Moins de N prestataires réels : noindex,follow (voir lib/seo-rules.ts).
+    noindex: !state.indexable,
   });
 }
 
@@ -56,42 +63,79 @@ export default async function VillePage({ params }: { params: { ville: string } 
   // getHeaderAccount) y déclenche une erreur DYNAMIC_SERVER_USAGE pour
   // toute route pas déjà pré-générée — c'est exactement ce qui causait le
   // 500 en prod. Header sans initialAccount résout la session côté client.
-  const [vendors, combos, categoryContent, eventContent, eventTypes] = await Promise.all([
+  const [vendors, eventTypes, categoryPages, eventPages, hubs, regionCities] = await Promise.all([
     getVendorsForCity(city.slug),
-    getIndexableCityCategoryCombos(),
-    getCityCategoryContent(),
-    getCityEventContent(),
     getEventTypes(),
+    getIndexableCityCategoryPages(),
+    getIndexableEventCityPages(),
+    getIndexableCityHubs(),
+    getSameRegionCities(city),
   ]);
   const verifiedCount = vendors.filter((v) => v.verified).length;
 
-  // Une pastille "catégorie" apparaît soit parce que le seuil de
-  // prestataires vérifiés est atteint, soit parce qu'un texte a été rédigé
-  // à la main — sinon la page existe mais personne ne peut jamais y arriver
-  // en cliquant depuis ce hub (c'est le bug qu'on vient de découvrir).
-  const categoriesHere = new Map<string, string>();
-  for (const c of combos) if (c.citySlug === city.slug) categoriesHere.set(c.categorySlug, c.category);
-  for (const c of categoryContent) {
-    if (c.citySlug === city.slug) categoriesHere.set(slugify(c.category), c.category);
+  // Métiers présents dans la ville, du plus fourni au moins fourni.
+  const byCategory = new Map<string, { label: string; count: number }>();
+  for (const v of vendors) {
+    if (!v.category) continue;
+    const slug = slugify(v.category);
+    const entry = byCategory.get(slug) ?? { label: v.category, count: 0 };
+    entry.count += 1;
+    byCategory.set(slug, entry);
   }
+  const categories = Array.from(byCategory.entries()).sort((a, b) => b[1].count - a[1].count);
+  const indexableCategoryPaths = new Set(categoryPages.map((p) => p.path));
 
-  const eventTypeName = new Map(eventTypes.map((et) => [et.slug, et.name]));
-  // Pages ville×événement dont la fiche locale est complète (indexées) :
-  // lien contextuel dans le texte, jamais vers une page en noindex.
-  const localGuides = getIndexableCityEventCombos()
-    .filter((c) => c.citySlug === city.slug && eventTypeName.has(c.eventTypeSlug))
-    .map((c) => ({
-      slug: c.eventTypeSlug,
-      label: eventGrammar({ slug: c.eventTypeSlug, name: eventTypeName.get(c.eventTypeSlug)! }).withArticle,
-    }));
-  const eventTypesHere = eventContent
-    .filter((c) => c.citySlug === city.slug)
-    .map((c) => ({ slug: c.eventTypeSlug, name: eventTypeName.get(c.eventTypeSlug) ?? c.eventTypeSlug }));
+  // Maillage : uniquement vers des pages indexables.
+  const categoryLinks = categories
+    .map(([slug, c]) => ({ href: `/prestataires/ville/${city.slug}/${slug}`, label: `${c.label} à ${city.name} (${c.count})` }))
+    .filter((l) => indexableCategoryPaths.has(l.href));
+  const guideLinks = eventPages
+    .filter((p) => p.city.slug === city.slug)
+    .map((p) => {
+      const et = eventTypes.find((e) => e.slug === p.eventTypeSlug);
+      return { href: p.path, label: `Organiser ${et ? eventGrammar(et).withArticle : p.eventTypeSlug} à ${city.name}` };
+    });
+  const regionSlugs = new Set(regionCities.map((c) => c.slug));
+  const nearbyHubs = hubs.filter((h) => regionSlugs.has(h.city.slug));
+  const otherHubs = (nearbyHubs.length ? nearbyHubs : hubs.filter((h) => h.city.slug !== city.slug).slice(0, 6)).map(
+    (h) => ({ href: h.path, label: `Prestataires à ${h.city.name}` })
+  );
+
+  // Hub de région : lien seulement s'il est publié (indexable).
+  const regionLink = isRegionIndexable(getRegionContentFile(regionSlug(city.region)))
+    ? [{ href: `/region/${regionSlug(city.region)}`, label: `Guide de la région ${city.region}` }]
+    : [];
+
+  const categorySummary = categories
+    .slice(0, 5)
+    .map(([, c]) => `${c.label.toLowerCase()} (${c.count})`)
+    .join(", ");
+
+  const faq: FaqEntry[] = vendors.length
+    ? [
+        {
+          q: `Combien de prestataires événementiels sont référencés à ${city.name} sur Misstice ?`,
+          a: `${plural(vendors.length, "fiche est actuellement référencée", "fiches sont actuellement référencées")} à ${city.name}, réparties en ${plural(categories.length, "métier", "métiers")}${categorySummary ? ` : ${categorySummary}` : ""}. ${plural(verifiedCount, "fiche est vérifiée", "fiches sont vérifiées")} par Misstice.`,
+        },
+        {
+          q: "Que signifie « Fiche non réclamée » ?",
+          a: "Ces fiches correspondent à de vraies entreprises du répertoire officiel des entreprises (SIRENE), qui n'ont pas encore rejoint Misstice. Le contact direct devient possible dès que l'entreprise réclame sa fiche.",
+        },
+        {
+          q: `Comment demander un devis à un prestataire à ${city.name} ?`,
+          a: "Ouvrez la fiche d'un prestataire inscrit puis cliquez sur « Demander un devis ». Les échanges se font sur Misstice ; les coordonnées du prestataire vous sont transmises dès que vous acceptez son devis.",
+        },
+      ]
+    : [];
 
   return (
     <>
       <Header />
       <main className="min-h-screen bg-cream">
+        <ItemListSchema
+          name={`Prestataires événementiels à ${city.name}`}
+          items={vendors.map((v) => ({ url: `${SITE_URL}/prestataires/${v.id}`, name: v.name }))}
+        />
         <section className="mx-auto max-w-content px-page py-12">
           <Breadcrumb
             items={[
@@ -107,53 +151,12 @@ export default async function VillePage({ params }: { params: { ville: string } 
           </h1>
           <p className="mt-3 max-w-2xl leading-relaxed text-slate">
             {vendors.length > 0
-              ? `${verifiedCount} prestataire${verifiedCount > 1 ? "s" : ""} vérifié${verifiedCount > 1 ? "s" : ""} à ${city.name}, pour organiser mariage, anniversaire, baptême, gala ou baby shower sans quitter Misstice.`
-              : `Misstice élargit son réseau de prestataires vérifiés à ${city.name}.`}
+              ? `L'annuaire Misstice référence ${plural(vendors.length, "prestataire", "prestataires")} à ${city.name}, classés par métier${categorySummary ? ` : ${categorySummary}` : ""}. Comparez les fiches, puis demandez vos devis aux professionnels inscrits sans quitter Misstice.`
+              : `Misstice élargit son réseau de prestataires à ${city.name}.`}
           </p>
 
-          {localGuides.length > 0 && (
-            <p className="mt-3 max-w-2xl leading-relaxed text-slate">
-              Pour préparer votre événement sur place, nos pages locales réunissent lieux, saison,
-              budget et conseils pratiques :{" "}
-              {localGuides.map((g, i) => (
-                <span key={g.slug}>
-                  {i > 0 && (i === localGuides.length - 1 ? " et " : ", ")}
-                  <a href={`/${g.slug}/${city.slug}`} className="font-semibold text-violet hover:text-violet-dark">
-                    organiser {g.label} à {city.name}
-                  </a>
-                </span>
-              ))}
-              .
-            </p>
-          )}
-
-          {categoriesHere.size > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              {Array.from(categoriesHere.entries()).map(([categorySlug, category]) => (
-                <a
-                  key={categorySlug}
-                  href={`/prestataires/ville/${city.slug}/${categorySlug}`}
-                  className="rounded-full border border-violet/20 bg-violet-soft px-4 py-2 text-sm font-medium text-violet transition-colors hover:bg-violet/10"
-                >
-                  {category}
-                </a>
-              ))}
-            </div>
-          )}
-
-          {eventTypesHere.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {eventTypesHere.map((et) => (
-                <a
-                  key={et.slug}
-                  href={`/${et.slug}/${city.slug}`}
-                  className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-plum transition-colors hover:border-violet/30 hover:text-violet"
-                >
-                  Organiser {eventGrammar(et).withArticle} à {city.name}
-                </a>
-              ))}
-            </div>
-          )}
+          <LinkGroup title={`Les métiers représentés à ${city.name}`} links={categoryLinks} />
+          <LinkGroup title={`Guides pour organiser votre événement à ${city.name}`} links={guideLinks} />
 
           {vendors.length > 0 ? (
             <FeaturedVendorsGrid vendors={vendors} />
@@ -162,6 +165,13 @@ export default async function VillePage({ params }: { params: { ville: string } 
               <ComingSoon cityName={city.slug} cityLabel={`à ${city.name}`} />
             </div>
           )}
+
+          <FaqSection items={faq} />
+
+          <LinkGroup
+            title={nearbyHubs.length ? `Autres villes de la région ${city.region}` : "Prestataires dans d'autres villes"}
+            links={[...regionLink, ...otherHubs]}
+          />
         </section>
       </main>
       <Footer />

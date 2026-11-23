@@ -6,6 +6,8 @@ import type { LucideIcon } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
+import CityLinksSection from "@/components/geo/CityLinksSection";
+import { FaqSection, type FaqEntry } from "@/components/geo/SeoBlocks";
 
 export const metadata: Metadata = pageMetadata({
   title: "Comment organiser votre événement : guides et étapes",
@@ -80,6 +82,42 @@ const guides = [
     text: "text-plum",
     title: "Organiser une baby shower",
     body: "Préparez l'arrivée de bébé avec une organisation simple, entre budget raisonnable et bons souvenirs.",
+  },
+];
+
+// Fonctionnement détaillé : texte rendu côté serveur (pas d'animation qui
+// masque le contenu), pour que la page ait un contenu propre et complet.
+const details: { title: string; text: string }[] = [
+  {
+    title: "1. Votre événement, au même endroit",
+    text: "La création de votre événement est gratuite. Vous y retrouvez le budget par poste de dépense, la liste d'invités avec les réponses, la checklist, le planning du jour J, le plan de table et la liste de cadeaux. Vous pouvez inviter vos proches pour qu'ils participent à l'organisation sans multiplier les fichiers et les groupes de discussion.",
+  },
+  {
+    title: "2. Des prestataires que l'on peut comparer",
+    text: "L'annuaire classe les prestataires par ville et par métier. Une fiche vérifiée correspond à une entreprise dont Misstice a contrôlé le numéro SIRET. Les fiches marquées « non réclamée » sont de vraies entreprises du répertoire officiel qui n'ont pas encore rejoint Misstice : vous pouvez les consulter, et le contact devient possible dès qu'elles réclament leur fiche.",
+  },
+  {
+    title: "3. Des devis et un paiement encadrés",
+    text: "Vous demandez vos devis depuis la fiche du prestataire et échangez avec lui sur la messagerie de Misstice. Ses coordonnées vous sont transmises dès que vous acceptez son devis. Le paiement passe par Misstice : un acompte peut être demandé avant l'événement, et le solde suit une double validation pour protéger les deux parties.",
+  },
+];
+
+const faq: FaqEntry[] = [
+  {
+    q: "Créer son événement sur Misstice est-il payant ?",
+    a: "Non, la création de votre événement et les outils d'organisation (budget, invités, checklist, planning) sont gratuits.",
+  },
+  {
+    q: "Comment savoir si un prestataire est fiable ?",
+    a: "Les fiches vérifiées portent un badge : Misstice a contrôlé le numéro SIRET de l'entreprise. Consultez aussi ses prestations, ses réalisations et les avis laissés après un événement.",
+  },
+  {
+    q: "Pourquoi les coordonnées des prestataires ne sont-elles pas affichées ?",
+    a: "Pour protéger les clients comme les prestataires, les échanges se font sur Misstice jusqu'à l'acceptation du devis. Les coordonnées sont alors transmises, et le paiement reste encadré par la plateforme.",
+  },
+  {
+    q: "Quel guide lire en premier ?",
+    a: "Celui de votre type d'événement : mariage, anniversaire, baptême, événement professionnel ou baby shower. Chaque guide donne un budget indicatif, une checklist et des conseils pour choisir vos prestataires.",
   },
 ];
 
@@ -168,8 +206,39 @@ export default function CommentCaMarchePage() {
             ))}
           </div>
 
+          <section className="mt-16 max-w-3xl">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-plum">
+              Comment fonctionne Misstice, en détail
+            </h2>
+            {details.map((d) => (
+              <div key={d.title} className="mt-6">
+                <h3 className="font-display text-xl font-semibold text-plum">{d.title}</h3>
+                <p className="mt-2 leading-relaxed text-slate">{d.text}</p>
+              </div>
+            ))}
+            <p className="mt-6 leading-relaxed text-slate">
+              Pour en savoir plus sur la vérification des prestataires, lisez{" "}
+              <Link href="/confiance" className="font-semibold text-violet hover:text-violet-dark">
+                notre page Confiance
+              </Link>
+              , ou parcourez directement{" "}
+              <Link href="/prestataires" className="font-semibold text-violet hover:text-violet-dark">
+                l&apos;annuaire des prestataires
+              </Link>
+              .
+            </p>
+          </section>
+
+          <div className="max-w-3xl">
+            <FaqSection items={faq} />
+          </div>
+
           <div className="mt-12 flex flex-col gap-5 border-t border-plum/10 pt-7 sm:flex-row sm:items-center sm:justify-between"><div className="flex gap-3 text-sm font-light text-slate"><Sparkles className="shrink-0 text-garnet" size={18} /><p>Vous avez déjà une idée ? Commencez directement par votre projet.</p></div><Link href="/creer" className="inline-flex items-center gap-2 text-sm font-semibold text-violet underline decoration-garnet decoration-2 underline-offset-6">Créer mon événement <ArrowRight size={16} /></Link></div>
         </div>
+        <CityLinksSection
+          title="Trouver des prestataires près de chez vous"
+          intro="Les annuaires des villes où Misstice référence le plus de prestataires."
+        />
       </main>
       <Footer />
     </>

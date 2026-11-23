@@ -31,15 +31,15 @@ const fetchEventTypesCached = cache(async (): Promise<EventType[]> => {
 });
 const fetchCityEventContentCached = cache(
   async (): Promise<
-    { citySlug: string; eventTypeSlug: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
+    CityEventContentRow[]
   > => {
     const supabase = db();
     const { data } = await supabase
       .from("city_event_content")
-      .select("city_slug, event_type_slug, intro_text, image_url, image_alt");
+      .select("city_slug, event_type_slug, intro_text, image_url, image_alt, created_at");
     return (
       (data as
-        | { city_slug: string; event_type_slug: string; intro_text: string; image_url: string | null; image_alt: string | null }[]
+        | { city_slug: string; event_type_slug: string; intro_text: string; image_url: string | null; image_alt: string | null; created_at: string | null }[]
         | null) ?? []
     ).map((r) => ({
       citySlug: r.city_slug,
@@ -47,20 +47,21 @@ const fetchCityEventContentCached = cache(
       introText: r.intro_text,
       imageUrl: r.image_url,
       imageAlt: r.image_alt,
+      createdAt: r.created_at,
     }));
   }
 );
 const fetchCityCategoryContentCached = cache(
   async (): Promise<
-    { citySlug: string; category: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
+    CityCategoryContentRow[]
   > => {
     const supabase = db();
     const { data } = await supabase
       .from("city_category_content")
-      .select("city_slug, category, intro_text, image_url, image_alt");
+      .select("city_slug, category, intro_text, image_url, image_alt, created_at");
     return (
       (data as
-        | { city_slug: string; category: string; intro_text: string; image_url: string | null; image_alt: string | null }[]
+        | { city_slug: string; category: string; intro_text: string; image_url: string | null; image_alt: string | null; created_at: string | null }[]
         | null) ?? []
     ).map((r) => ({
       citySlug: r.city_slug,
@@ -68,6 +69,7 @@ const fetchCityCategoryContentCached = cache(
       introText: r.intro_text,
       imageUrl: r.image_url,
       imageAlt: r.image_alt,
+      createdAt: r.created_at,
     }));
   }
 );
@@ -82,7 +84,25 @@ const fetchKnownCategorySlugsCached = cache(async (): Promise<Map<string, string
 });
 
 const PICK_COLUMNS =
-  "id, city_slug, rank, name, address, lat, lng, phone, price_level, description, source_url, claimed_vendor_id";
+  "id, city_slug, rank, name, address, lat, lng, phone, price_level, description, source_url, claimed_vendor_id, verified_at";
+
+export type CityEventContentRow = {
+  citySlug: string;
+  eventTypeSlug: string;
+  introText: string;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  createdAt: string | null;
+};
+
+export type CityCategoryContentRow = {
+  citySlug: string;
+  category: string;
+  introText: string;
+  imageUrl: string | null;
+  imageAlt: string | null;
+  createdAt: string | null;
+};
 
 const fetchCityCategoryPicksCached = cache(async (): Promise<DirectoryPick[]> => {
   const supabase = db();
@@ -141,6 +161,8 @@ export type DirectoryPick = {
   description: string;
   source_url: string;
   claimed_vendor_id: string | null;
+  /** Date de vérification manuelle de la ligne (lastmod du sitemap). */
+  verified_at?: string | null;
 };
 
 // Sous ce seuil, une page ville×catégorie (ou ville×événement) n'est pas
@@ -174,6 +196,11 @@ export async function getEventTypes(): Promise<EventType[]> {
 export async function getEventTypeBySlug(slug: string): Promise<EventType | null> {
   const types = await getEventTypes();
   return types.find((t) => t.slug === slug) ?? null;
+}
+
+/** Tout l'annuaire public (même requête mise en cache que les pages géo). */
+export async function getAllPublicVendors(): Promise<Vendor[]> {
+  return fetchVendorsCached();
 }
 
 /** Prestataires d'une ville (tous, vérifiés ou non — comme l'annuaire /prestataires). */
@@ -254,9 +281,7 @@ export async function getIndexableCitySlugs(
  * contenu "thin" — le problème est le gabarit vide répété, pas l'absence
  * de prestataires sur une page par ailleurs réellement rédigée).
  */
-export async function getCityEventContent(): Promise<
-  { citySlug: string; eventTypeSlug: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
-> {
+export async function getCityEventContent(): Promise<CityEventContentRow[]> {
   return fetchCityEventContentCached();
 }
 
@@ -292,9 +317,7 @@ export async function getCityEventImage(
  * on la fait correspondre au slug de l'URL via slugify(), comme partout
  * ailleurs dans ce fichier.
  */
-export async function getCityCategoryContent(): Promise<
-  { citySlug: string; category: string; introText: string; imageUrl: string | null; imageAlt: string | null }[]
-> {
+export async function getCityCategoryContent(): Promise<CityCategoryContentRow[]> {
   return fetchCityCategoryContentCached();
 }
 

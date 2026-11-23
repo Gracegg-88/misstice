@@ -175,7 +175,7 @@ export default function VendorProfile({
           fond plein (autres thèmes, pour garder un contraste garanti). */}
       <div
         className="relative overflow-hidden bg-[var(--v-ground)] bg-cover bg-center"
-        style={heroHasPhoto ? { backgroundImage: "url('/hero_details.png')" } : undefined}
+        style={heroHasPhoto ? { backgroundImage: "url('/hero_details.jpg')" } : undefined}
       >
         {heroHasPhoto && (
           <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
@@ -199,7 +199,7 @@ export default function VendorProfile({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={vendor.img}
-                    alt={vendor.name}
+                    alt={`${vendor.name}, ${vendor.category.toLowerCase()}${vendor.city ? ` à ${vendor.city}` : ""}`}
                     className="h-20 w-20 shrink-0 rounded-3xl object-cover shadow-md sm:h-24 sm:w-24"
                   />
                 ) : (
@@ -517,7 +517,7 @@ export default function VendorProfile({
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={url}
-                              alt={`Réalisation ${i + 1}`}
+                              alt={`Réalisation ${i + 1} de ${vendor.name} (${vendor.category.toLowerCase()})`}
                               className="aspect-[4/3] w-full object-cover"
                             />
                           )}
@@ -718,7 +718,7 @@ export default function VendorProfile({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={photos[lightbox]}
-                alt="Réalisation"
+                alt={`Réalisation ${lightbox + 1} de ${vendor.name} (${vendor.category.toLowerCase()})`}
                 className="max-h-[85vh] w-full max-w-3xl rounded-3xl object-contain"
               />
             )

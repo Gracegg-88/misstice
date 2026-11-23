@@ -1,8 +1,15 @@
+import { SITE_URL } from "@/lib/seo";
+
 type Crumb = { label: string; href?: string };
 
-/** Fil d'Ariane + BreadcrumbList (schema.org) pour les pages géolocalisées. */
+/**
+ * Fil d'Ariane + BreadcrumbList (schema.org).
+ * Chaque niveau porte son URL absolue en https://www (le dernier, la page
+ * courante, peut s'en passer). Avant, ces URL dépendaient de la variable
+ * NEXT_PUBLIC_SITE_URL : sans elle, aucun niveau n'avait d'URL et Google
+ * n'en retenait aucun (0 fil d'Ariane détecté dans Search Console).
+ */
 export default function Breadcrumb({ items }: { items: Crumb[] }) {
-  const site = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -10,7 +17,7 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
       "@type": "ListItem",
       position: i + 1,
       name: item.label,
-      ...(site && item.href ? { item: `${site}${item.href}` } : {}),
+      ...(item.href ? { item: `${SITE_URL}${item.href}` } : {}),
     })),
   };
 

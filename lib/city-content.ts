@@ -53,6 +53,8 @@ export type CityEventContentFile = {
   evenement: string;
   angle_local?: string;
   images?: ImageVille[];
+  /** Traditions et coutumes locales autour de l'événement (texte rédigé). */
+  traditions_et_coutumes?: string;
   saison_et_meteo?: string;
   lieux?: Lieu[];
   budget_local?: string;
@@ -111,6 +113,7 @@ export function getCityEventContentFile(
 export function countFilledSections(c: CityEventContentFile): number {
   return [
     filled(c.saison_et_meteo),
+    filled(c.traditions_et_coutumes),
     (c.lieux?.length ?? 0) > 0,
     filled(c.budget_local),
     filled(c.contraintes_pratiques),

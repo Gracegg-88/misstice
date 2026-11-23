@@ -1,0 +1,32 @@
+{
+  "publier": false,
+  "ville": "Nom de la ville",
+  "evenement": "mariage",
+  "derniere_mise_a_jour": "",
+  "angle_local": "",
+  "images": [],
+  "traditions_et_coutumes": "",
+  "saison_et_meteo": "",
+  "lieux": [
+    {
+      "nom": "",
+      "type": "",
+      "quartier": "",
+      "capacite": "",
+      "fourchette_prix": "",
+      "convient_a": "",
+      "conseil": ""
+    }
+  ],
+  "budget_local": "",
+  "contraintes_pratiques": "",
+  "specialites_locales": "",
+  "faq_locale": [
+    { "question": "", "reponse": "" }
+  ],
+  "sources": [
+    { "sujet": "", "titre": "", "url": "", "consulte_le": "" }
+  ],
+  "prestataires_mis_en_avant": [],
+  "notes_internes_a_ne_pas_afficher": []
+}

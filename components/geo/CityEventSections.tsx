@@ -100,6 +100,12 @@ export default function CityEventSections({
   const faq = content.faq_locale ?? [];
   return (
     <>
+      {content.traditions_et_coutumes?.trim() && (
+        <Section id="traditions" title={`Traditions et coutumes à ${cityName}`}>
+          <Prose text={content.traditions_et_coutumes} />
+        </Section>
+      )}
+
       {content.saison_et_meteo?.trim() && (
         <Section id="saison" title={`Quelle saison choisir à ${cityName}`}>
           <Prose text={content.saison_et_meteo} />
