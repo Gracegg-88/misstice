@@ -31,9 +31,35 @@ import {
   type VendorVibes,
 } from "@/lib/vibes";
 import ThemePicker from "@/components/pro/ThemePicker";
-import { DEFAULT_THEME_ID } from "@/lib/themes";
+import { DEFAULT_THEME_ID, getTheme } from "@/lib/themes";
 import { canUploadMorePhotos, isPilotPackProActive } from "@/lib/pilot-utils";
+import { ensureVendorSlug } from "@/lib/slug";
+import SharePanel from "@/components/pro/SharePanel";
 import { Sparkles } from "lucide-react";
+import CoverPicker from "@/components/pro/CoverPicker";
+import ButtonsPicker from "@/components/pro/ButtonsPicker";
+import MobilePreview from "@/components/pro/MobilePreview";
+import PackProModal from "@/components/pro/PackProModal";
+import {
+  COVER_SHAPES,
+  COVER_GRADIENTS,
+  type CoverShape,
+  type CoverGradient,
+} from "@/lib/cover-options";
+import { DEFAULT_BUTTON_CONFIG, toggleOptionalButton } from "@/lib/button-config";
+import BottomSheet from "@/components/pro/BottomSheet";
+import PencilTag from "@/components/pro/PencilTag";
+import CoverBanner from "@/components/explorer/CoverBanner";
+import ProPreviewWatermark from "@/components/pro/ProPreviewWatermark";
+import { Eye } from "lucide-react";
+
+const TABS = [
+  { id: "infos", label: "Infos" },
+  { id: "apparence", label: "Apparence" },
+  { id: "boutons", label: "Boutons" },
+  { id: "partager", label: "Partager" },
+] as const;
+type TabId = (typeof TABS)[number]["id"];
 
 export default function ProfilClient({
   vendor,
@@ -42,6 +68,7 @@ export default function ProfilClient({
   categories,
   categoryDepositDefaults = {},
   freeTierPhotoLimit = 3,
+  categoryIllustrationPhotos = [],
 }: {
   vendor: ProVendor;
   packages: VendorPackage[];
@@ -53,6 +80,8 @@ export default function ProfilClient({
   categoryDepositDefaults?: Record<string, number>;
   // Limite de photos en formule gratuite (platform_settings.free_tier_photo_limit).
   freeTierPhotoLimit?: number;
+  // Photos d'illustration de la catégorie du prestataire (voir CoverPicker.tsx).
+  categoryIllustrationPhotos?: { id: string; url: string }[];
 }) {
   const router = useRouter();
 
@@ -71,9 +100,50 @@ export default function ProfilClient({
   );
   const categoryDefaultDeposit = categoryDepositDefaults[info.category] ?? 0;
   const [themeId, setThemeId] = useState(vendor.themeId || DEFAULT_THEME_ID);
+  const [slug, setSlug] = useState(vendor.slug);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  // Onglet « Ma page » actif.
+  const [activeTab, setActiveTab] = useState<TabId>("infos");
+
+  // Édition mobile (Complément 5) : "wysiwyg" affiche la fiche telle que les
+  // clients la voient, avec un crayon par zone modifiable ; "classic" bascule
+  // vers l'éditeur par onglets (seul utilisé sur ordinateur) — notamment pour
+  // Formules & tarifs et le Book, trop denses pour un petit panneau.
+  const [mobileMode, setMobileMode] = useState<"wysiwyg" | "classic">("wysiwyg");
+  const [mobileSheet, setMobileSheet] = useState<
+    null | "couverture" | "photo" | "nom" | "presentation" | "apparence" | "boutons" | "partager"
+  >(null);
+
+  // Couverture (Complément 3) — forme/dégradé réservés au Pack Pro, voir
+  // lib/cover-options.ts. "Essayer" reste possible sans les droits : c'est
+  // l'enregistrement qui est intercepté (voir saveInfo/doSaveInfo).
+  const [coverShape, setCoverShape] = useState<CoverShape>(
+    (vendor.coverShape as CoverShape) || "droite"
+  );
+  const [coverGradient, setCoverGradient] = useState<CoverGradient>(
+    (vendor.coverGradient as CoverGradient) || "aucun"
+  );
+  const [coverIsIllustration, setCoverIsIllustration] = useState(
+    vendor.coverIsIllustration
+  );
+  const [illustrationUrl, setIllustrationUrl] = useState<string | null>(
+    vendor.coverIllustrationUrl
+  );
+  const hasAccess = isPilotPackProActive(vendor);
+
+  // Boutons d'action affichés sur la fiche (voir lib/button-config.ts).
+  const [buttonConfig, setButtonConfig] = useState<string[]>(
+    vendor.buttonConfig?.length ? vendor.buttonConfig : DEFAULT_BUTTON_CONFIG
+  );
+
+  // Fenêtre Pack Pro (Complément 4), déclenchée par saveInfo quand une
+  // option Pro non payée a été essayée.
+  const [packProModalOpen, setPackProModalOpen] = useState(false);
+  const [triedProOptions, setTriedProOptions] = useState<string[]>([]);
+  const [interestSaved, setInterestSaved] = useState(false);
 
   // Ambiance & Vibe (tags auto-attribués, stockés sur vendors)
   const [vibes, setVibes] = useState<VendorVibes>({
@@ -186,7 +256,9 @@ export default function ProfilClient({
       about: info.about || null,
       theme_id: themeId,
     });
-    return e?.message ?? null;
+    if (e) return e.message;
+    await ensureVendorSlug(supabase, vendor.profileId, info.company.trim());
+    return null;
   };
 
   // Photo principale (vendors.image)
@@ -226,7 +298,25 @@ export default function ProfilClient({
   const inputCls =
     "w-full rounded-xl border border-black/10 bg-cream px-4 py-2.5 text-sm text-plum outline-none focus:border-violet";
 
+  // --- Couverture : options Pro essayées sans y avoir droit (Complément 3) ---
+  const proOptionsTried = (shape: CoverShape, gradient: CoverGradient): string[] => {
+    if (hasAccess) return [];
+    const tried: string[] = [];
+    const shapeDef = COVER_SHAPES.find((s) => s.id === shape);
+    if (shapeDef && !shapeDef.free) {
+      tried.push(`la couverture ${shapeDef.label.toLowerCase()}`);
+    }
+    const gradientDef = COVER_GRADIENTS.find((g) => g.id === gradient);
+    if (gradientDef && !gradientDef.free) {
+      tried.push(`le dégradé ${gradientDef.label.toLowerCase()}`);
+    }
+    return tried;
+  };
+
   // --- Enregistrer les infos (crée la fiche si elle n'existe pas encore) ---
+  // Intercepte l'enregistrement si une option Pack Pro non payée a été
+  // essayée (Complément 3) : la fenêtre Pack Pro (Complément 4) décide alors
+  // de la suite, voir handlePackProUpgrade / handleSaveWithoutPro ci-dessous.
   const saveInfo = async () => {
     if (!info.company.trim()) {
       setError("Le nom de votre activité est obligatoire.");
@@ -244,7 +334,50 @@ export default function ProfilClient({
         return;
       }
     }
+    setError("");
 
+    const tried = proOptionsTried(coverShape, coverGradient);
+    if (tried.length > 0) {
+      setTriedProOptions(tried);
+      setPackProModalOpen(true);
+      return;
+    }
+    await doSaveInfo(coverShape, coverGradient);
+  };
+
+  const handleSaveWithoutPro = async () => {
+    setPackProModalOpen(false);
+    setCoverShape("droite");
+    setCoverGradient("aucun");
+    await doSaveInfo("droite", "aucun");
+  };
+
+  const handleContinueEditing = () => setPackProModalOpen(false);
+
+  const handlePackProUpgradeInterest = async () => {
+    setPackProModalOpen(false);
+    const profErr = await ensureProfile();
+    if (!profErr) {
+      const supabase = createClient();
+      await supabase
+        .from("vendor_profiles")
+        .update({ pack_pro_interest_at: new Date().toISOString() })
+        .eq("id", vendor.profileId);
+      setInterestSaved(true);
+      setTimeout(() => setInterestSaved(false), 5000);
+    }
+    setCoverShape("droite");
+    setCoverGradient("aucun");
+    await doSaveInfo("droite", "aucun");
+  };
+
+  // Enregistrement effectif — appelé directement (pas d'option Pro essayée)
+  // ou après le choix du prestataire dans la fenêtre Pack Pro. shapeToSave /
+  // gradientToSave sont toujours "droite"/"aucun" quand hasAccess est faux
+  // (déjà revérifié ici, et de nouveau côté base, voir
+  // enforce_cover_pro_gate dans supabase/ma-page.sql).
+  const doSaveInfo = async (shapeToSave: CoverShape, gradientToSave: CoverGradient) => {
+    const depositTrim = depositPercent.trim();
     setSaving(true);
     setError("");
     setSaved(false);
@@ -259,12 +392,21 @@ export default function ProfilClient({
       about: info.about || null,
       deposit_percent: depositTrim === "" ? null : Number(depositTrim),
       theme_id: themeId,
+      cover_shape: hasAccess ? shapeToSave : "droite",
+      cover_gradient: hasAccess ? gradientToSave : "aucun",
+      cover_is_illustration: coverIsIllustration,
+      cover_illustration_url: coverIsIllustration ? illustrationUrl : null,
+      button_config: buttonConfig,
     });
     if (pErr) {
       setSaving(false);
       setError(pErr.message);
       return;
     }
+    setCoverShape(hasAccess ? shapeToSave : "droite");
+    setCoverGradient(hasAccess ? gradientToSave : "aucun");
+    const newSlug = await ensureVendorSlug(supabase, vendor.profileId, info.company.trim());
+    setSlug(newSlug);
 
     // vendors (fiche annuaire) : met à jour si elle existe, sinon la crée.
     const { data: existing } = await supabase
@@ -502,11 +644,11 @@ export default function ProfilClient({
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <div className="flex items-end justify-between">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-plum">
-            Mon profil
+            Ma page
           </h1>
           {vendor.verified && (
             <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-violet">
@@ -538,7 +680,7 @@ export default function ProfilClient({
             className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold text-plum hover:border-violet/40"
           >
             <ExternalLink size={15} />
-            Aperçu public
+            Voir ma fiche publique
           </a>
         )}
       </div>
@@ -548,9 +690,368 @@ export default function ProfilClient({
           {error}
         </p>
       )}
+      {interestSaved && (
+        <p className="mt-4 rounded-2xl bg-emerald-soft px-4 py-3 text-sm font-medium text-emerald">
+          Merci&nbsp;! On te recontacte dès que le Pack Pro est disponible.
+        </p>
+      )}
+
+      {/* Édition mobile "sur la fiche" (Complément 5) — masquée sur ordinateur
+          (seul l'éditeur classique ci-dessous y est utilisé) et quand le
+          prestataire est passé en vue classique (formules/book). */}
+      <div className={mobileMode === "wysiwyg" ? "lg:hidden" : "hidden"}>
+        {(() => {
+          const wysiwygTheme = getTheme(themeId);
+          const coverUrl = coverIsIllustration ? illustrationUrl : mainImage;
+          return (
+            <>
+              <div className="relative mt-6 overflow-hidden rounded-3xl border border-black/5 pb-24">
+                <div className="relative">
+                  <CoverBanner
+                    imageUrl={coverUrl}
+                    isIllustration={coverIsIllustration}
+                    shape={coverShape}
+                    gradient={coverGradient}
+                    groundColor={wysiwygTheme.colors.ground}
+                    heightClassName="h-36"
+                  />
+                  <ProPreviewWatermark
+                    active={!hasAccess && (coverShape !== "droite" || coverGradient !== "aucun")}
+                  />
+                  <PencilTag
+                    label="Couverture"
+                    onClick={() => setMobileSheet("couverture")}
+                    className="absolute right-3 top-3 z-20"
+                  />
+                </div>
+
+                <div className="relative px-5 pb-5" style={{ background: wysiwygTheme.colors.ground }}>
+                  <div className="relative -mt-9 inline-block">
+                    {mainImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={mainImage}
+                        alt=""
+                        className="h-16 w-16 rounded-2xl border-2 object-cover shadow-sm"
+                        style={{ borderColor: wysiwygTheme.colors.ground }}
+                      />
+                    ) : (
+                      <div
+                        className="flex h-16 w-16 items-center justify-center rounded-2xl border-2 font-display text-xl font-semibold shadow-sm"
+                        style={{ borderColor: wysiwygTheme.colors.ground, background: wysiwygTheme.colors.surface, color: wysiwygTheme.colors.heading }}
+                      >
+                        {(info.company.trim()[0] || "P").toUpperCase()}
+                      </div>
+                    )}
+                    <PencilTag
+                      label="Photo de profil"
+                      onClick={() => setMobileSheet("photo")}
+                      className="absolute -bottom-1 -right-1 h-6 w-6"
+                    />
+                  </div>
+
+                  <div className="relative mt-3 pr-9">
+                    <p className="truncate font-display text-xl font-semibold" style={{ color: wysiwygTheme.colors.heading }}>
+                      {info.company.trim() || "Votre activité"}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm" style={{ color: wysiwygTheme.colors.muted }}>
+                      {info.tagline.trim() || "Votre accroche"}
+                    </p>
+                    <PencilTag
+                      label="Nom et accroche"
+                      onClick={() => setMobileSheet("nom")}
+                      className="absolute right-0 top-0"
+                    />
+                  </div>
+
+                  {vendor.verified && (
+                    <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-violet-soft px-2.5 py-1 text-xs font-medium text-violet">
+                      <BadgeCheck size={13} />
+                      Vérifié par Misstice
+                    </span>
+                  )}
+
+                  <div className="relative mt-4 pr-9">
+                    <p className="text-sm leading-relaxed" style={{ color: wysiwygTheme.colors.text }}>
+                      {info.about.trim() || "Ajoutez une présentation pour vous démarquer."}
+                    </p>
+                    <PencilTag
+                      label="Présentation"
+                      onClick={() => setMobileSheet("presentation")}
+                      className="absolute right-0 top-0"
+                    />
+                  </div>
+
+                  <div
+                    className="relative mt-4 rounded-2xl p-3.5 pr-11"
+                    style={{ background: wysiwygTheme.colors.surface }}
+                  >
+                    <p className="text-sm font-semibold" style={{ color: wysiwygTheme.colors.surfaceText }}>
+                      Formules &amp; tarifs
+                    </p>
+                    <p className="mt-0.5 text-xs" style={{ color: wysiwygTheme.colors.muted }}>
+                      {pkgs.length > 0 ? `${pkgs.length} formule${pkgs.length > 1 ? "s" : ""}` : "Aucune formule pour le moment"}
+                    </p>
+                    <PencilTag
+                      label="Formules et tarifs"
+                      onClick={() => {
+                        setActiveTab("infos");
+                        setMobileMode("classic");
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+
+                  <div
+                    className="relative mt-3 rounded-2xl p-3.5 pr-11"
+                    style={{ background: wysiwygTheme.colors.surface }}
+                  >
+                    <p className="text-sm font-semibold" style={{ color: wysiwygTheme.colors.surfaceText }}>
+                      Mon book
+                    </p>
+                    <p className="mt-0.5 text-xs" style={{ color: wysiwygTheme.colors.muted }}>
+                      {pics.length > 0 ? `${pics.length} photo${pics.length > 1 ? "s" : ""}` : "Aucune photo pour le moment"}
+                    </p>
+                    <PencilTag
+                      label="Galerie"
+                      onClick={() => {
+                        setActiveTab("infos");
+                        setMobileMode("classic");
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+
+                  <div className="relative mt-4 pr-9">
+                    <div className="h-11 rounded-2xl" style={{ background: wysiwygTheme.colors.buttonBg }} />
+                    <PencilTag
+                      label="Boutons d'action"
+                      onClick={() => setMobileSheet("boutons")}
+                      className="absolute right-0 top-1/2 -translate-y-1/2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Boutons flottants Apparence / Partager */}
+              <div className="fixed bottom-24 right-4 z-[80] flex flex-col items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMobileSheet("apparence")}
+                  className="rounded-full bg-plum px-4 py-2.5 text-xs font-semibold text-white shadow-lg"
+                >
+                  Apparence
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileSheet("partager")}
+                  className="rounded-full border border-black/10 bg-white px-4 py-2.5 text-xs font-semibold text-plum shadow-lg"
+                >
+                  Partager
+                </button>
+              </div>
+
+              {/* Barre "Enregistrer" fixe */}
+              <div className="fixed inset-x-0 bottom-0 z-[75] border-t border-black/5 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                {error && (
+                  <p className="mb-2 text-center text-xs font-medium text-garnet">{error}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={saveInfo}
+                  disabled={saving}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-violet py-3 text-sm font-semibold text-white disabled:opacity-60"
+                >
+                  <Check size={16} />
+                  {saving ? "Enregistrement…" : saved ? "Modifications enregistrées" : "Enregistrer"}
+                </button>
+              </div>
+
+              <BottomSheet
+                open={mobileSheet === "couverture"}
+                title="Couverture"
+                onClose={() => setMobileSheet(null)}
+              >
+                <CoverPicker
+                  hasAccess={hasAccess}
+                  mainImage={mainImage}
+                  categoryPhotos={categoryIllustrationPhotos}
+                  coverIsIllustration={coverIsIllustration}
+                  illustrationUrl={illustrationUrl}
+                  shape={coverShape}
+                  gradient={coverGradient}
+                  onChangeCoverSource={(isIllustration, url) => {
+                    setCoverIsIllustration(isIllustration);
+                    setIllustrationUrl(url);
+                  }}
+                  onChangeShape={setCoverShape}
+                  onChangeGradient={setCoverGradient}
+                />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "photo"}
+                title="Photo de profil"
+                onClose={() => setMobileSheet(null)}
+              >
+                <div className="flex items-center gap-4">
+                  {mainImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={mainImage} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-soft font-display text-xl font-semibold text-violet">
+                      {(info.company.trim()[0] || "P").toUpperCase()}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => mainRef.current?.click()}
+                    disabled={uploadingMain}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 px-3 py-2 text-sm font-semibold text-plum disabled:opacity-60"
+                  >
+                    <Upload size={15} />
+                    {uploadingMain ? "Envoi…" : "Changer la photo"}
+                  </button>
+                </div>
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "nom"}
+                title="Nom et accroche"
+                onClose={() => setMobileSheet(null)}
+              >
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-plum">Nom</label>
+                    <input
+                      value={info.company}
+                      onChange={(e) => setInfo({ ...info, company: e.target.value })}
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">Accroche</label>
+                    <input
+                      value={info.tagline}
+                      onChange={(e) => setInfo({ ...info, tagline: e.target.value })}
+                      placeholder="ex. Reportage doux et lumineux"
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">Catégorie</label>
+                    <div className="mt-1.5">
+                      <CategorySelect
+                        value={info.category}
+                        onChange={(v) => setInfo({ ...info, category: v })}
+                        options={categories}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">Ville</label>
+                    <input
+                      value={info.city}
+                      onChange={(e) => setInfo({ ...info, city: e.target.value })}
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-plum">À partir de</label>
+                    <input
+                      value={info.priceFrom}
+                      onChange={(e) => setInfo({ ...info, priceFrom: e.target.value })}
+                      placeholder="ex. dès 800 €"
+                      className={`mt-1.5 ${inputCls}`}
+                    />
+                  </div>
+                </div>
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "presentation"}
+                title="Présentation"
+                onClose={() => setMobileSheet(null)}
+              >
+                <label className="text-sm font-medium text-plum">À propos</label>
+                <textarea
+                  rows={5}
+                  value={info.about}
+                  onChange={(e) => setInfo({ ...info, about: e.target.value })}
+                  className={`mt-1.5 ${inputCls}`}
+                />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "apparence"}
+                title="Apparence — Thème"
+                onClose={() => setMobileSheet(null)}
+              >
+                <ThemePicker value={themeId} onChange={setThemeId} />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "boutons"}
+                title="Boutons d'action"
+                onClose={() => setMobileSheet(null)}
+              >
+                <ButtonsPicker
+                  buttonConfig={buttonConfig}
+                  onToggle={(id) => setButtonConfig((p) => toggleOptionalButton(p, id))}
+                />
+              </BottomSheet>
+
+              <BottomSheet
+                open={mobileSheet === "partager"}
+                title="Partager"
+                onClose={() => setMobileSheet(null)}
+              >
+                <SharePanel
+                  vendorId={vendor.vendorId}
+                  slug={slug}
+                  company={info.company || vendor.company}
+                  category={info.category || vendor.category || ""}
+                  city={info.city || vendor.city || ""}
+                  verified={vendor.verified}
+                />
+              </BottomSheet>
+            </>
+          );
+        })()}
+      </div>
+
+      <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className={mobileMode === "classic" ? "min-w-0 flex-1" : "hidden min-w-0 flex-1 lg:block"}>
+          {mobileMode === "classic" && (
+            <button
+              type="button"
+              onClick={() => setMobileMode("wysiwyg")}
+              className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-violet lg:hidden"
+            >
+              <Eye size={15} />
+              Revenir à l&apos;aperçu de ma fiche
+            </button>
+          )}
+          {/* Onglets Ma page */}
+          <div className="flex gap-1 overflow-x-auto rounded-2xl bg-cream p-1">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+                  activeTab === t.id
+                    ? "bg-white text-plum shadow-sm"
+                    : "text-slate hover:text-plum"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
       {/* Infos */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Informations
         </h2>
@@ -670,8 +1171,8 @@ export default function ProfilClient({
         </div>
       </section>
 
-      {/* Thème de la fiche publique */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      {/* Apparence : thème + couverture */}
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "apparence" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Thème de ma fiche
         </h2>
@@ -684,10 +1185,64 @@ export default function ProfilClient({
         <div className="mt-4">
           <ThemePicker value={themeId} onChange={setThemeId} />
         </div>
+
+        <h2 className="mt-8 font-display text-lg font-semibold text-plum">
+          Couverture
+        </h2>
+        <p className="mt-1 text-sm text-slate">
+          La forme courbe/vague/arche et le dégradé font partie du Pack Pro —
+          vous pouvez les essayer ici, l&apos;enregistrement vous proposera de
+          passer au Pack Pro le cas échéant.
+        </p>
+        <div className="mt-4">
+          <CoverPicker
+            hasAccess={hasAccess}
+            mainImage={mainImage}
+            categoryPhotos={categoryIllustrationPhotos}
+            coverIsIllustration={coverIsIllustration}
+            illustrationUrl={illustrationUrl}
+            shape={coverShape}
+            gradient={coverGradient}
+            onChangeCoverSource={(isIllustration, url) => {
+              setCoverIsIllustration(isIllustration);
+              setIllustrationUrl(url);
+            }}
+            onChangeShape={setCoverShape}
+            onChangeGradient={setCoverGradient}
+          />
+        </div>
       </section>
 
+      {/* Boutons affichés sur la fiche */}
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "boutons" ? "" : "hidden"}`}>
+        <h2 className="font-display text-lg font-semibold text-plum">
+          Boutons affichés sur ma fiche
+        </h2>
+        <p className="mt-1 text-sm text-slate">
+          Choisissez les boutons secondaires visibles sous vos deux actions
+          principales.
+        </p>
+        <div className="mt-4">
+          <ButtonsPicker
+            buttonConfig={buttonConfig}
+            onToggle={(id) => setButtonConfig((p) => toggleOptionalButton(p, id))}
+          />
+        </div>
+      </section>
+
+      <div className={activeTab === "partager" ? "" : "hidden"}>
+        <SharePanel
+          vendorId={vendor.vendorId}
+          slug={slug}
+          company={info.company || vendor.company}
+          category={info.category || vendor.category || ""}
+          city={info.city || vendor.city || ""}
+          verified={vendor.verified}
+        />
+      </div>
+
       {/* Ambiance & Vibe */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Ambiance &amp; Vibe
         </h2>
@@ -745,7 +1300,7 @@ export default function ProfilClient({
       </section>
 
       {/* Services & tarifs */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <h2 className="font-display text-lg font-semibold text-plum">
           Services &amp; tarifs
         </h2>
@@ -1031,7 +1586,7 @@ export default function ProfilClient({
       </section>
 
       {/* Book */}
-      <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+      <section className={`mt-5 rounded-3xl border border-black/5 bg-white p-6 ${activeTab === "infos" ? "" : "hidden"}`}>
         <div className="flex items-center justify-between">
           <h2 className="font-display text-lg font-semibold text-plum">
             Mon book
@@ -1099,23 +1654,46 @@ export default function ProfilClient({
         </div>
       </section>
 
-      {error && <p className="mt-4 text-right text-sm text-garnet">{error}</p>}
+          {error && <p className="mt-4 text-right text-sm text-garnet">{error}</p>}
 
-      {/* Save */}
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={saveInfo}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
-        >
-          <Check size={17} />
-          {saving
-            ? "Enregistrement…"
-            : saved
-            ? "Modifications enregistrées"
-            : "Enregistrer les modifications"}
-        </button>
+          {/* Save */}
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={saveInfo}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-violet px-6 py-3 text-sm font-semibold text-white hover:bg-violet-dark disabled:opacity-60"
+            >
+              <Check size={17} />
+              {saving
+                ? "Enregistrement…"
+                : saved
+                ? "Modifications enregistrées"
+                : "Enregistrer les modifications"}
+            </button>
+          </div>
+        </div>
+
+        <div className="hidden w-[280px] shrink-0 lg:block">
+          <MobilePreview
+            company={info.company}
+            themeId={themeId}
+            mainImage={mainImage}
+            coverIsIllustration={coverIsIllustration}
+            illustrationUrl={illustrationUrl}
+            shape={coverShape}
+            gradient={coverGradient}
+            hasAccess={hasAccess}
+          />
+        </div>
       </div>
+
+      <PackProModal
+        open={packProModalOpen}
+        triedOptions={triedProOptions}
+        onUpgrade={handlePackProUpgradeInterest}
+        onSaveWithoutPro={handleSaveWithoutPro}
+        onContinueEditing={handleContinueEditing}
+      />
     </div>
   );
 }

@@ -197,6 +197,49 @@
 }
 .ev-flip-back { transform: rotateY(180deg); }
 
+/* ---------- Cartes en éventail (hero, Complément 2) ----------
+   Chaque carte pose --r (angle final) en style inline ; elle apparaît
+   translatée/inclinée puis se redresse au scroll (via <Reveal variant="none">). */
+.ev-fan-card {
+  opacity: 0;
+  transform: translateY(28px) rotate(var(--r, 0deg)) scale(0.94);
+  transition: opacity 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ev-fan-card.is-visible {
+  opacity: 1;
+  transform: translateY(0) rotate(var(--r, 0deg)) scale(1);
+}
+
+/* ---------- Carrousel circulaire (page /devenir-prestataire) ----------
+   La grande roue tourne en continu (CSS pur) ; chaque carte est contre-
+   tournée du même angle pour rester lisible (voir CircularCarousel.tsx). */
+@keyframes ev-wheel-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes ev-wheel-counter-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+.ev-carousel-wheel {
+  animation: ev-wheel-spin 90s linear infinite;
+}
+/* Contre-rotation (même durée, sens inverse) pour que chaque carte reste
+   lisible pendant que la roue tourne. */
+.ev-carousel-counter {
+  animation: ev-wheel-counter-spin 90s linear infinite;
+}
+
+/* ---------- Bande défilante (repli mobile du carrousel circulaire) ---------- */
+@keyframes ev-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ev-marquee-track {
+  animation: ev-marquee 32s linear infinite;
+}
+
 /* ═════════════════════════════════════════════
    RESPECT DE prefers-reduced-motion
    ═════════════════════════════════════════════ */
@@ -210,9 +253,13 @@
   .reveal,
   .reveal-scale,
   .reveal-row,
-  .reveal-item { opacity: 1; transform: none; }
+  .reveal-item,
+  .ev-fan-card { opacity: 1; transform: none; }
   .ev-flip:hover .ev-flip-inner { transform: none; }
   .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
+  .ev-carousel-wheel,
+  .ev-carousel-counter,
+  .ev-marquee-track { animation: none; }
 
   /* CTA et liseré statiques ; aucun mouvement imposé. */
   .ev-cta {

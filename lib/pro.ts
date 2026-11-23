@@ -65,7 +65,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
   const { data: vp } = await supabase
     .from("vendor_profiles")
     .select(
-      "id, company, category, city, about, deposit_percent, theme_id, founding_member, pilot_member, pilot_pack_pro_until"
+      "id, company, category, city, about, deposit_percent, theme_id, founding_member, pilot_member, pilot_pack_pro_until, slug, cover_shape, cover_gradient, cover_is_illustration, cover_illustration_url, button_config"
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -108,6 +108,12 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     founding_member: boolean;
     pilot_member: boolean;
     pilot_pack_pro_until: string | null;
+    slug: string | null;
+    cover_shape: string;
+    cover_gradient: string;
+    cover_is_illustration: boolean;
+    cover_illustration_url: string | null;
+    button_config: string[];
   };
 
   return {
@@ -122,6 +128,12 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     foundingMember: p.founding_member,
     pilotMember: p.pilot_member,
     pilotPackProUntil: p.pilot_pack_pro_until,
+    slug: p.slug,
+    coverShape: p.cover_shape,
+    coverGradient: p.cover_gradient,
+    coverIsIllustration: p.cover_is_illustration,
+    coverIllustrationUrl: p.cover_illustration_url,
+    buttonConfig: p.button_config,
     tagline: vv?.tagline ?? null,
     priceFrom: vv?.price_from ?? null,
     image: vv?.image ?? null,

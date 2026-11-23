@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import Stats from "@/components/Stats";
 import HomeDirectory from "@/components/HomeDirectory";
 import EventTypes from "@/components/EventTypes";
 import HowItWorks from "@/components/HowItWorks";
@@ -48,9 +49,7 @@ export default async function Home() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <Hero />
-        <div aria-hidden="true" className="mx-auto max-w-content px-page py-2">
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-plum/15 to-transparent" />
-        </div>
+        <Stats />
         <HomeDirectory />
         <EventTypes />
         <HowItWorks />

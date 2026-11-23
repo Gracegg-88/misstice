@@ -17,6 +17,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyButton from "@/components/CalendlyButton";
+import CircularCarousel from "@/components/CircularCarousel";
 import { getPilotSlotsRemaining, getPlatformSettings } from "@/lib/pilot";
 
 export const metadata: Metadata = pageMetadata({
@@ -49,25 +50,25 @@ const perks = [
 const steps = [
   {
     icon: UserPlus,
-    label: "Étape 1",
+    label: "01 / 04",
     title: "Créez votre profil",
     text: "Indiquez les types d'événements que vous couvrez : 5 minutes, gratuit.",
   },
   {
     icon: Inbox,
-    label: "Étape 2",
+    label: "02 / 04",
     title: "Recevez des demandes",
     text: "Des demandes de devis correspondant précisément à votre activité.",
   },
   {
     icon: MessageSquare,
-    label: "Étape 3",
+    label: "03 / 04",
     title: "Échangez et concluez",
     text: "Répondez, échangez, et concluez directement via la plateforme.",
   },
   {
     icon: ShieldCheck,
-    label: "Étape 4",
+    label: "04 / 04",
     title: "Soyez payé sereinement",
     text: "Paiement sécurisé par séquestre, versé automatiquement 72h après votre événement.",
   },
@@ -153,16 +154,33 @@ export default async function DevenirPrestatairePage() {
     <>
       <Header />
       <main className="bg-cream">
-        {/* ── H1 + CTA, visible sans scroller ── */}
-        <section className="bg-gradient-soft">
-          <div className="mx-auto max-w-3xl px-5 py-16 text-center sm:px-8 sm:py-20">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet/20 bg-white/70 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-violet">
-              Espace prestataires
+        {/* ── H1 + CTA, visible sans scroller (Complément 2 : inspiration hadi-community.de) ── */}
+        <section className="bg-cream pt-12 sm:pt-16">
+          <div className="mx-auto max-w-2xl px-5 text-center sm:px-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet/20 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-violet">
+              Espace prestataires · Phase pilote
             </span>
-            <h1 className="mt-4 font-display text-3xl font-semibold leading-[1.15] tracking-tight text-plum sm:text-4xl lg:text-5xl">
-              Développez votre activité de prestataire mariage et
-              événementiel avec Misstice
+            <h1 className="mt-4 font-hero text-hero font-bold leading-[1.05] tracking-tight text-plum">
+              Créez votre{" "}
+              <span className="text-violet">page pro</span> en quelques
+              minutes
             </h1>
+            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-slate sm:text-[17px]">
+              Une seule page, personnalisable, à partager partout. Misstice
+              connecte votre activité à des particuliers qui organisent
+              mariages, anniversaires, baptêmes, galas et baby showers.
+            </p>
+            <div className="mt-7 flex flex-col items-center gap-3">
+              <Link
+                href={CTA_HREF}
+                className="inline-flex items-center justify-center rounded-full bg-ink px-8 py-4 text-base font-semibold text-cream shadow-lg shadow-ink/20 transition-transform hover:-translate-y-0.5"
+              >
+                Créer ma page gratuite
+              </Link>
+              <p className="text-xs text-slate">
+                10 minutes · gratuit · sans engagement
+              </p>
+            </div>
             {slotsRemaining > 0 ? (
               <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-4 py-1.5 text-sm font-semibold text-gold-dark">
                 ✦ Plus que {slotsRemaining} place
@@ -174,21 +192,17 @@ export default async function DevenirPrestatairePage() {
                 Le programme pilote Pack Pro gratuit est complet — inscrivez-vous, la formule gratuite reste ouverte à tous
               </p>
             )}
-            <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link
-                href={CTA_HREF}
-                className="ev-cta ev-cta-pulse inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-semibold text-cream shadow-lg shadow-violet/25"
-              >
-                Devenir prestataire pilote
-              </Link>
-              <CalendlyButton
-                label="Réserver un appel plutôt"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/20 bg-white/70 px-6 py-4 text-base font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
-              />
-            </div>
-            <p className="mt-3 text-xs text-slate">
-              30 minutes pour répondre à vos questions, sans engagement.
-            </p>
+          </div>
+
+          <div className="mt-10 sm:mt-14">
+            <CircularCarousel />
+          </div>
+
+          <div className="mx-auto max-w-2xl px-5 pb-10 text-center sm:px-8 sm:pb-14">
+            <CalendlyButton
+              label="Réserver un appel plutôt"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-plum/20 bg-white px-6 py-3.5 text-sm font-semibold text-plum transition-colors hover:bg-plum/5"
+            />
           </div>
         </section>
 
@@ -376,7 +390,7 @@ export default async function DevenirPrestatairePage() {
             <div className="mt-6">
               <Link
                 href={CTA_HREF}
-                className="inline-flex items-center justify-center rounded-2xl bg-cream px-8 py-4 text-base font-semibold text-violet shadow-lg transition-all hover:brightness-95"
+                className="inline-flex items-center justify-center rounded-full bg-cream px-8 py-4 text-base font-semibold text-violet shadow-lg transition-all hover:brightness-95"
               >
                 Créer mon profil prestataire
               </Link>

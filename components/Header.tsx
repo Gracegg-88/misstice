@@ -1,8 +1,10 @@
 "use client";
 
 /**
- * Carnet de Confiance — navigation compacte reliant toutes les entrées publiques structurantes de Misstice.
- * Les règles d’authentification et les destinations compte/création existantes sont conservées.
+ * Nouveau style du site (Complément 2, inspiration y-vision.co.kr) : barre de
+ * navigation "pilule" flottante, centrée, qui reste visible au défilement.
+ * "Menu" ouvre un panneau plein écran (desktop et mobile) — la pilule elle-même
+ * ne montre que l'essentiel : Menu, logo, CTA principal.
  */
 import { useEffect, useState } from "react";
 import { Menu, X, CircleUserRound } from "lucide-react";
@@ -37,33 +39,80 @@ export default function Header({ initialAccount = null }: { initialAccount?: Acc
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-md">
-        <div className="mx-auto flex min-h-16 max-w-content px-page items-center justify-between gap-3 py-2">
+      <header className="sticky top-3 z-50 px-page sm:top-4">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 rounded-full bg-white/95 py-2 pl-2.5 pr-2 shadow-lg shadow-ink/10 ring-1 ring-black/5 backdrop-blur-md sm:gap-3 sm:pl-3 sm:pr-2.5">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Ouvrir le menu"
+            className="flex min-h-11 items-center gap-1.5 rounded-full px-2.5 text-sm font-semibold text-plum transition-colors hover:bg-plum/5 sm:px-3.5"
+          >
+            <Menu size={18} />
+            <span className="hidden sm:inline">Menu</span>
+          </button>
           <Logo />
-          <nav className="hidden items-center gap-7 lg:flex" aria-label="Navigation principale">
-            {navLinks.map((link) => <a key={link.href} href={link.href} className="text-sm font-medium text-plum/80 transition-colors hover:text-violet">{link.label}</a>)}
-          </nav>
-          <div className="hidden items-center gap-3 md:flex">
-            {!account && <a href="/devenir-prestataire" className="text-sm font-medium text-violet underline decoration-violet/40 decoration-2 underline-offset-4 transition-colors hover:text-violet-dark">Devenir prestataire</a>}
-            <a href={account ? account.href : "/auth"} aria-label={account ? "Mon compte" : "Connexion"} title={account ? "Mon compte" : "Connexion"} className="flex h-10 w-10 items-center justify-center text-plum transition-colors hover:text-violet"><CircleUserRound size={19} /></a>
-            <a href={account ? account.createHref : "/creer"} className="inline-flex items-center rounded-full bg-violet px-5 py-2.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5">Créer mon événement</a>
-          </div>
-          <button type="button" aria-label={open ? "Fermer le menu" : "Ouvrir le menu"} onClick={() => setOpen((v) => !v)} className="flex h-10 w-10 items-center justify-center text-plum md:hidden">{open ? <X size={22} /> : <Menu size={22} />}</button>
+          <a
+            href={account ? account.createHref : "/creer"}
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-3.5 text-sm font-semibold text-cream transition-transform hover:-translate-y-0.5 sm:px-5"
+          >
+            <span className="sm:hidden">Créer</span>
+            <span className="hidden sm:inline">Créer mon événement</span>
+          </a>
         </div>
       </header>
 
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-start justify-end p-3 md:hidden">
-          <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="relative flex w-full max-w-sm flex-col bg-cream p-5 shadow-2xl">
-            <div className="mb-5 flex items-center justify-between"><Logo /><button type="button" aria-label="Fermer" onClick={() => setOpen(false)} className="flex h-9 w-9 items-center justify-center bg-white text-plum"><X size={18} /></button></div>
-            <nav className="flex flex-col py-2">
-              {navLinks.map((link) => <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="px-2 py-3 text-sm font-medium text-plum hover:text-violet">{link.label}</a>)}
+        <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-6">
+          <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="ev-fade-in relative flex w-full max-w-lg flex-col rounded-3xl bg-cream p-6 shadow-2xl sm:p-8">
+            <div className="flex items-center justify-between">
+              <Logo />
+              <button
+                type="button"
+                aria-label="Fermer le menu"
+                onClick={() => setOpen(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-plum"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="mt-6 flex flex-col" aria-label="Navigation principale">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="border-b border-black/5 py-4 font-display text-xl font-medium text-plum transition-colors hover:text-violet"
+                >
+                  {link.label}
+                </a>
+              ))}
             </nav>
-            <div className="mt-4 flex flex-col gap-2">
-              {!account && <a href="/devenir-prestataire" onClick={() => setOpen(false)} className="bg-violet-soft px-4 py-3 text-center text-sm font-medium text-violet">Devenir prestataire</a>}
-              <a href={account ? account.href : "/auth"} onClick={() => setOpen(false)} className="flex items-center justify-center gap-2 bg-white/60 px-4 py-3 text-center text-sm font-semibold text-plum"><CircleUserRound size={17} />{account ? "Mon compte" : "Connexion"}</a>
-              <a href={account ? account.createHref : "/creer"} onClick={() => setOpen(false)} className="bg-violet px-4 py-3 text-center text-sm font-semibold text-white">Créer mon événement</a>
+            <div className="mt-5 flex flex-col gap-2.5">
+              {!account && (
+                <a
+                  href="/devenir-prestataire"
+                  onClick={() => setOpen(false)}
+                  className="rounded-full bg-violet-soft px-4 py-3.5 text-center text-sm font-semibold text-violet"
+                >
+                  Devenir prestataire
+                </a>
+              )}
+              <a
+                href={account ? account.href : "/auth"}
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-full bg-white px-4 py-3.5 text-center text-sm font-semibold text-plum"
+              >
+                <CircleUserRound size={17} />
+                {account ? "Mon compte" : "Connexion"}
+              </a>
+              <a
+                href={account ? account.createHref : "/creer"}
+                onClick={() => setOpen(false)}
+                className="rounded-full bg-ink px-4 py-3.5 text-center text-sm font-semibold text-cream"
+              >
+                Créer mon événement
+              </a>
             </div>
           </div>
         </div>
