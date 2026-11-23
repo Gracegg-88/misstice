@@ -2,17 +2,15 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import {
-  Rocket,
-  BadgeCheck,
-  Percent,
-  UserPlus,
-  Inbox,
-  MessageSquare,
-  ShieldCheck,
+  Smartphone,
+  QrCode,
+  CreditCard,
+  Mail,
+  CalendarCheck,
+  Calculator,
   Lock,
-  LayoutDashboard,
+  BarChart3,
   ChevronDown,
-  Clock,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -29,102 +27,27 @@ export const metadata: Metadata = pageMetadata({
 
 const CTA_HREF = "/creer?type=pro";
 
-const perks = [
-  {
-    icon: Rocket,
-    title: "Une visibilité maximale, dès maintenant",
-    text: "Vous faites partie des tout premiers prestataires référencés, une visibilité maximale pendant la phase de lancement.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Un badge qui rassure",
-    text: "Un badge « Vérifié par Misstice » qui rassure vos clients dès le premier contact (vérification SIRET).",
-  },
-  {
-    icon: Percent,
-    title: "Une commission claire",
-    text: "15 % uniquement sur les prestations réalisées via la plateforme, pas d'abonnement mensuel, pas de frais cachés.",
-  },
-];
-
-const steps = [
-  {
-    icon: UserPlus,
-    label: "01 / 04",
-    title: "Créez votre profil",
-    text: "Indiquez les types d'événements que vous couvrez : 5 minutes, gratuit.",
-  },
-  {
-    icon: Inbox,
-    label: "02 / 04",
-    title: "Recevez des demandes",
-    text: "Des demandes de devis correspondant précisément à votre activité.",
-  },
-  {
-    icon: MessageSquare,
-    label: "03 / 04",
-    title: "Échangez et concluez",
-    text: "Répondez, échangez, et concluez directement via la plateforme.",
-  },
-  {
-    icon: ShieldCheck,
-    label: "04 / 04",
-    title: "Soyez payé sereinement",
-    text: "Paiement sécurisé par séquestre, versé automatiquement 72h après votre événement.",
-  },
-];
-
-const payment = [
-  {
-    icon: Percent,
-    title: "Une commission de 15 %",
-    text: "Misstice prélève 15 % sur chaque prestation réservée via la plateforme. Pas d'abonnement, pas de frais caché : vous ne payez que lorsque vous décrochez une mission.",
-  },
-  {
-    icon: Lock,
-    title: "Paiement sécurisé par séquestre",
-    text: "Dès que le client accepte votre devis, son paiement est immédiatement sécurisé par Misstice via Stripe. Vous n'avez rien à gérer côté paiement : tout est automatisé.",
-  },
-  {
-    icon: Clock,
-    title: "Versé automatiquement",
-    text: "Votre part est versée automatiquement sur votre compte 72h après la date de l'événement, sauf signalement du client pendant ce délai.",
-  },
-];
-
-const differentiators = [
-  {
-    icon: ShieldCheck,
-    text: (
-      <>
-        <Link
-          href="/confiance"
-          className="font-semibold text-cream underline decoration-cream/40 underline-offset-2 hover:decoration-cream"
-        >
-          Vérification réelle de votre SIRET
-        </Link>
-        , pas juste une inscription libre.
-      </>
-    ),
-  },
-  {
-    icon: Lock,
-    text: "Vos coordonnées restent protégées tant que le client n'a pas accepté votre devis, zéro spam, zéro faux lead.",
-  },
-  {
-    icon: LayoutDashboard,
-    text: "Une seule interface pour gérer vos demandes, quel que soit le type d'événement.",
-  },
+// Bloc 2 — "Tout ce qu'il te faut" (remplace Pourquoi rejoindre / Comment ça
+// marche / Ce qui différencie, fusionnés en une grille compacte).
+const features = [
+  { icon: Smartphone, text: "Ta page pro personnalisable, façon Linktree" },
+  { icon: QrCode, text: "Lien court et QR code à partager partout" },
+  { icon: CreditCard, text: "Carte de visite générée automatiquement" },
+  { icon: Mail, text: "Signature email prête à copier" },
+  { icon: CalendarCheck, text: "Tes disponibilités visibles par tes clients" },
+  { icon: Calculator, text: "Devis à composer directement sur ta page" },
+  { icon: Lock, text: "Acompte à la réservation, sécurisé par séquestre" },
+  { icon: BarChart3, text: "Statistiques de vues et de demandes" },
 ];
 
 const faqs = [
   {
     q: "Combien ça coûte de s'inscrire ?",
-    a: "L'inscription et la création de votre profil sont entièrement gratuites, sans engagement.",
+    a: "La création de votre page pro est entièrement gratuite, sans engagement. Le Pack Pro (options avancées) est optionnel.",
   },
   {
     q: "Comment fonctionne la commission ?",
-    a: "Une commission de 15 % est prélevée uniquement sur les prestations effectivement réservées via Misstice, au moment du paiement. Aucun abonnement mensuel, aucun frais caché : vous ne payez que lorsque vous décrochez une mission.",
+    a: "Une commission de 15 % est prélevée uniquement sur les prestations effectivement réservées via Misstice, au moment du paiement.",
   },
   {
     q: "Quand suis-je payé ?",
@@ -132,15 +55,11 @@ const faqs = [
   },
   {
     q: "Puis-je demander un acompte à la réservation ?",
-    a: "Oui. Depuis votre profil, choisissez un pourcentage d'acompte (jusqu'à 50 % de votre part), avec une valeur pré-remplie selon votre métier (par exemple 50 % pour un traiteur) — ajustable à tout moment, et modifiable aussi au cas par cas sur chaque devis. Il est versé sur votre compte 5 jours après le paiement du client (ou à la confirmation après rencontre pour les métiers concernés), le solde suivant la règle habituelle (72h après l'événement).",
+    a: "Oui. Depuis votre profil, choisissez un pourcentage d'acompte (jusqu'à 50 % de votre part), avec une valeur pré-remplie selon votre métier (par exemple 50 % pour un traiteur) — ajustable à tout moment, et modifiable aussi au cas par cas sur chaque devis.",
   },
   {
     q: "Puis-je m'inscrire pour plusieurs types d'événements à la fois ?",
     a: "Oui. Vous choisissez librement les types d'événements que vous couvrez (mariage, anniversaire, baptême, gala, baby shower…) et vous pouvez modifier cette liste à tout moment depuis votre profil.",
-  },
-  {
-    q: "Puis-je refuser une demande ?",
-    a: "Bien sûr. Vous restez libre d'accepter ou de refuser chaque demande de devis selon votre disponibilité et vos envies.",
   },
 ];
 
@@ -154,10 +73,20 @@ export default async function DevenirPrestatairePage() {
     <>
       <Header />
       <main className="bg-cream">
-        {/* ── H1 + CTA, visible sans scroller (Complément 2 : inspiration hadi-community.de) ── */}
-        <section className="bg-cream pt-12 sm:pt-16">
-          <div className="mx-auto max-w-2xl px-5 text-center sm:px-8">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet/20 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-violet">
+        {/* ── Bloc 1 : premier écran — titre + bouton, visuels en fond ── */}
+        <section className="grain relative overflow-hidden bg-cream pb-10 pt-12 sm:pb-14 sm:pt-16">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-violet/20 blur-[90px]"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-gold/25 blur-[100px]"
+          />
+          <CircularCarousel variant="background" />
+
+          <div className="relative mx-auto max-w-2xl px-5 text-center sm:px-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet/20 bg-white/80 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-violet backdrop-blur-sm">
               Espace prestataires · Phase pilote
             </span>
             <h1 className="mt-4 font-hero text-hero font-bold leading-[1.05] tracking-tight text-plum">
@@ -181,66 +110,48 @@ export default async function DevenirPrestatairePage() {
                 10 minutes · gratuit · sans engagement
               </p>
             </div>
-            {slotsRemaining > 0 ? (
-              <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-gold-soft px-4 py-1.5 text-sm font-semibold text-gold-dark">
-                ✦ Plus que {slotsRemaining} place
-                {slotsRemaining > 1 ? "s" : ""} pour profiter du Pack Pro
-                gratuit pendant {pilotDurationMonths} mois
-              </p>
-            ) : (
-              <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-violet-soft px-4 py-1.5 text-sm font-semibold text-violet">
-                Le programme pilote Pack Pro gratuit est complet — inscrivez-vous, la formule gratuite reste ouverte à tous
-              </p>
-            )}
-          </div>
 
-          <div className="mt-10 sm:mt-14">
-            <CircularCarousel />
-          </div>
-
-          <div className="mx-auto max-w-2xl px-5 pb-10 text-center sm:px-8 sm:pb-14">
-            <CalendlyButton
-              label="Réserver un appel plutôt"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-plum/20 bg-white px-6 py-3.5 text-sm font-semibold text-plum transition-colors hover:bg-plum/5"
-            />
+            {/* Sous-navigation de la page (descend vers les sections). */}
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <a
+                href="#fonctionnalites"
+                className="rounded-full border border-plum/15 bg-white/70 px-4 py-2 text-xs font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
+              >
+                Fonctionnalités
+              </a>
+              <a
+                href="#tarifs"
+                className="rounded-full border border-plum/15 bg-white/70 px-4 py-2 text-xs font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
+              >
+                Tarifs
+              </a>
+            </div>
+            <div className="mt-3">
+              <CalendlyButton
+                label="Réserver un appel plutôt"
+                className="text-xs font-semibold text-slate underline decoration-slate/30 underline-offset-4 hover:text-plum"
+              />
+            </div>
           </div>
         </section>
 
-        {/* ── Tous types d'événements ── */}
-        <section className="mx-auto max-w-content px-page py-14">
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-            Une plateforme pour tous vos événements, pas seulement les
-            mariages
-          </h2>
-          <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate">
-            Que vous soyez traiteur, photographe, DJ, décorateur ou
-            fleuriste, Misstice vous connecte à des particuliers qui
-            organisent mariages, anniversaires, baptêmes, galas ou baby
-            showers. Votre activité n&apos;est pas limitée à un seul type
-            d&apos;événement, votre visibilité non plus.
-          </p>
-        </section>
-
-        {/* ── Pourquoi rejoindre maintenant ── */}
-        <section className="bg-white py-14">
+        {/* ── Bloc 2 : Fonctionnalités — "Tout ce qu'il te faut" ── */}
+        <section id="fonctionnalites" className="scroll-mt-24 bg-white py-14">
           <div className="mx-auto max-w-content px-page">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-              Pourquoi rejoindre Misstice maintenant
+            <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+              Tout ce qu&apos;il te faut
             </h2>
-            <div className="mt-8 grid gap-5 sm:grid-cols-3">
-              {perks.map((p) => (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {features.map((f) => (
                 <div
-                  key={p.title}
-                  className="rounded-3xl border border-black/5 bg-cream p-6"
+                  key={f.text}
+                  className="flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-soft text-violet">
-                    <p.icon size={20} strokeWidth={1.75} />
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
+                    <f.icon size={17} strokeWidth={1.75} />
                   </span>
-                  <p className="mt-4 font-display text-lg font-semibold text-plum">
-                    {p.title}
-                  </p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate">
-                    {p.text}
+                  <p className="pt-1.5 text-sm font-medium leading-snug text-plum">
+                    {f.text}
                   </p>
                 </div>
               ))}
@@ -248,80 +159,58 @@ export default async function DevenirPrestatairePage() {
           </div>
         </section>
 
-        {/* ── Comment ça marche ── */}
-        <section className="mx-auto max-w-content px-page py-14">
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-            Comment ça marche
-          </h2>
-          <div className="mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((s, i) => (
-              <div key={s.title} className="relative">
-                <div className="flex h-full flex-col rounded-3xl border border-black/5 bg-white p-6 shadow-sm">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet text-cream shadow-md shadow-violet/25">
-                    <s.icon size={22} strokeWidth={1.75} />
-                  </span>
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-violet">
-                    {s.label}
+        {/* ── Bloc 3 : Tarifs ── */}
+        <section id="tarifs" className="scroll-mt-24 bg-cream py-14">
+          <div className="mx-auto max-w-content px-page">
+            <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
+              Tarifs
+            </h2>
+            <div className="mx-auto mt-8 grid max-w-3xl gap-5 sm:grid-cols-2">
+              <div className="rounded-3xl border border-black/5 bg-white p-7">
+                <p className="font-display text-lg font-semibold text-plum">Gratuit</p>
+                <p className="mt-1 text-sm text-slate">Pour toujours</p>
+                <p className="mt-4 font-display text-3xl font-semibold text-plum">0 €</p>
+                <ul className="mt-5 space-y-2 text-sm text-slate">
+                  <li>Page pro personnalisable</li>
+                  <li>Lien court, QR code, carte de visite</li>
+                  <li>Disponibilités et devis à composer</li>
+                  <li>Book de 3 photos</li>
+                </ul>
+              </div>
+              <div className="relative rounded-3xl border-2 border-violet bg-white p-7">
+                <span className="absolute -top-3 left-7 rounded-full bg-violet px-3 py-1 text-xs font-semibold text-white">
+                  Recommandé
+                </span>
+                <p className="font-display text-lg font-semibold text-plum">Pack Pro</p>
+                <p className="mt-1 text-sm text-slate">9 €/mois ou 79 €/an</p>
+                <p className="mt-4 font-display text-3xl font-semibold text-plum">
+                  9 €<span className="text-base font-medium text-slate">/mois</span>
+                </p>
+                <ul className="mt-5 space-y-2 text-sm text-slate">
+                  <li>Thèmes premium et animés</li>
+                  <li>Book de photos illimité</li>
+                  <li>Carte de visite en HD, sans bandeau</li>
+                  <li>Statistiques détaillées</li>
+                </ul>
+                {slotsRemaining > 0 ? (
+                  <p className="mt-5 rounded-xl bg-gold-soft px-3 py-2 text-center text-xs font-semibold text-gold-dark">
+                    ✦ Offert {pilotDurationMonths} mois aux membres pilotes —
+                    plus que {slotsRemaining} place
+                    {slotsRemaining > 1 ? "s" : ""}
                   </p>
-                  <p className="mt-1 font-display text-lg font-semibold text-plum">
-                    {s.title}
+                ) : (
+                  <p className="mt-5 rounded-xl bg-violet-soft px-3 py-2 text-center text-xs font-semibold text-violet">
+                    Programme pilote complet
                   </p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate">
-                    {s.text}
-                  </p>
-                </div>
-                {/* Connecteur entre les étapes (desktop) */}
-                {i < steps.length - 1 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute right-[-14px] top-11 hidden h-px w-7 bg-violet/25 lg:block"
-                  />
                 )}
               </div>
-            ))}
-          </div>
-          <p className="mt-6 text-sm text-slate">
-            Vous avez d&apos;autres questions ? Consultez notre{" "}
-            <Link
-              href="/faq"
-              className="font-semibold text-violet hover:text-violet-dark"
-            >
-              foire aux questions prestataires
-            </Link>
-            .
-          </p>
-        </section>
-
-        {/* ── Comment fonctionne le paiement ── */}
-        <section className="bg-white py-14">
-          <div className="mx-auto max-w-content px-page">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-              Comment fonctionne le paiement
-            </h2>
-            <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate">
-              Simple et transparent : le client paie en ligne dès qu&apos;il
-              accepte votre devis, Misstice sécurise le paiement, et vous êtes
-              réglé automatiquement après l&apos;événement.
-            </p>
-            <div className="mt-8 grid gap-5 sm:grid-cols-3">
-              {payment.map((p) => (
-                <div
-                  key={p.title}
-                  className="rounded-3xl border border-black/5 bg-cream p-6"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-soft text-violet">
-                    <p.icon size={20} strokeWidth={1.75} />
-                  </span>
-                  <p className="mt-4 font-display text-lg font-semibold text-plum">
-                    {p.title}
-                  </p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate">
-                    {p.text}
-                  </p>
-                </div>
-              ))}
             </div>
-            <p className="mt-6 text-sm text-slate">
+            <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-slate">
+              Commission de 15 % uniquement sur les réservations payées via
+              Misstice · Paiement sécurisé par séquestre · Versé
+              automatiquement 72h après l&apos;événement.
+            </p>
+            <p className="mt-2 text-center text-sm text-slate">
               Détails complets dans nos{" "}
               <Link
                 href="/cgu#annulation"
@@ -334,32 +223,11 @@ export default async function DevenirPrestatairePage() {
           </div>
         </section>
 
-        {/* ── Ce qui différencie Misstice ── */}
-        <section className="bg-ink py-14">
-          <div className="mx-auto max-w-content px-page">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-cream sm:text-3xl">
-              Ce qui différencie Misstice des autres plateformes
-            </h2>
-            <div className="mt-8 grid gap-5 sm:grid-cols-3">
-              {differentiators.map((d, i) => (
-                <div key={i} className="flex items-start gap-3.5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cream/10 text-garnet">
-                    <d.icon size={19} strokeWidth={1.75} />
-                  </span>
-                  <p className="text-sm leading-relaxed text-cream/85">
-                    {d.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FAQ prestataires ── */}
+        {/* ── Bloc 4 : FAQ courte ── */}
         <section className="mx-auto max-w-content px-page py-14">
           <div className="mx-auto max-w-2xl">
             <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-              Foire aux questions prestataires
+              Foire aux questions
             </h2>
             <div className="mt-8 space-y-3">
               {faqs.map((f) => (
@@ -378,6 +246,16 @@ export default async function DevenirPrestatairePage() {
                 </details>
               ))}
             </div>
+            <p className="mt-6 text-center text-sm text-slate">
+              D&apos;autres questions ? Consultez notre{" "}
+              <Link
+                href="/faq"
+                className="font-semibold text-violet hover:text-violet-dark"
+              >
+                foire aux questions complète
+              </Link>
+              .
+            </p>
           </div>
         </section>
 

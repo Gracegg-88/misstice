@@ -240,6 +240,23 @@
   animation: ev-marquee 32s linear infinite;
 }
 
+/* ---------- Colonnes photo de part et d'autre du titre (hero accueil) ----------
+   Défilement vertical lent et continu, sens opposé gauche/droite. */
+@keyframes ev-marquee-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@keyframes ev-marquee-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+.ev-marquee-up {
+  animation: ev-marquee-up 38s linear infinite;
+}
+.ev-marquee-down {
+  animation: ev-marquee-down 42s linear infinite;
+}
+
 /* ═════════════════════════════════════════════
    RESPECT DE prefers-reduced-motion
    ═════════════════════════════════════════════ */
@@ -259,7 +276,9 @@
   .ev-zoom-hover:hover .ev-zoom-target { transform: none; }
   .ev-carousel-wheel,
   .ev-carousel-counter,
-  .ev-marquee-track { animation: none; }
+  .ev-marquee-track,
+  .ev-marquee-up,
+  .ev-marquee-down { animation: none; }
 
   /* CTA et liseré statiques ; aucun mouvement imposé. */
   .ev-cta {

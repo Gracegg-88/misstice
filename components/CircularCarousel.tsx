@@ -4,12 +4,16 @@ import FakeVendorCard, { type FakeVendor } from "@/components/FakeVendorCard";
 
 /**
  * Carrousel circulaire (Complément 2, inspiration hadi-community.de) : une
- * grande roue tourne en continu en CSS pur (~90s/tour), on ne voit que l'arc
- * du haut. Chaque carte est contre-tournée (même durée, sens inverse) pour
- * rester lisible pendant la rotation — technique "roue de fête foraine" à
- * l'ancienne, 100% CSS. Repli mobile : bande horizontale qui boucle.
- * Les deux animations sont neutralisées par prefers-reduced-motion (voir
- * app/animations.css).
+ * grande roue tourne en continu en CSS pur (~90s/tour). Chaque carte est
+ * contre-tournée (même durée, sens inverse) pour rester lisible pendant la
+ * rotation — technique "roue de fête foraine" à l'ancienne, 100% CSS. Repli
+ * mobile : bande horizontale qui boucle. Les deux animations sont
+ * neutralisées par prefers-reduced-motion (voir app/animations.css).
+ *
+ * variant="background" (révision du 23/11) : la roue entière (centrée, pas
+ * juste l'arc du haut) sert de texture animée derrière le texte du premier
+ * écran de /devenir-prestataire, en très faible opacité — "les visuels en
+ * fond", pour ne plus prendre de place en pleine section.
  */
 const FAKE_VENDORS: FakeVendor[] = [
   { name: "Atelier Verveine", category: "Traiteur", city: "Lyon", ground: "#F7F3EC", accent: "#8C8378", heading: "#1F3D33" },
@@ -29,8 +33,58 @@ const FAKE_VENDORS: FakeVendor[] = [
 const WHEEL_SIZE = 920;
 const RADIUS = 360;
 
-export default function CircularCarousel() {
+/** Roue brute (cartes placées autour du centre de sa propre boîte
+ *  WHEEL_SIZE × WHEEL_SIZE) — à l'appelant de la positionner. */
+function Wheel() {
   const n = FAKE_VENDORS.length;
+  return (
+    <div className="ev-carousel-wheel relative" style={{ width: WHEEL_SIZE, height: WHEEL_SIZE }}>
+      {FAKE_VENDORS.map((v, i) => {
+        const angle = (360 / n) * i;
+        return (
+          <div
+            key={v.name}
+            className="absolute left-1/2 top-1/2 h-0 w-0"
+            style={{ transform: `rotate(${angle}deg) translateX(${RADIUS}px)` }}
+          >
+            <div className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2">
+              <div className="ev-carousel-counter">
+                <div style={{ transform: `rotate(${-angle}deg)` }}>
+                  <FakeVendorCard vendor={v} />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function CircularCarousel({
+  variant = "default",
+}: {
+  variant?: "default" | "background";
+}) {
+  if (variant === "background") {
+    return (
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute left-1/2 top-1/2 opacity-[0.08]"
+          style={{ transform: "translate(-50%, -50%)" }}
+        >
+          <Wheel />
+        </div>
+        <div className="absolute inset-0 flex items-center opacity-[0.07] sm:hidden">
+          <div className="ev-marquee-track flex w-max gap-4">
+            {[...FAKE_VENDORS, ...FAKE_VENDORS].map((v, i) => (
+              <FakeVendorCard key={`${v.name}-${i}`} vendor={v} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -45,27 +99,10 @@ export default function CircularCarousel() {
         style={{ width: "100%", maxWidth: WHEEL_SIZE, height: 230 }}
       >
         <div
-          className="ev-carousel-wheel absolute left-1/2"
-          style={{ width: WHEEL_SIZE, height: WHEEL_SIZE, marginLeft: -WHEEL_SIZE / 2, top: -(WHEEL_SIZE - 230) }}
+          className="absolute left-1/2"
+          style={{ marginLeft: -WHEEL_SIZE / 2, top: -(WHEEL_SIZE - 230) }}
         >
-          {FAKE_VENDORS.map((v, i) => {
-            const angle = (360 / n) * i;
-            return (
-              <div
-                key={v.name}
-                className="absolute left-1/2 top-1/2 h-0 w-0"
-                style={{ transform: `rotate(${angle}deg) translateX(${RADIUS}px)` }}
-              >
-                <div className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2">
-                  <div className="ev-carousel-counter">
-                    <div style={{ transform: `rotate(${-angle}deg)` }}>
-                      <FakeVendorCard vendor={v} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <Wheel />
         </div>
       </div>
 
