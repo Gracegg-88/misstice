@@ -42,14 +42,14 @@ export default function FinalCTA() {
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/creer"
-                className="ev-cta inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
+                className="ev-cta inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-cream shadow-lg shadow-violet/25"
               >
                 <CalendarDays size={17} />
                 Créer mon événement
               </a>
               <a
                 href="/creer?type=pro"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-plum/20 bg-cream/80 px-6 py-3 text-sm font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-cream"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-plum/20 bg-cream/80 px-6 py-3 text-sm font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-cream"
               >
                 <Users size={17} />
                 Devenir prestataire

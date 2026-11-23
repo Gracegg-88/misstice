@@ -72,6 +72,9 @@ const config: Config = {
         display: ["var(--font-heading)", "Georgia", "serif"],
         // Corps de texte, menu, boutons, libellés (la machine)
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        // Titres énormes du nouveau style du site (Complément 2) — hero
+        // accueil, /devenir-prestataire, chiffres. Distinct de `font-display`.
+        hero: ["var(--font-hero)", "system-ui", "sans-serif"],
       },
       // Échelle éditoriale fluide (s'adapte seule au mobile via clamp()).
       // Minimum absolu du site : 12px (text-xs) — jamais en dessous.

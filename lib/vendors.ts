@@ -108,6 +108,47 @@ export function isPubliclyVisible(
   return v.claimStatus === "non_reclamee" || v.verified;
 }
 
+/**
+ * Chiffres réels affichés sur l'accueil (section "01/04", Complément 2) —
+ * jamais inventés. Comptes larges (head: true) ou agrégés côté application
+ * (table prestataires modeste, pas besoin d'une fonction SQL dédiée).
+ */
+export async function getPlatformStats(): Promise<{
+  verifiedVendors: number;
+  categories: number;
+  cities: number;
+  avgResponseHours: number;
+}> {
+  const supabase = createClient();
+  const [verifiedRes, categoriesRes, cityRes] = await Promise.all([
+    supabase
+      .from("vendors")
+      .select("id", { count: "exact", head: true })
+      .eq("claim_status", "reclamee")
+      .eq("verified", true),
+    supabase.from("vendor_categories").select("id", { count: "exact", head: true }),
+    supabase
+      .from("vendors")
+      .select("city, response_hours")
+      .eq("claim_status", "reclamee")
+      .eq("verified", true),
+  ]);
+  const rows = (cityRes.data as { city: string | null; response_hours: number }[]) ?? [];
+  const cities = new Set(
+    rows.map((r) => r.city?.trim().toLowerCase()).filter((c): c is string => Boolean(c))
+  ).size;
+  const hours = rows.map((r) => r.response_hours).filter((h) => h > 0);
+  const avgResponseHours = hours.length
+    ? Math.round((hours.reduce((s, h) => s + h, 0) / hours.length) * 10) / 10
+    : 0;
+  return {
+    verifiedVendors: verifiedRes.count ?? 0,
+    categories: categoriesRes.count ?? 0,
+    cities,
+    avgResponseHours,
+  };
+}
+
 export async function getVendors(client?: SupabaseClient): Promise<Vendor[]> {
   const supabase = client ?? createClient();
   const { data } = await supabase
