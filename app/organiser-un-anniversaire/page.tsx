@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
 import GuideLayout from "@/components/guide/GuideLayout";
+import CityLinksSection from "@/components/geo/CityLinksSection";
 import GuideSection from "@/components/guide/GuideSection";
 import GuideSimpleTable, {
   type SimpleRow,
@@ -90,6 +91,13 @@ const faqItems: FaqItem[] = [
 export default function OrganiserUnAnniversairePage() {
   return (
     <GuideLayout
+      afterContent={
+        <CityLinksSection
+          eventTypeSlug="anniversaire"
+          title="Trouver vos prestataires d'anniversaire par ville"
+          intro="Annuaires locaux des prestataires référencés sur Misstice : comparez les professionnels près de chez vous."
+        />
+      }
       heroImage="/birthday-party.jpg"
       heroAlt="Amis célébrant un anniversaire autour d'un gâteau"
       title="Comment organiser un anniversaire"

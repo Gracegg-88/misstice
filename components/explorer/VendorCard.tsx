@@ -1,5 +1,6 @@
 "use client";
 
+import { optimizedSrc } from "@/lib/img";
 import { Star, BadgeCheck, MapPin, Heart, Sparkles, Lock, ShieldCheck } from "lucide-react";
 import type { Vendor } from "./vendors";
 import { vibesVisible } from "@/lib/vibes";
@@ -33,8 +34,10 @@ export default function VendorCard({
         {img && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={img}
-            alt={vendor.name}
+            src={optimizedSrc(img, 640)}
+            alt={`${vendor.name}, ${vendor.category.toLowerCase()}${vendor.city ? ` à ${vendor.city}` : ""}`}
+            loading="lazy"
+            decoding="async"
             className="ev-zoom-target absolute inset-0 h-full w-full object-cover"
           />
         )}

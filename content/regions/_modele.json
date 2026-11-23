@@ -1,0 +1,18 @@
+{
+  "publier": false,
+  "region": "Auvergne-Rhône-Alpes",
+  "derniere_mise_a_jour": "",
+  "introduction": "",
+  "traditions_et_coutumes": "",
+  "lieux_de_reception_typiques": "",
+  "meilleure_saison": "",
+  "specialites_culinaires": "",
+  "budget_moyen": "",
+  "faq": [
+    { "question": "", "reponse": "" }
+  ],
+  "sources": [
+    { "sujet": "", "titre": "", "url": "", "consulte_le": "" }
+  ],
+  "notes_internes_a_ne_pas_afficher": []
+}

@@ -13,7 +13,7 @@ export default function Logo({
   return (
     <a href="/" className={`group inline-flex items-center ${className}`} aria-label="Misstice, accueil">
       <img
-        src="/brand/misstice-mark.png"
+        src="/brand/misstice-mark-96.png"
         alt=""
         aria-hidden="true"
         width={34}

@@ -63,9 +63,11 @@ export const metadata: Metadata = {
   // (voir commentaire plus bas sur pourquoi Next.js ne le fait plus
   // automatiquement dès qu'un objet `icons` est fourni ici).
   icons: {
-    icon: "/brand/misstice-mark.png?v=1",
-    shortcut: "/brand/misstice-mark.png",
-    apple: "/brand/misstice-mark.png",
+    // Versions réduites (l'original fait 2 Mo et était téléchargé sur
+    // chaque page) ; v=2 force le rafraîchissement du cache navigateur.
+    icon: "/brand/misstice-mark-192.png?v=2",
+    shortcut: "/brand/misstice-mark-192.png?v=2",
+    apple: "/brand/apple-touch-icon.png",
   },
   twitter: {
     card: "summary_large_image",
@@ -91,6 +93,11 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-sans bg-cream text-plum antialiased">
+        {/* Sans JavaScript (certains robots), les blocs animés au défilement
+            (components/Reveal.tsx) restaient à opacité 0 : on les affiche. */}
+        <noscript>
+          <style>{".reveal,.reveal-scale,.reveal-row,.reveal-item{opacity:1!important;transform:none!important}"}</style>
+        </noscript>
         {children}
         <GuideMascot />
       </body>

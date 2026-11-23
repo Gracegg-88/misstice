@@ -31,7 +31,7 @@ export default function Footer() {
               <Logo />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/sparkler.jpg"
+                src="/sparkler-96.jpg"
                 alt=""
                 aria-hidden="true"
                 className="h-8 w-8 rounded-full object-cover"

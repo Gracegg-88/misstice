@@ -11,6 +11,7 @@ export default function GuideLayout({
   subtitle,
   toc,
   path,
+  afterContent,
   children,
 }: {
   heroImage: string;
@@ -19,6 +20,8 @@ export default function GuideLayout({
   subtitle?: string;
   toc: TocItem[];
   path?: string;
+  /** Bloc pleine largeur après le guide (ex. liens vers les pages ville). */
+  afterContent?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -99,6 +102,7 @@ export default function GuideLayout({
             <div className="min-w-0 space-y-14">{children}</div>
           </div>
         </div>
+        {afterContent}
       </main>
       <Footer />
     </>

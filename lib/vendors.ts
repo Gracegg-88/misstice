@@ -20,6 +20,10 @@ type Row = {
   payouts_enabled: boolean | null;
   retire_le: string | null;
   reviewed_at: string | null;
+  created_at: string;
+  // Colonne ajoutée par supabase/vendors-updated-at.sql ; absente tant que
+  // ce script n'a pas été lancé (repli sur created_at).
+  updated_at?: string | null;
   response_hours: number;
   response_rate: number;
   languages: string[] | null;
@@ -55,6 +59,7 @@ function map(r: Row): Vendor {
     googlePlaceId: r.google_place_status === "valide" ? r.google_place_id ?? null : null,
     payoutsEnabled: Boolean(r.payouts_enabled),
     retired: Boolean(r.retire_le),
+    updatedAt: r.updated_at ?? r.created_at ?? null,
     isNew: !r.reviewed_at,
     responseHours: r.response_hours,
     responseRate: r.response_rate,

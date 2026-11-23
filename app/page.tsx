@@ -12,6 +12,7 @@ import HowItWorks from "@/components/HowItWorks";
 import BecomeVendorCallout from "@/components/BecomeVendorCallout";
 import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
+import CityLinksSection from "@/components/geo/CityLinksSection";
 import { getHeaderAccount } from "@/lib/header-account";
 
 export const metadata: Metadata = pageMetadata({
@@ -53,6 +54,10 @@ export default async function Home() {
         </div>
         <HomeDirectory />
         <EventTypes />
+        <CityLinksSection
+          title="Prestataires événementiels par ville"
+          intro="Les annuaires des villes où Misstice référence le plus de prestataires."
+        />
         <HowItWorks />
         <BecomeVendorCallout
           headline="Votre activité mérite d’être vue par les bonnes familles"
