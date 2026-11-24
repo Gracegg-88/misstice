@@ -70,6 +70,10 @@ export default function CreerPage() {
   // (next) : on ne doit pas interrompre ce parcours-là avec une question
   // hors sujet.
   const [showTypeModal, setShowTypeModal] = useState(false);
+  // Réclamation d'une fiche importée (?reclamer=<id>, bouton « Réclamer ma
+  // fiche ») : l'id voyage dans les métadonnées d'inscription et une demande
+  // de rattachement est créée automatiquement (supabase/vendor-claims.sql).
+  const [claim, setClaim] = useState<{ id: string; name: string } | null>(null);
 
   // Présélection du parcours prestataire via ?type=pro (depuis « Je suis
   // prestataire » / « Devenir prestataire »). Lu au montage pour éviter tout
@@ -79,7 +83,28 @@ export default function CreerPage() {
     const t = sp.get("type");
     if (t === "pro" || t === "professionnel") setType("professionnel");
     const n = safeNext(sp.get("next"), "");
-    if (n) {
+    const reclamer = sp.get("reclamer");
+    if (reclamer && /^[0-9a-f-]{36}$/i.test(reclamer)) {
+      setType("professionnel");
+      // Préremplissage depuis la fiche importée (lecture publique), seulement
+      // si elle est encore libre.
+      void (async () => {
+        const { data } = await createClient()
+          .from("vendors")
+          .select("id, name, category, city, claim_status, user_id")
+          .eq("id", reclamer)
+          .maybeSingle();
+        const v = data as
+          | { id: string; name: string; category: string | null; city: string | null; claim_status: string | null; user_id: string | null }
+          | null;
+        if (v && v.claim_status === "non_reclamee" && !v.user_id) {
+          setClaim({ id: v.id, name: v.name });
+          setPro({ company: v.name, category: v.category ?? "", city: v.city ?? "" });
+        } else {
+          setShowTypeModal(true);
+        }
+      })();
+    } else if (n) {
       setNextParam(n);
     } else {
       setShowTypeModal(true);
@@ -123,10 +148,11 @@ export default function CreerPage() {
         new URLSearchParams(window.location.search).get("next"),
         ""
       );
+      const reclamer = new URLSearchParams(window.location.search).get("reclamer");
       if (n) {
         router.push(n);
       } else if ((profile as { role: string } | null)?.role === "prestataire") {
-        router.push("/pro");
+        router.push(reclamer ? `/pro?reclamer=${encodeURIComponent(reclamer)}` : "/pro");
       } else {
         router.push("/dashboard");
       }
@@ -197,7 +223,7 @@ export default function CreerPage() {
     }
     const redirectTo = `${window.location.origin}/auth/callback${
       type === "professionnel"
-        ? "?intent=pro"
+        ? `?intent=pro${claim ? `&reclamer=${claim.id}` : ""}`
         : pendingEventType
         ? `?eventType=${encodeURIComponent(pendingEventType)}`
         : ""
@@ -278,6 +304,7 @@ export default function CreerPage() {
           company: pro.company.trim(),
           category: pro.category.trim(),
           city: pro.city.trim(),
+          ...(claim ? { claim_vendor_id: claim.id } : {}),
         },
       },
     });
@@ -442,8 +469,14 @@ export default function CreerPage() {
             {step === 0 && (
               <div>
                 <h1 className="font-display text-xl font-semibold tracking-tight text-plum">
-                  Créez votre compte
+                  {claim ? "Réclamez votre fiche" : "Créez votre compte"}
                 </h1>
+                {claim && (
+                  <p className="mt-2 rounded-xl bg-violet-soft px-3 py-2 text-xs leading-relaxed text-plum">
+                    Fiche réclamée : <span className="font-semibold">{claim.name}</span>. Créez votre
+                    compte : votre demande de rattachement sera vérifiée par l&apos;équipe Misstice.
+                  </p>
+                )}
                 <p className="mt-1 text-sm text-slate">
                   Gratuit. Vous ne payez que les prestataires que vous réservez.
                 </p>

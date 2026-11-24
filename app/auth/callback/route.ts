@@ -22,6 +22,20 @@ export async function GET(request: Request) {
       // soi-même (voir supabase/security.sql, become_prestataire).
       if (searchParams.get("intent") === "pro") {
         await supabase.rpc("become_prestataire");
+        // « Réclamer ma fiche » via Google : la demande de rattachement est
+        // créée ici (avec l'inscription email, c'est handle_new_user qui la
+        // crée). La politique RLS n'accepte qu'une fiche importée et libre.
+        const reclamer = searchParams.get("reclamer");
+        if (reclamer && /^[0-9a-f-]{36}$/i.test(reclamer)) {
+          const {
+            data: { user: claimant },
+          } = await supabase.auth.getUser();
+          if (claimant) {
+            await supabase
+              .from("vendor_claim_requests")
+              .insert({ imported_vendor_id: reclamer, user_id: claimant.id });
+          }
+        }
       }
       // Type d'événement choisi dans la modale avant l'OAuth Google (ne
       // survit pas à l'aller-retour vers Google contrairement à

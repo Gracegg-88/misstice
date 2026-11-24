@@ -152,7 +152,7 @@ export default async function VendorPage({
                 Vous êtes {vendor.name}&nbsp;? Réclamez gratuitement votre fiche
               </p>
               <a
-                href="/devenir-prestataire"
+                href={`/creer?type=pro&reclamer=${vendor.id}`}
                 className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
               >
                 Réclamer ma fiche

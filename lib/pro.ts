@@ -75,7 +75,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
   const { data: v } = await supabase
     .from("vendors")
     .select(
-      "id, tagline, price_from, image, verified, rating, reviews, moods, energies, lights, palettes, atmospheres, music_styles"
+      "id, tagline, price_from, image, verified, rating, reviews, moods, energies, lights, palettes, atmospheres, music_styles, claim_status"
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -95,6 +95,7 @@ export async function getMyVendor(): Promise<ProVendor | null> {
         palettes: string[] | null;
         atmospheres: string[] | null;
         music_styles: string[] | null;
+        claim_status: string | null;
       }
     | null;
 
@@ -109,7 +110,20 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     founding_member?: boolean | null;
     pilot_member?: boolean | null;
     pilot_pack_pro_until?: string | null;
+    afficher_anciennete?: boolean | null;
   };
+
+  // Date de création (Sirene) de la fiche, si connue. Table absente ou
+  // aucune ligne : null.
+  let dateCreation: string | null = null;
+  if (vv?.id) {
+    const { data: ci } = await supabase
+      .from("vendor_company_info")
+      .select("date_creation")
+      .eq("vendor_id", vv.id)
+      .maybeSingle();
+    dateCreation = (ci as { date_creation: string | null } | null)?.date_creation ?? null;
+  }
 
   return {
     profileId: user.id,
@@ -123,6 +137,9 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     foundingMember: p.founding_member ?? false,
     pilotMember: p.pilot_member ?? false,
     pilotPackProUntil: p.pilot_pack_pro_until ?? null,
+    dateCreation,
+    claimed: vv?.claim_status === "reclamee",
+    afficherAnciennete: p.afficher_anciennete ?? false,
     tagline: vv?.tagline ?? null,
     priceFrom: vv?.price_from ?? null,
     image: vv?.image ?? null,

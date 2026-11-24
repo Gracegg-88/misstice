@@ -27,6 +27,8 @@ export type Vendor = {
   /** Dernière modification de la fiche (updated_at, sinon created_at) — lastmod du sitemap. */
   updatedAt?: string | null;
   about?: string | null; // description réelle (vendor_profiles.about)
+  /** Année de création (Sirene), seulement si fiche réclamée et accord du prestataire. */
+  foundedYear?: number;
   themeId?: string; // thème choisi pour la fiche publique (voir lib/themes.ts)
   // Ambiance & Vibe (tags renseignés par le prestataire).
   moods: string[];

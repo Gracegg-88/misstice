@@ -232,6 +232,10 @@ export default function VendorProfile({
                       <MapPin size={14} />
                       {vendor.city}
                     </span>
+                    {/* Ancienneté (Sirene) : fiche réclamée + accord du prestataire. */}
+                    {vendor.foundedYear && (
+                      <span className="text-[var(--v-text)]">Entreprise créée en {vendor.foundedYear}</span>
+                    )}
                     {/* Badges statut : fond opaque clair, pour rester lisibles
                         quel que soit le thème de la page. */}
                     {vendor.verified && vendor.userId && (

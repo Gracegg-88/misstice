@@ -71,6 +71,10 @@ export default function ProfilClient({
   );
   const categoryDefaultDeposit = categoryDepositDefaults[info.category] ?? 0;
   const [themeId, setThemeId] = useState(vendor.themeId || DEFAULT_THEME_ID);
+  // Ancienneté : proposée seulement pour une fiche réclamée dont la date de
+  // création officielle (Sirene) est connue.
+  const canShowAnciennete = vendor.claimed && !!vendor.dateCreation;
+  const [afficherAnciennete, setAfficherAnciennete] = useState(vendor.afficherAnciennete);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -259,6 +263,7 @@ export default function ProfilClient({
       about: info.about || null,
       deposit_percent: depositTrim === "" ? null : Number(depositTrim),
       theme_id: themeId,
+      ...(canShowAnciennete ? { afficher_anciennete: afficherAnciennete } : {}),
     });
     if (pErr) {
       setSaving(false);
@@ -685,6 +690,26 @@ export default function ProfilClient({
           <ThemePicker value={themeId} onChange={setThemeId} />
         </div>
       </section>
+
+      {canShowAnciennete && (
+        <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
+          <h2 className="font-display text-lg font-semibold text-plum">Ancienneté de l&apos;entreprise</h2>
+          <p className="mt-1 text-sm text-slate">
+            D&apos;après le répertoire officiel des entreprises (Sirene), votre entreprise a été créée en{" "}
+            {new Date(vendor.dateCreation as string).getFullYear()}. Vous choisissez si cette information
+            apparaît sur votre fiche publique.
+          </p>
+          <label className="mt-4 flex items-start gap-3 text-sm text-plum">
+            <input
+              type="checkbox"
+              checked={afficherAnciennete}
+              onChange={(e) => setAfficherAnciennete(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-violet"
+            />
+            Afficher « Entreprise créée en {new Date(vendor.dateCreation as string).getFullYear()} » sur ma fiche
+          </label>
+        </section>
+      )}
 
       {/* Ambiance & Vibe */}
       <section className="mt-6 rounded-3xl border border-black/5 bg-white p-6">
