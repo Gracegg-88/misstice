@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_THEME_ID } from "@/lib/themes";
 import type {
   ProVendor,
   Quote,
@@ -64,9 +65,9 @@ export async function getMyVendor(): Promise<ProVendor | null> {
 
   const { data: vp } = await supabase
     .from("vendor_profiles")
-    .select(
-      "id, company, category, city, about, deposit_percent, theme_id, founding_member, pilot_member, pilot_pack_pro_until"
-    )
+    // select("*") : tolère l'absence des colonnes du programme pilote
+    // (supabase/pilot-founding-members.sql) au lieu de faire échouer la requête.
+    .select("*")
     .eq("id", user.id)
     .maybeSingle();
   if (!vp) return null;
@@ -104,10 +105,10 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     city: string | null;
     about: string | null;
     deposit_percent: number | null;
-    theme_id: string;
-    founding_member: boolean;
-    pilot_member: boolean;
-    pilot_pack_pro_until: string | null;
+    theme_id?: string | null;
+    founding_member?: boolean | null;
+    pilot_member?: boolean | null;
+    pilot_pack_pro_until?: string | null;
   };
 
   return {
@@ -118,10 +119,10 @@ export async function getMyVendor(): Promise<ProVendor | null> {
     city: p.city,
     about: p.about,
     depositPercent: p.deposit_percent == null ? null : Number(p.deposit_percent),
-    themeId: p.theme_id,
-    foundingMember: p.founding_member,
-    pilotMember: p.pilot_member,
-    pilotPackProUntil: p.pilot_pack_pro_until,
+    themeId: p.theme_id ?? DEFAULT_THEME_ID,
+    foundingMember: p.founding_member ?? false,
+    pilotMember: p.pilot_member ?? false,
+    pilotPackProUntil: p.pilot_pack_pro_until ?? null,
     tagline: vv?.tagline ?? null,
     priceFrom: vv?.price_from ?? null,
     image: vv?.image ?? null,

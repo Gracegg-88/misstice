@@ -71,7 +71,8 @@ function map(r: Row): Vendor {
     img: r.image ?? "",
     userId: r.user_id ?? null,
     claimStatus: r.claim_status,
-    siret: r.siret ?? null,
+    // Jamais le n° SIRET lui-même : l'objet Vendor part aussi au navigateur.
+    hasSiret: !!r.siret?.trim(),
     moods: r.moods ?? [],
     energies: r.energies ?? [],
     lights: r.lights ?? [],
@@ -291,10 +292,13 @@ export async function getVendor(id: string): Promise<Vendor | null> {
   if (row.user_id) {
     const { data: vp } = await supabase
       .from("vendor_profiles")
-      .select("about, theme_id")
+      // select("*") : tolère une base où les colonnes optionnelles (theme_id…)
+      // n'existent pas encore — une colonne absente ferait échouer la requête
+      // et la description ne s'afficherait plus.
+      .select("*")
       .eq("id", row.user_id)
       .maybeSingle();
-    const p = vp as { about: string | null; theme_id: string | null } | null;
+    const p = vp as { about?: string | null; theme_id?: string | null } | null;
     vendor.about = p?.about ?? null;
     vendor.themeId = p?.theme_id ?? undefined;
   }
