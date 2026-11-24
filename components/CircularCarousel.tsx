@@ -17,11 +17,9 @@
  * transparent — à la place des cartes dessinées en CSS. public/devenir/mockup-*.webp.
  */
 const MOCKUP_IMAGES = [
-  "/devenir/mockup-dj-hand.webp",
   "/devenir/mockup-hortense.webp",
   "/devenir/mockup-saveurs.webp",
   "/devenir/mockup-ignis.webp",
-  "/devenir/mockup-horizon.webp",
   "/devenir/mockup-gabriel.webp",
   "/devenir/mockup-floral.webp",
   "/devenir/mockup-elise.webp",
@@ -51,7 +49,7 @@ function Wheel() {
                   <img
                     src={src}
                     alt=""
-                    className="h-56 w-auto max-w-none object-contain drop-shadow-[0_14px_24px_rgba(30,18,64,0.25)] sm:h-64"
+                    className="h-56 w-auto max-w-none object-contain drop-shadow-[0_14px_24px_rgba(30,18,64,0.25)] sm:h-80"
                   />
                 </div>
               </div>
