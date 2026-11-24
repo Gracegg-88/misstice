@@ -23,7 +23,7 @@ export type Vendor = {
   img: string; // photo
   userId?: string | null; // compte prestataire lié (null = fiche démo, non contactable)
   claimStatus: "reclamee" | "non_reclamee"; // fiche vitrine importée (SIRENE) pas encore réclamée
-  siret?: string | null; // n° SIRET (activité confirmée), utilisé pour la sélection « 3 prestataires »
+  hasSiret?: boolean; // SIRET renseigné (activité confirmée), pour la sélection « 3 prestataires ». Jamais le numéro : cet objet part au navigateur.
   /** Dernière modification de la fiche (updated_at, sinon created_at) — lastmod du sitemap. */
   updatedAt?: string | null;
   about?: string | null; // description réelle (vendor_profiles.about)

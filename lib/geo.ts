@@ -517,7 +517,7 @@ export async function getFeaturedVendors(
     }
     const auto = cityVendors
       .map((v, index) => ({ v, index }))
-      .filter(({ v }) => role.categories.includes(v.category) && !!v.siret?.trim() && !used.has(v.id))
+      .filter(({ v }) => role.categories.includes(v.category) && !!v.hasSiret && !used.has(v.id))
       .sort((a, b) => completeness(b.v) - completeness(a.v) || a.index - b.index)[0];
     if (auto) {
       picked.push({ vendor: auto.v, role, pourquoi: "", auto: true });
