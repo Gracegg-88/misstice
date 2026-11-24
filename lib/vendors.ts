@@ -298,9 +298,20 @@ export async function getVendor(id: string): Promise<Vendor | null> {
       .select("*")
       .eq("id", row.user_id)
       .maybeSingle();
-    const p = vp as { about?: string | null; theme_id?: string | null } | null;
+    const p = vp as { about?: string | null; theme_id?: string | null; afficher_anciennete?: boolean | null } | null;
     vendor.about = p?.about ?? null;
     vendor.themeId = p?.theme_id ?? undefined;
+    // Ancienneté : jamais affichée sur une fiche non réclamée, ni sans
+    // l'accord du prestataire (la politique RLS applique la même règle).
+    if (row.claim_status === "reclamee" && p?.afficher_anciennete) {
+      const { data: ci } = await supabase
+        .from("vendor_company_info")
+        .select("date_creation")
+        .eq("vendor_id", row.id)
+        .maybeSingle();
+      const d = (ci as { date_creation: string | null } | null)?.date_creation;
+      if (d) vendor.foundedYear = new Date(d).getFullYear();
+    }
   }
 
   return vendor;

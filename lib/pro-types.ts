@@ -22,6 +22,12 @@ export type ProVendor = {
   foundingMember: boolean;
   pilotMember: boolean;
   pilotPackProUntil: string | null;
+  // Ancienneté (date de création Sirene, jamais saisie) : affichée sur la
+  // fiche publique seulement si elle est réclamée ET avec l'accord du
+  // prestataire (supabase/vendor-claims.sql).
+  dateCreation: string | null;
+  claimed: boolean;
+  afficherAnciennete: boolean;
   // Ambiance & Vibe
   moods: string[];
   energies: string[];

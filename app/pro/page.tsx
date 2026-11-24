@@ -1,4 +1,5 @@
 import ActivatePaymentsCallout from "@/components/pro/ActivatePaymentsCallout";
+import ClaimStatus from "@/components/pro/ClaimStatus";
 import Link from "next/link";
 import {
   Inbox,
@@ -24,7 +25,11 @@ const QUOTE_BADGE: Record<string, string> = {
   "en litige": "bg-garnet-soft text-garnet",
 };
 
-export default async function ProOverviewPage() {
+export default async function ProOverviewPage({
+  searchParams,
+}: {
+  searchParams?: { reclamer?: string };
+}) {
   const [vendor, stats, conversations, quotes] = await Promise.all([
     getMyVendor(),
     getProStats(),
@@ -217,6 +222,9 @@ export default async function ProOverviewPage() {
         <img src="/brand/misstice-mark-96.png" alt="" aria-hidden="true" className="h-4 w-4 shrink-0" />
         {tip}
       </p>
+
+      {/* Réclamation d'une fiche importée (statut / envoi de la demande). */}
+      <ClaimStatus reclamerId={searchParams?.reclamer ?? null} />
 
       {/* Bandeau de visibilité — tant que le SIRET n'est pas vérifié, la fiche
           n'apparaît pas dans l'annuaire public (voir lib/vendors.ts). */}
