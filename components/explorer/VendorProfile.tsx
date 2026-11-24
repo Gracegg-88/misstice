@@ -294,7 +294,7 @@ export default function VendorProfile({
               {vendor.claimStatus === "non_reclamee" && (
                 <p className="mt-3 text-sm text-[var(--v-muted)]">
                   Cette entreprise est la vôtre ?{" "}
-                  <a href="/devenir-prestataire" className="font-semibold text-[var(--v-heading)] underline decoration-[var(--v-heading)]/40 underline-offset-2 hover:opacity-80">
+                  <a href={`/creer?type=pro&reclamer=${vendor.id}`} className="font-semibold text-[var(--v-heading)] underline decoration-[var(--v-heading)]/40 underline-offset-2 hover:opacity-80">
                     Réclamez-la
                   </a>
                 </p>
@@ -681,7 +681,7 @@ export default function VendorProfile({
           <div className="flex flex-col gap-2 border-t border-black/5 pt-6 text-xs text-[var(--v-muted)] sm:flex-row sm:items-center sm:justify-between">
             <p>
               Vous êtes ce professionnel ?{" "}
-              <a href="/devenir-prestataire" className="font-semibold text-[var(--v-heading)] underline decoration-[var(--v-heading)]/40 underline-offset-2 hover:opacity-80">
+              <a href={`/creer?type=pro&reclamer=${vendor.id}`} className="font-semibold text-[var(--v-heading)] underline decoration-[var(--v-heading)]/40 underline-offset-2 hover:opacity-80">
                 Réclamez votre fiche
               </a>
             </p>
@@ -964,7 +964,7 @@ function UnclaimedContactNotice({ vendor, onDone }: { vendor: Vendor; onDone: ()
       </p>
       {unclaimed && (
         <a
-          href="/devenir-prestataire"
+          href={`/creer?type=pro&reclamer=${vendor.id}`}
           className="mt-5 block w-full rounded-xl bg-violet px-5 py-3 text-sm font-semibold text-white hover:bg-violet-dark"
         >
           Cette entreprise est la vôtre ? Réclamez-la
