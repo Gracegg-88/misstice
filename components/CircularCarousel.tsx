@@ -28,10 +28,17 @@ const MOCKUP_IMAGES = [
 
 const WHEEL_SIZE = 920;
 const RADIUS = 360;
+const RADIUS_BACKGROUND = 440;
 
 /** Roue brute (images placées autour du centre de sa propre boîte
  *  WHEEL_SIZE × WHEEL_SIZE) — à l'appelant de la positionner. */
-function Wheel() {
+function Wheel({
+  radius = RADIUS,
+  imgClassName = "h-56 w-auto max-w-none object-contain drop-shadow-[0_14px_24px_rgba(30,18,64,0.25)] sm:h-80",
+}: {
+  radius?: number;
+  imgClassName?: string;
+}) {
   const n = MOCKUP_IMAGES.length;
   return (
     <div className="ev-carousel-wheel relative" style={{ width: WHEEL_SIZE, height: WHEEL_SIZE }}>
@@ -41,16 +48,12 @@ function Wheel() {
           <div
             key={src}
             className="absolute left-1/2 top-1/2 h-0 w-0"
-            style={{ transform: `rotate(${angle}deg) translateX(${RADIUS}px)` }}
+            style={{ transform: `rotate(${angle}deg) translateX(${radius}px)` }}
           >
             <div className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2">
               <div className="ev-carousel-counter">
                 <div style={{ transform: `rotate(${-angle}deg)` }}>
-                  <img
-                    src={src}
-                    alt=""
-                    className="h-56 w-auto max-w-none object-contain drop-shadow-[0_14px_24px_rgba(30,18,64,0.25)] sm:h-80"
-                  />
+                  <img src={src} alt="" className={imgClassName} />
                 </div>
               </div>
             </div>
@@ -70,12 +73,15 @@ export default function CircularCarousel({
     return (
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
-          className="absolute left-1/2 top-1/2 opacity-[0.14]"
+          className="absolute left-1/2 top-1/2 opacity-[0.2]"
           style={{ transform: "translate(-50%, -50%)" }}
         >
-          <Wheel />
+          <Wheel
+            radius={RADIUS_BACKGROUND}
+            imgClassName="h-56 w-auto max-w-none object-contain drop-shadow-[0_14px_24px_rgba(30,18,64,0.25)] sm:h-[26rem]"
+          />
         </div>
-        <div className="absolute inset-0 flex items-center opacity-[0.12] sm:hidden">
+        <div className="absolute inset-0 flex items-center opacity-[0.16] sm:hidden">
           <div className="ev-marquee-track flex w-max items-center gap-6">
             {[...MOCKUP_IMAGES, ...MOCKUP_IMAGES].map((src, i) => (
               <img

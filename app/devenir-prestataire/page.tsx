@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
-import {
-  Smartphone,
-  QrCode,
-  CreditCard,
-  Mail,
-  CalendarCheck,
-  Calculator,
-  Lock,
-  BarChart3,
-  ChevronDown,
-} from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CalendlyButton from "@/components/CalendlyButton";
@@ -26,19 +16,6 @@ export const metadata: Metadata = pageMetadata({
 });
 
 const CTA_HREF = "/creer?type=pro";
-
-// Bloc 2 — "Tout ce qu'il te faut" (remplace Pourquoi rejoindre / Comment ça
-// marche / Ce qui différencie, fusionnés en une grille compacte).
-const features = [
-  { icon: Smartphone, text: "Ta page pro personnalisable, façon Linktree" },
-  { icon: QrCode, text: "Lien court et QR code à partager partout" },
-  { icon: CreditCard, text: "Carte de visite générée automatiquement" },
-  { icon: Mail, text: "Signature email prête à copier" },
-  { icon: CalendarCheck, text: "Tes disponibilités visibles par tes clients" },
-  { icon: Calculator, text: "Devis à composer directement sur ta page" },
-  { icon: Lock, text: "Acompte à la réservation, sécurisé par séquestre" },
-  { icon: BarChart3, text: "Statistiques de vues et de demandes" },
-];
 
 const faqs = [
   {
@@ -74,7 +51,7 @@ export default async function DevenirPrestatairePage() {
       <Header />
       <main className="bg-cream">
         {/* ── Bloc 1 : premier écran — titre + bouton, visuels en fond ── */}
-        <section className="grain relative overflow-hidden bg-cream pb-10 pt-12 sm:pb-14 sm:pt-16">
+        <section className="grain relative overflow-hidden bg-cream pb-10 pt-6 sm:pb-14 sm:pt-8">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-violet/20 blur-[90px]"
@@ -112,72 +89,43 @@ export default async function DevenirPrestatairePage() {
             </div>
 
             {/* Sous-navigation de la page (descend vers les sections). */}
-            <div className="mt-6 flex items-center justify-center gap-2">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
                 href="#fonctionnalites"
                 className="rounded-full border border-plum/15 bg-white/70 px-4 py-2 text-xs font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
               >
                 Fonctionnalités
               </a>
-              <a
-                href="#tarifs"
-                className="rounded-full border border-plum/15 bg-white/70 px-4 py-2 text-xs font-semibold text-plum backdrop-blur-sm transition-colors hover:bg-white"
-              >
-                Tarifs
-              </a>
-            </div>
-            <div className="mt-3">
               <CalendlyButton
                 label="Réserver un appel plutôt"
-                className="text-xs font-semibold text-slate underline decoration-slate/30 underline-offset-4 hover:text-plum"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate underline decoration-slate/30 underline-offset-4 hover:text-plum"
               />
             </div>
           </div>
         </section>
 
-        {/* ── Bloc 2 : Fonctionnalités — "Tout ce qu'il te faut" ── */}
+        {/* ── Bloc 2 : Fonctionnalités + Tarifs fusionnés — les cartes
+             Gratuit / Pack Pro portent directement la liste complète de ce
+             qui est inclus, pour ne pas répéter la même info deux fois. ── */}
         <section id="fonctionnalites" className="scroll-mt-24 bg-white py-14">
           <div className="mx-auto max-w-content px-page">
             <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
               Tout ce qu&apos;il te faut
             </h2>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {features.map((f) => (
-                <div
-                  key={f.text}
-                  className="flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-soft text-violet">
-                    <f.icon size={17} strokeWidth={1.75} />
-                  </span>
-                  <p className="pt-1.5 text-sm font-medium leading-snug text-plum">
-                    {f.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Bloc 3 : Tarifs ── */}
-        <section id="tarifs" className="scroll-mt-24 bg-cream py-14">
-          <div className="mx-auto max-w-content px-page">
-            <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-              Tarifs
-            </h2>
             <div className="mx-auto mt-8 grid max-w-3xl gap-5 sm:grid-cols-2">
-              <div className="rounded-3xl border border-black/5 bg-white p-7">
+              <div className="rounded-3xl border border-black/5 bg-cream p-7">
                 <p className="font-display text-lg font-semibold text-plum">Gratuit</p>
                 <p className="mt-1 text-sm text-slate">Pour toujours</p>
                 <p className="mt-4 font-display text-3xl font-semibold text-plum">0 €</p>
                 <ul className="mt-5 space-y-2 text-sm text-slate">
-                  <li>Page pro personnalisable</li>
-                  <li>Lien court, QR code, carte de visite</li>
-                  <li>Disponibilités et devis à composer</li>
-                  <li>Book de 3 photos</li>
+                  <li>Page personnalisable</li>
+                  <li>Agenda partagé</li>
+                  <li>Devis en ligne</li>
+                  <li>Carte de visite digitale</li>
+                  <li>Signature professionnelle</li>
                 </ul>
               </div>
-              <div className="relative rounded-3xl border-2 border-violet bg-white p-7">
+              <div className="relative rounded-3xl border-2 border-violet bg-cream p-7">
                 <span className="absolute -top-3 left-7 rounded-full bg-violet px-3 py-1 text-xs font-semibold text-white">
                   Recommandé
                 </span>
@@ -187,10 +135,14 @@ export default async function DevenirPrestatairePage() {
                   9 €<span className="text-base font-medium text-slate">/mois</span>
                 </p>
                 <ul className="mt-5 space-y-2 text-sm text-slate">
-                  <li>Thèmes premium et animés</li>
-                  <li>Book de photos illimité</li>
-                  <li>Carte de visite en HD, sans bandeau</li>
-                  <li>Statistiques détaillées</li>
+                  <li>Page personnalisable</li>
+                  <li>Agenda partagé</li>
+                  <li>Lien et QR code dédié à partager</li>
+                  <li>Devis en ligne</li>
+                  <li>Carte de visite digitale</li>
+                  <li>Signature professionnelle</li>
+                  <li>Statistiques</li>
+                  <li>Mise en avant</li>
                 </ul>
                 {slotsRemaining > 0 ? (
                   <p className="mt-5 rounded-xl bg-gold-soft px-3 py-2 text-center text-xs font-semibold text-gold-dark">
@@ -223,55 +175,55 @@ export default async function DevenirPrestatairePage() {
           </div>
         </section>
 
-        {/* ── Bloc 4 : FAQ courte ── */}
+        {/* ── Bloc 3 : FAQ + CTA final, côte à côte sur ordinateur pour
+             éviter un scroll en plus (ils s'empilent sur mobile). ── */}
         <section className="mx-auto max-w-content px-page py-14">
-          <div className="mx-auto max-w-2xl">
-            <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl">
-              Foire aux questions
-            </h2>
-            <div className="mt-8 space-y-3">
-              {faqs.map((f) => (
-                <details
-                  key={f.q}
-                  className="group rounded-2xl border border-black/5 bg-white p-5 shadow-sm [&_svg]:open:rotate-180"
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+            <div>
+              <h2 className="text-center font-display text-2xl font-semibold tracking-tight text-plum sm:text-3xl lg:text-left">
+                Foire aux questions
+              </h2>
+              <div className="mt-8 space-y-3">
+                {faqs.map((f) => (
+                  <details
+                    key={f.q}
+                    className="group rounded-2xl border border-black/5 bg-white p-5 shadow-sm [&_svg]:open:rotate-180"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-plum marker:hidden">
+                      {f.q}
+                      <ChevronDown
+                        size={20}
+                        className="shrink-0 text-violet transition-transform"
+                      />
+                    </summary>
+                    <p className="mt-3 leading-relaxed text-slate">{f.a}</p>
+                  </details>
+                ))}
+              </div>
+              <p className="mt-6 text-center text-sm text-slate lg:text-left">
+                D&apos;autres questions ? Consultez notre{" "}
+                <Link
+                  href="/faq"
+                  className="font-semibold text-violet hover:text-violet-dark"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-plum marker:hidden">
-                    {f.q}
-                    <ChevronDown
-                      size={20}
-                      className="shrink-0 text-violet transition-transform"
-                    />
-                  </summary>
-                  <p className="mt-3 leading-relaxed text-slate">{f.a}</p>
-                </details>
-              ))}
+                  foire aux questions complète
+                </Link>
+                .
+              </p>
             </div>
-            <p className="mt-6 text-center text-sm text-slate">
-              D&apos;autres questions ? Consultez notre{" "}
-              <Link
-                href="/faq"
-                className="font-semibold text-violet hover:text-violet-dark"
-              >
-                foire aux questions complète
-              </Link>
-              .
-            </p>
-          </div>
-        </section>
 
-        {/* ── CTA final ── */}
-        <section className="mx-auto max-w-content px-page pb-16">
-          <div className="rounded-[32px] bg-gradient-premium p-8 text-center sm:p-12">
-            <p className="font-display text-2xl font-semibold text-cream sm:text-3xl">
-              Prêt à développer votre activité ?
-            </p>
-            <div className="mt-6">
-              <Link
-                href={CTA_HREF}
-                className="inline-flex items-center justify-center rounded-full bg-cream px-8 py-4 text-base font-semibold text-violet shadow-lg transition-all hover:brightness-95"
-              >
-                Créer mon profil prestataire
-              </Link>
+            <div className="rounded-[32px] bg-gradient-premium p-8 text-center sm:p-12">
+              <p className="font-display text-2xl font-semibold text-cream sm:text-3xl">
+                Prêt à développer votre activité ?
+              </p>
+              <div className="mt-6">
+                <Link
+                  href={CTA_HREF}
+                  className="inline-flex items-center justify-center rounded-full bg-cream px-8 py-4 text-base font-semibold text-violet shadow-lg transition-all hover:brightness-95"
+                >
+                  Créer mon profil prestataire
+                </Link>
+              </div>
             </div>
           </div>
         </section>
